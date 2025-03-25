@@ -61,25 +61,6 @@ class TaxCodeIncomeHelper @Inject() (
     )
   }
 
-  def fetchIabdDetails(nino: Nino, year: TaxYear)(implicit hc: HeaderCarrier): Future[Seq[IabdIncome]] = {
-    lazy val iabdDetailsFuture = iabdService.retrieveIabdDetails(nino, year)
-
-    for {
-      iabdDetails <- iabdDetailsFuture
-    } yield transformIabdDetailsToIabdIncome(iabdDetails)
-  }
-
-  private def transformIabdDetailsToIabdIncome(iabdDetails: Seq[IabdDetails]): Seq[IabdIncome] =
-    iabdDetails.map { detail =>
-      IabdIncome(
-        employmentId = detail.employmentSequenceNumber,
-        iabdUpdateSource = detail.source.flatMap(IabdUpdateSource.fromCode),
-        updateNotificationDate = detail.receiptDate,
-        updateActionDate = detail.captureDate,
-        grossAmount = detail.grossAmount.orNull
-      )
-    }
-
   def incomeAmountForEmploymentId(nino: Nino, year: TaxYear, employmentId: Int)(implicit
     hc: HeaderCarrier
   ): Future[Option[String]] = {

@@ -73,21 +73,6 @@ class IncomeController @Inject() (
       .merge recoverWith taxAccountErrorHandler()
   }
 
-  def filterEmploymentsByStatus(
-    nino: Nino,
-    year: TaxYear,
-    incomeType: TaxCodeIncomeComponentType,
-    status: TaxCodeIncomeStatus
-  ): Action[AnyContent] = authentication.authWithUserDetails.async { implicit request =>
-    incomeService
-      .employmentsForYearByStatus(nino, year, incomeType, status)
-      .bimap(
-        error => errorToResponse(error),
-        result => Ok(Json.toJson(ApiResponse(Json.toJson(result), Nil)))
-      )
-      .merge recoverWith taxAccountErrorHandler()
-  }
-
   def nonMatchingCeasedEmployments(nino: Nino, year: TaxYear): Action[AnyContent] =
     authentication.authWithUserDetails.async { implicit request =>
       incomeService

@@ -43,7 +43,8 @@ class EmploymentsSpec extends PlaySpec {
     1,
     Some(100),
     false,
-    false
+    false,
+    PensionIncome
   )
 
   def createAnnualAccount(
@@ -144,7 +145,8 @@ class EmploymentsSpec extends PlaySpec {
             1,
             None,
             false,
-            false
+            false,
+            PensionIncome
           )
 
         val employment1WithPTYAccount =
@@ -160,7 +162,8 @@ class EmploymentsSpec extends PlaySpec {
             1,
             None,
             false,
-            false
+            false,
+            PensionIncome
           )
 
         val annualAccount2CTY = createAnnualAccount(sequenceNumber = 2, taxYear = currentTaxYear)
@@ -177,7 +180,8 @@ class EmploymentsSpec extends PlaySpec {
             2,
             None,
             false,
-            false
+            false,
+            PensionIncome
           )
 
         val expectedMergedEmployment = employment1.copy(annualAccounts = Seq(annualAccountCTY, annualAccountPTY))
@@ -205,7 +209,8 @@ class EmploymentsSpec extends PlaySpec {
             1,
             None,
             false,
-            false
+            false,
+            PensionIncome
           )
 
         val annualAccount2CTY = createAnnualAccount(sequenceNumber = 2, taxYear = currentTaxYear)
@@ -222,7 +227,8 @@ class EmploymentsSpec extends PlaySpec {
             2,
             None,
             false,
-            false
+            false,
+            PensionIncome
           )
 
         val unifiedEmployment = Employments(Seq(employment1), None)
@@ -255,7 +261,8 @@ class EmploymentsSpec extends PlaySpec {
           1,
           None,
           false,
-          false
+          false,
+          PensionIncome
         )
 
       val employment1WithUpdatedStatus =
@@ -271,7 +278,8 @@ class EmploymentsSpec extends PlaySpec {
           1,
           None,
           false,
-          false
+          false,
+          PensionIncome
         )
 
       val annualAccount2CTY = createAnnualAccount(sequenceNumber = 2, taxYear = currentTaxYear)
@@ -288,7 +296,8 @@ class EmploymentsSpec extends PlaySpec {
           2,
           None,
           false,
-          false
+          false,
+          PensionIncome
         )
 
       val expectedEmployments =

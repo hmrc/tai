@@ -30,7 +30,7 @@ import uk.gov.hmrc.tai.audit.Auditor
 import uk.gov.hmrc.tai.connectors.{CitizenDetailsConnector, TaxAccountConnector}
 import uk.gov.hmrc.tai.controllers.auth.AuthenticatedRequest
 import uk.gov.hmrc.tai.model.ETag
-import uk.gov.hmrc.tai.model.domain.*
+import uk.gov.hmrc.tai.model.domain.{PensionIncome, *}
 import uk.gov.hmrc.tai.model.domain.income.*
 import uk.gov.hmrc.tai.model.domain.response.*
 import uk.gov.hmrc.tai.model.tai.TaxYear
@@ -146,7 +146,8 @@ class IncomeServiceHipToggleOnSpec extends BaseSpec {
         1,
         Some(100),
         hasPayrolledBenefit = false,
-        receivingOccupationalPension = true
+        receivingOccupationalPension = true,
+        PensionIncome
       )
       val employment2 = Employment(
         "company name",
@@ -160,7 +161,8 @@ class IncomeServiceHipToggleOnSpec extends BaseSpec {
         2,
         Some(100),
         hasPayrolledBenefit = false,
-        receivingOccupationalPension = true
+        receivingOccupationalPension = true,
+        PensionIncome
       )
 
       val mockEmploymentService = mock[EmploymentService]
@@ -338,7 +340,8 @@ class IncomeServiceHipToggleOnSpec extends BaseSpec {
       2,
       Some(100),
       hasPayrolledBenefit = false,
-      receivingOccupationalPension = true
+      receivingOccupationalPension = true,
+      PensionIncome
     )
     val employments = Seq(employment, employment.copy(sequenceNumber = 1))
     val employmentWithDifferentSeqNumber = Seq(employment.copy(sequenceNumber = 99))
@@ -530,7 +533,8 @@ class IncomeServiceHipToggleOnSpec extends BaseSpec {
               sequenceNumber = 1,
               cessationPay = Some(100),
               hasPayrolledBenefit = false,
-              receivingOccupationalPension = true
+              receivingOccupationalPension = true,
+              PensionIncome
             )
           )
         )
@@ -672,7 +676,8 @@ class IncomeServiceHipToggleOnSpec extends BaseSpec {
       2,
       Some(100),
       hasPayrolledBenefit = false,
-      receivingOccupationalPension = true
+      receivingOccupationalPension = true,
+      PensionIncome
     )
 
     "return list of non matching ceased employments when some employments do have an end date" in {
@@ -928,7 +933,8 @@ class IncomeServiceHipToggleOnSpec extends BaseSpec {
         2,
         Some(100),
         hasPayrolledBenefit = false,
-        receivingOccupationalPension = true
+        receivingOccupationalPension = true,
+        PensionIncome
       )
       val taxCodeIncomes = Seq(
         TaxCodeIncome(
@@ -1003,7 +1009,8 @@ class IncomeServiceHipToggleOnSpec extends BaseSpec {
                   0,
                   Some(100),
                   hasPayrolledBenefit = false,
-                  receivingOccupationalPension = false
+                  receivingOccupationalPension = false,
+                  PensionIncome
                 )
               )
             )
@@ -1068,7 +1075,8 @@ class IncomeServiceHipToggleOnSpec extends BaseSpec {
                   0,
                   Some(100),
                   hasPayrolledBenefit = false,
-                  receivingOccupationalPension = false
+                  receivingOccupationalPension = false,
+                  PensionIncome
                 )
               )
             )
@@ -1136,7 +1144,8 @@ class IncomeServiceHipToggleOnSpec extends BaseSpec {
                   0,
                   Some(100),
                   hasPayrolledBenefit = false,
-                  receivingOccupationalPension = false
+                  receivingOccupationalPension = false,
+                  PensionIncome
                 )
               )
             )
@@ -1205,7 +1214,8 @@ class IncomeServiceHipToggleOnSpec extends BaseSpec {
                   0,
                   Some(100),
                   hasPayrolledBenefit = false,
-                  receivingOccupationalPension = false
+                  receivingOccupationalPension = false,
+                  PensionIncome
                 )
               )
             )
@@ -1259,7 +1269,8 @@ class IncomeServiceHipToggleOnSpec extends BaseSpec {
                   0,
                   Some(100),
                   hasPayrolledBenefit = false,
-                  receivingOccupationalPension = false
+                  receivingOccupationalPension = false,
+                  PensionIncome
                 )
               )
             )
@@ -1324,7 +1335,8 @@ class IncomeServiceHipToggleOnSpec extends BaseSpec {
               0,
               Some(100),
               hasPayrolledBenefit = false,
-              receivingOccupationalPension = false
+              receivingOccupationalPension = false,
+              PensionIncome
             )
           )
         )
@@ -1364,7 +1376,8 @@ class IncomeServiceHipToggleOnSpec extends BaseSpec {
               0,
               Some(100),
               hasPayrolledBenefit = false,
-              receivingOccupationalPension = false
+              receivingOccupationalPension = false,
+              PensionIncome
             )
           )
         )
@@ -1388,30 +1401,6 @@ class IncomeServiceHipToggleOnSpec extends BaseSpec {
 
       val result = SUT.updateTaxCodeIncome(nino, taxYear, 1, 1234)(HeaderCarrier(), implicitly)
       result.futureValue mustBe IncomeUpdateFailed("Could not parse etag")
-    }
-  }
-
-  "employmentsForYearByStatus" must {
-    "return filtered employments JSON" in {
-      val mockTaxCodeIncomeHelper = mock[TaxCodeIncomeHelper]
-      val mockEmploymentService = mock[EmploymentService]
-
-      when(mockTaxCodeIncomeHelper.fetchIabdDetails(any(), meq(TaxYear().next))(any()))
-        .thenReturn(Future.successful(Seq.empty))
-
-      when(mockEmploymentService.employmentsAsEitherT(any(), meq(TaxYear().next))(any(), any()))
-        .thenReturn(EitherT.rightT(Employments(Seq.empty, None)))
-
-      val sut = createSUT(taxCodeIncomeHelper = mockTaxCodeIncomeHelper, employmentService = mockEmploymentService)
-      val result = sut
-        .employmentsForYearByStatus(nino, TaxYear().next, EmploymentIncome, Live)(
-          HeaderCarrier(),
-          FakeRequest()
-        )
-        .value
-        .futureValue
-
-      result mustBe Right(Seq.empty)
     }
   }
 }

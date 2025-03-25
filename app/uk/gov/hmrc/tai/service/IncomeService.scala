@@ -105,44 +105,6 @@ class IncomeService @Inject() (
     )
   }
 
-  def employmentsForYearByStatus(
-    nino: Nino,
-    year: TaxYear,
-    incomeType: TaxCodeIncomeComponentType,
-    status: TaxCodeIncomeStatus
-  )(implicit
-    hc: HeaderCarrier,
-    request: Request[_]
-  ): EitherT[Future, UpstreamErrorResponse, Seq[IncomeSourceFromSummary]] = {
-
-    def filterEmploymentsByStatus(
-      employments: Seq[Employment],
-      iabdIncome: Seq[IabdIncome],
-      status: TaxCodeIncomeStatus
-    ): Seq[IncomeSourceFromSummary] = {
-
-      val employmentMap: Map[Int, Employment] = employments
-        .filter(emp => status == NotLive && emp.employmentStatus != Live || emp.employmentStatus == status)
-        .map(emp => emp.sequenceNumber -> emp)
-        .toMap
-
-      iabdIncome.flatMap { income =>
-        income.employmentId.flatMap(employmentMap.get).map { emp =>
-          IncomeSourceFromSummary(TaxCodeIncomeSummary(emp.name, emp.startingTaxCode.get, income.grossAmount), emp)
-        }
-      }
-    }
-
-    for {
-      iabdIncome  <- EitherT.right(taxCodeIncomeHelper.fetchIabdDetails(nino, year))
-      employments <- employmentService.employmentsAsEitherT(nino, year)
-    } yield filterEmploymentsByStatus(
-      employments.employments.filter(_.componentType == incomeType),
-      iabdIncome,
-      status
-    )
-  }
-
   def untaxedInterest(nino: Nino)(implicit hc: HeaderCarrier): Future[Option[income.UntaxedInterest]] =
     incomes(nino, TaxYear()).map(_.nonTaxCodeIncomes.untaxedInterest)
 

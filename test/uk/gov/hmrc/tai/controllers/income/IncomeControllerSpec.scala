@@ -248,7 +248,8 @@ class IncomeControllerSpec extends BaseSpec {
       2,
       Some(100),
       hasPayrolledBenefit = false,
-      receivingOccupationalPension = true
+      receivingOccupationalPension = true,
+      PensionIncome
     )
 
     "return tax code incomes and employments JSON" in {
@@ -328,7 +329,8 @@ class IncomeControllerSpec extends BaseSpec {
       2,
       Some(100),
       hasPayrolledBenefit = false,
-      receivingOccupationalPension = true
+      receivingOccupationalPension = true,
+      PensionIncome
     )
 
     "return non matching ceased employments JSON" in {
@@ -492,27 +494,4 @@ class IncomeControllerSpec extends BaseSpec {
     createSUT(mockIncomeService)
   }
 
-  "filterEmploymentsByStatus" must {
-
-    "return filtered employments JSON" in {
-      when(mockIncomeService.employmentsForYearByStatus(any(), meq(TaxYear().next), any(), any())(any(), any()))
-        .thenReturn(EitherT.rightT(Seq.empty))
-
-      val SUT = createSUT(mockIncomeService)
-      val result = SUT.filterEmploymentsByStatus(nino, TaxYear().next, EmploymentIncome, Live)(FakeRequest())
-
-      status(result) mustBe OK
-      contentAsJson(result) mustBe expectedJsonEmpty
-    }
-
-    "return NotFound when a Not Found Exception occurs" in {
-      when(mockIncomeService.employmentsForYearByStatus(any(), meq(TaxYear().next), any(), any())(any(), any()))
-        .thenReturn(EitherT.leftT(UpstreamErrorResponse("Not found", NOT_FOUND)))
-
-      val SUT = createSUT(mockIncomeService)
-      val result = SUT.filterEmploymentsByStatus(nino, TaxYear().next, EmploymentIncome, Live)(FakeRequest())
-
-      status(result) mustBe NOT_FOUND
-    }
-  }
 }

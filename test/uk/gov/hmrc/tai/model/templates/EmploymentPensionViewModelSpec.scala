@@ -94,7 +94,8 @@ class EmploymentPensionViewModelSpec extends PlaySpec {
     1,
     Some(100),
     false,
-    false
+    false,
+    PensionIncome
   )
 
   private val formatter = DateTimeFormatter.ofPattern(IFormConstants.DateFormat)

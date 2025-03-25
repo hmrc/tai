@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.tai.model.domain
 
-import play.api.libs.json.{Format, Json, OFormat}
+import play.api.libs.json.{Format, Json, OFormat, Writes}
 import uk.gov.hmrc.tai.model.domain.income.TaxCodeIncomeStatus
 import uk.gov.hmrc.tai.model.tai.TaxYear
 
@@ -35,9 +35,9 @@ case class Employment(
   sequenceNumber: Int,
   cessationPay: Option[BigDecimal],
   hasPayrolledBenefit: Boolean,
+  @deprecated("Use employmentType instead")
   receivingOccupationalPension: Boolean,
-  componentType: Option[TaxComponentType] = None,
-  startingTaxCode: Option[String] = None
+  employmentType: TaxCodeIncomeComponentType
 ) {
 
   def tempUnavailableStubExistsForYear(year: TaxYear): Boolean =
@@ -52,7 +52,8 @@ case class Employment(
 }
 
 object Employment {
-  implicit val employmentFormat: Format[Employment] = Json.format[Employment]
+  implicit val employmentWrites: Writes[Employment] = Json.writes[Employment]
+
   private val numericWithLeadingZeros: Regex = """^([0]+)([1-9][0-9]*)""".r
   def numberChecked(stringVal: String): String =
     stringVal match {

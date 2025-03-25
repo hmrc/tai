@@ -86,5 +86,6 @@ lazy val it = project
   .dependsOn(microservice % "test->test")
   .settings(
     libraryDependencies ++= AppDependencies.test,
-    DefaultBuildSettings.itSettings()
+    DefaultBuildSettings.itSettings(),
+    Test / parallelExecution := false
   )

@@ -52,6 +52,7 @@ trait IntegrationSpec
   override def beforeEach(): Unit = {
     super.beforeEach()
     reset(mockFeatureFlagService)
+    Thread.sleep(2000) // 5 seconds delay
 
     val authResponse =
       s"""

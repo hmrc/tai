@@ -120,44 +120,22 @@ class EmploymentService @Inject() (
   def employmentAsEitherT(nino: Nino, id: Int)(implicit
     hc: HeaderCarrier,
     request: Request[_]
-  ): EitherT[Future, UpstreamErrorResponse, Employment] =
-    fetchEmploymentById(nino, id, TaxYear(), employmentsAsEitherT)
+  ): EitherT[Future, UpstreamErrorResponse, Option[Employment]] =
+    employmentsAsEitherT(nino, TaxYear()).map { employments =>
+      employments.employmentById(id)
+    }
 
   def employmentsWithoutRtiAsEitherT(nino: Nino, taxYear: TaxYear)(implicit
     hc: HeaderCarrier
-  ): EitherT[Future, UpstreamErrorResponse, Employments] =
-    for {
-      employmentsCollection <- fetchEmploymentsCollection(nino, taxYear)
-    } yield employmentBuilder.combineAccountsWithEmployments(
-      employmentsCollection.employments,
-      Seq.empty[AnnualAccount],
-      nino,
-      taxYear
-    )
-
-  private def fetchEmploymentById(
-    nino: Nino,
-    id: Int,
-    taxYear: TaxYear,
-    employmentsFetcher: (Nino, TaxYear) => EitherT[Future, UpstreamErrorResponse, Employments]
-  ): EitherT[Future, UpstreamErrorResponse, Employment] =
-    employmentsFetcher(nino, taxYear).transform {
-      case Right(employments) =>
-        employments.employmentById(id) match {
-          case Some(employment) => Right(employment)
-          case None =>
-            val sequenceNumbers = employments.sequenceNumbers.mkString(", ")
-            logger.warn(s"employment id: $id not found in employment sequence numbers: $sequenceNumbers")
-            Left(UpstreamErrorResponse("Not found", NOT_FOUND))
-        }
-      case Left(error) => Left(error)
-    }
+  ): EitherT[Future, UpstreamErrorResponse, EmploymentCollection] =
+    fetchEmploymentsCollection(nino, taxYear)
 
   def employmentWithoutRTIAsEitherT(nino: Nino, id: Int, taxYear: TaxYear)(implicit
-    hc: HeaderCarrier,
-    request: Request[_]
-  ): EitherT[Future, UpstreamErrorResponse, Employment] =
-    fetchEmploymentById(nino, id, taxYear, employmentsWithoutRtiAsEitherT)
+    hc: HeaderCarrier
+  ): EitherT[Future, UpstreamErrorResponse, Option[Employment]] =
+    employmentsWithoutRtiAsEitherT(nino, taxYear).map { employments =>
+      employments.employmentById(id)
+    }
 
   def ninoWithoutSuffix(nino: Nino): String = nino.nino.take(8)
 
@@ -165,46 +143,48 @@ class EmploymentService @Inject() (
     hc: HeaderCarrier,
     request: Request[_]
   ): EitherT[Future, UpstreamErrorResponse, String] =
-    for {
-      person <- EitherT[Future, UpstreamErrorResponse, Person](personRepository.getPerson(nino).map(Right(_)))
-      existingEmployment <- employmentAsEitherT(nino, id)
-      templateModel = EmploymentPensionViewModel(TaxYear(), person, endEmployment, existingEmployment)
-      endEmploymentHtml = EmploymentIForm(templateModel).toString
-      pdf <-
-        EitherT[Future, UpstreamErrorResponse, Array[Byte]](pdfService.generatePdf(endEmploymentHtml).map(Right(_)))
-      envelopeId <- EitherT[Future, UpstreamErrorResponse, String](fileUploadService.createEnvelope().map(Right(_)))
-      endEmploymentMetadata = PdfSubmissionMetadata(PdfSubmission(ninoWithoutSuffix(nino), "TES1", 2))
-                                .toString()
-                                .getBytes
-      _ <- EitherT[Future, UpstreamErrorResponse, HttpResponse](
-             fileUploadService
-               .uploadFile(pdf, envelopeId, endEmploymentFileName(envelopeId), MimeContentType.ApplicationPdf)
-               .map(Right(_))
-           )
-      _ <- EitherT[Future, UpstreamErrorResponse, HttpResponse](
-             fileUploadService
-               .uploadFile(
-                 endEmploymentMetadata,
-                 envelopeId,
-                 endEmploymentMetaDataName(envelopeId),
-                 MimeContentType.ApplicationXml
-               )
-               .map(Right(_))
-           )
-    } yield {
-      logger.info("Envelope Id for end employment- " + envelopeId)
+    EitherT(employmentAsEitherT(nino, id).value.flatMap {
+      case Right(Some(existingEmployment)) =>
+        for {
+          person <- personRepository.getPerson(nino)
+          templateModel = EmploymentPensionViewModel(TaxYear(), person, endEmployment, existingEmployment)
+          endEmploymentHtml = EmploymentIForm(templateModel).toString
+          pdf <-
+            pdfService.generatePdf(endEmploymentHtml)
+          envelopeId <- fileUploadService.createEnvelope()
+          endEmploymentMetadata = PdfSubmissionMetadata(PdfSubmission(ninoWithoutSuffix(nino), "TES1", 2))
+                                    .toString()
+                                    .getBytes
+          _ <- fileUploadService
+                 .uploadFile(pdf, envelopeId, endEmploymentFileName(envelopeId), MimeContentType.ApplicationPdf)
+          _ <- fileUploadService
+                 .uploadFile(
+                   endEmploymentMetadata,
+                   envelopeId,
+                   endEmploymentMetaDataName(envelopeId),
+                   MimeContentType.ApplicationXml
+                 )
+        } yield {
+          logger.info("Envelope Id for end employment- " + envelopeId)
 
-      auditable.sendDataEvent(
-        EndEmploymentAuditRequest,
-        detail = Map(
-          "nino"        -> nino.nino,
-          "envelope Id" -> envelopeId,
-          "end-date"    -> endEmployment.endDate.toString
+          auditable.sendDataEvent(
+            EndEmploymentAuditRequest,
+            detail = Map(
+              "nino"        -> nino.nino,
+              "envelope Id" -> envelopeId,
+              "end-date"    -> endEmployment.endDate.toString
+            )
+          )
+          Right[UpstreamErrorResponse, String](envelopeId)
+        }
+      case Right(None) =>
+        Future.successful(
+          Left[UpstreamErrorResponse, String](
+            UpstreamErrorResponse(s"employment id: $id not found in list of employments", NOT_FOUND)
+          )
         )
-      )
-
-      envelopeId
-    }
+      case Left(error) => Future.successful(Left[UpstreamErrorResponse, String](error))
+    })
 
   def addEmployment(nino: Nino, employment: AddEmployment)(implicit hc: HeaderCarrier): Future[String] =
     for {
@@ -250,15 +230,14 @@ class EmploymentService @Inject() (
       IFormConstants.IncorrectEmploymentSubmissionKey,
       "TES1",
       (person: Person) =>
-        {
-          for {
-            existingEmployment <- employmentAsEitherT(nino, id)
-            templateModel = EmploymentPensionViewModel(TaxYear(), person, incorrectEmployment, existingEmployment)
-          } yield EmploymentIForm(templateModel).toString
-        }.value.map {
-          case Right(result) => result
-          case Left(error)   => throw error
-        }
+        employmentAsEitherT(nino, id)
+          .map {
+            case Some(employment) =>
+              val templateModel = EmploymentPensionViewModel(TaxYear(), person, incorrectEmployment, employment)
+              EmploymentIForm(templateModel).toString
+            case None => throw new RuntimeException(s"employment id: $id not found in list of employments")
+          }
+          .foldF(Future.failed, Future.successful)
     ) map { envelopeId =>
       logger.info("Envelope Id for incorrect employment- " + envelopeId)
 

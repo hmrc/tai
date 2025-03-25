@@ -182,12 +182,13 @@ class PensionProviderServiceSpec extends BaseSpec {
           2,
           Some(100),
           hasPayrolledBenefit = false,
-          receivingOccupationalPension = false
+          receivingOccupationalPension = false,
+          PensionIncome
         )
 
         val mockEmploymentService = mock[EmploymentService]
         when(mockEmploymentService.employmentAsEitherT(any(), any())(any(), any()))
-          .thenReturn(EitherT.rightT(employment))
+          .thenReturn(EitherT.rightT(Some(employment)))
 
         val sut = createSut(mock[IFormSubmissionService], mock[Auditor], mockEmploymentService)
 

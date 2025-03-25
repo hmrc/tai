@@ -22,7 +22,7 @@ import org.mockito.ArgumentCaptor
 import org.mockito.ArgumentMatchers.{any, eq as eqTo}
 import org.mockito.ArgumentMatchers.{contains, eq as meq}
 import org.mockito.Mockito.{doNothing, reset, times, verify, when}
-import play.api.http.Status.{IM_A_TEAPOT, INTERNAL_SERVER_ERROR, NOT_FOUND}
+import play.api.http.Status.INTERNAL_SERVER_ERROR
 import play.api.libs.json.Json
 import play.api.test.FakeRequest
 import uk.gov.hmrc.domain.Nino
@@ -71,7 +71,8 @@ class EmploymentServiceNpsSpec extends BaseSpec {
     2,
     Some(100),
     false,
-    false
+    false,
+    PensionIncome
   )
 
   private def createSut(
@@ -243,7 +244,7 @@ class EmploymentServiceNpsSpec extends BaseSpec {
       )
       val employments = sut.employmentAsEitherT(nino, 2)(HeaderCarrier(), FakeRequest()).value.futureValue
 
-      employments mustBe Right(employment)
+      employments mustBe Right(Some(employment))
     }
 
     "return the correct Error Type when the employment doesn't exist" in {
@@ -274,8 +275,7 @@ class EmploymentServiceNpsSpec extends BaseSpec {
       )
       val employments = sut.employmentAsEitherT(nino, 5)(HeaderCarrier(), FakeRequest()).value.futureValue
 
-      employments mustBe a[Left[UpstreamErrorResponse, _]]
-      employments.swap.getOrElse(UpstreamErrorResponse("dummy", IM_A_TEAPOT)).statusCode mustBe NOT_FOUND
+      employments mustBe Right(None)
     }
   }
 

@@ -52,8 +52,7 @@ class EmploymentCollectionSpec extends PlaySpec with TaxCodeHistoryConstants {
       Some(100),
       false,
       false,
-      Some(EmploymentIncome),
-      Some("1250L")
+      EmploymentIncome
     )
   )
 
@@ -71,7 +70,7 @@ class EmploymentCollectionSpec extends PlaySpec with TaxCodeHistoryConstants {
       None,
       true,
       false,
-      Some(EmploymentIncome)
+      EmploymentIncome
     ),
     Employment(
       "EMPLOYER2",
@@ -86,7 +85,7 @@ class EmploymentCollectionSpec extends PlaySpec with TaxCodeHistoryConstants {
       Some(100),
       false,
       false,
-      Some(EmploymentIncome)
+      EmploymentIncome
     )
   )
 
