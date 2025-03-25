@@ -134,7 +134,9 @@ class EmploymentService @Inject() (
     hc: HeaderCarrier
   ): EitherT[Future, UpstreamErrorResponse, Option[Employment]] =
     employmentsWithoutRtiAsEitherT(nino, taxYear).map { employments =>
-      employments.employmentById(id)
+      val tt = employments.employmentById(id)
+      println("UUUUU " + tt)
+      tt
     }
 
   def ninoWithoutSuffix(nino: Nino): String = nino.nino.take(8)

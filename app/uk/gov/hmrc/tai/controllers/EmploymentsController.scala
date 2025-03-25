@@ -93,7 +93,13 @@ class EmploymentsController @Inject() (
           val filteredEmployments = employmentsCollection.employments.filter(employment =>
             employment.employmentType == incomeType && employment.employmentStatus == status
           )
-          Ok(Json.toJson(ApiResponse(Json.toJson(employmentsCollection.copy(employments = filteredEmployments)), Nil)))
+          if (filteredEmployments.isEmpty) {
+            NotFound(s"No Employment with income type `$incomeType` and status `$status` found")
+          } else {
+            Ok(
+              Json.toJson(ApiResponse(Json.toJson(employmentsCollection.copy(employments = filteredEmployments)), Nil))
+            )
+          }
         }
       )
       .merge recoverWith taxAccountErrorHandler()
