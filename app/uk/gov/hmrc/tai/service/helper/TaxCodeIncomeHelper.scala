@@ -21,7 +21,7 @@ import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.tai.connectors.TaxAccountConnector
 import uk.gov.hmrc.tai.model.domain.IabdDetails
-import uk.gov.hmrc.tai.model.domain.income._
+import uk.gov.hmrc.tai.model.domain.income.*
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.service.IabdService
 import uk.gov.hmrc.tai.util.JsonHelper

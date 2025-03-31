@@ -97,11 +97,13 @@ class PensionProviderService @Inject() (
     id: Int,
     incorrectPensionProvider: IncorrectPensionProvider
   )(implicit hc: HeaderCarrier, request: Request[_]) = (person: Person) =>
-    (for {
-      existingEmployment <- employmentService.employmentAsEitherT(nino, id)
-      templateModel = EmploymentPensionViewModel(TaxYear(), person, incorrectPensionProvider, existingEmployment)
-    } yield EmploymentIForm(templateModel).toString).value.map {
-      case Right(result) => result
-      case Left(error)   => throw error
-    }
+    employmentService
+      .employmentAsEitherT(nino, id)
+      .map {
+        case Some(employment) =>
+          val templateModel = EmploymentPensionViewModel(TaxYear(), person, incorrectPensionProvider, employment)
+          EmploymentIForm(templateModel).toString
+        case None => throw new RuntimeException(s"employment id: $id not found in list of employments")
+      }
+      .foldF(Future.failed, Future.successful)
 }

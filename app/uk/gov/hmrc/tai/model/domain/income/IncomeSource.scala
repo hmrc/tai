@@ -26,9 +26,7 @@ object IncomeSource {
     The Hip toggle only affects the Reads. We only require the Writes
     here therefore we can safely import TaxCodeIncomeSquidReads.
    */
-  implicit val incomeSourceFormat: Writes[IncomeSource] = {
-    import TaxCodeIncomeSquidReads._
-    Json.format[IncomeSource]
-  }
+  implicit val incomeSourceWrites: Writes[IncomeSource] =
+    Json.writes[IncomeSource]
 
 }

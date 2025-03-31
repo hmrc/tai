@@ -18,6 +18,7 @@ package uk.gov.hmrc.tai.model.domain
 
 import uk.gov.hmrc.tai.model.tai.TaxYear
 
+//todo this is a duplicate of uk.gov.hmrc.tai.model.api.EmploymentCollection
 case class Employments(employments: Seq[Employment], etag: Option[Int]) {
 
   def accountsForYear(year: TaxYear): Employments = {

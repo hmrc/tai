@@ -17,13 +17,16 @@
 package uk.gov.hmrc.tai.controllers
 
 import com.google.inject.{Inject, Singleton}
+import play.api.Logging
 import play.api.libs.json.{JsValue, Json}
 import play.api.mvc.{Action, AnyContent, ControllerComponents}
 import uk.gov.hmrc.domain.Nino
+import uk.gov.hmrc.http.UpstreamErrorResponse
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 import uk.gov.hmrc.tai.controllers.auth.AuthJourney
 import uk.gov.hmrc.tai.model.api.{ApiResponse, EmploymentCollection}
-import uk.gov.hmrc.tai.model.domain.{AddEmployment, EndEmployment, IncorrectEmployment}
+import uk.gov.hmrc.tai.model.domain.income.TaxCodeIncomeStatus
+import uk.gov.hmrc.tai.model.domain.{AddEmployment, EndEmployment, IncorrectEmployment, TaxCodeIncomeComponentType}
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.service.EmploymentService
 
@@ -35,7 +38,7 @@ class EmploymentsController @Inject() (
   authentication: AuthJourney,
   cc: ControllerComponents
 )(implicit ec: ExecutionContext)
-    extends BackendController(cc) with ControllerErrorHandler {
+    extends BackendController(cc) with ControllerErrorHandler with Logging {
 
   def employments(nino: Nino, year: TaxYear): Action[AnyContent] = authentication.authForEmployeeExpenses.async {
     implicit request =>
@@ -54,7 +57,13 @@ class EmploymentsController @Inject() (
         .employmentWithoutRTIAsEitherT(nino, id, year)
         .bimap(
           error => errorToResponse(error),
-          employment => Ok(Json.toJson(ApiResponse(employment, Nil)))
+          {
+            case Some(employment) => Ok(Json.toJson(ApiResponse(employment, Nil)))
+            case None =>
+              val message = s"employment id: $id not found in list of employments"
+              logger.warn(message)
+              errorToResponse(UpstreamErrorResponse(message, NOT_FOUND))
+          }
         )
         .merge recoverWith taxAccountErrorHandler()
     }
@@ -65,9 +74,35 @@ class EmploymentsController @Inject() (
         .employmentsWithoutRtiAsEitherT(nino, year)
         .bimap(
           error => errorToResponse(error),
-          employments => Ok(Json.toJson(ApiResponse(EmploymentCollection(employments.employments, None), Nil)))
+          employments => Ok(Json.toJson(ApiResponse(employments, Nil)))
         )
         .merge recoverWith taxAccountErrorHandler()
+  }
+
+  def getEmploymentsByStatusAndType(
+    nino: Nino,
+    year: TaxYear,
+    incomeType: TaxCodeIncomeComponentType,
+    status: TaxCodeIncomeStatus
+  ): Action[AnyContent] = authentication.authWithUserDetails.async { implicit request =>
+    employmentService
+      .employmentsWithoutRtiAsEitherT(nino, year)
+      .bimap(
+        error => errorToResponse(error),
+        employmentsCollection => {
+          val filteredEmployments = employmentsCollection.employments.filter(employment =>
+            employment.employmentType == incomeType && employment.employmentStatus == status
+          )
+          if (filteredEmployments.isEmpty) {
+            NotFound(s"No Employment with income type `$incomeType` and status `$status` found")
+          } else {
+            Ok(
+              Json.toJson(ApiResponse(Json.toJson(employmentsCollection.copy(employments = filteredEmployments)), Nil))
+            )
+          }
+        }
+      )
+      .merge recoverWith taxAccountErrorHandler()
   }
 
   def employment(nino: Nino, id: Int): Action[AnyContent] = authentication.authWithUserDetails.async {
@@ -76,7 +111,13 @@ class EmploymentsController @Inject() (
         .employmentAsEitherT(nino, id)
         .bimap(
           error => errorToResponse(error),
-          employment => Ok(Json.toJson(ApiResponse(employment, Nil)))
+          {
+            case Some(employment) => Ok(Json.toJson(ApiResponse(employment, Nil)))
+            case None =>
+              val message = s"employment id: $id not found in list of employments"
+              logger.warn(message)
+              errorToResponse(UpstreamErrorResponse(message, NOT_FOUND))
+          }
         )
         .merge recoverWith taxAccountErrorHandler()
   }

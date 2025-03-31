@@ -57,7 +57,8 @@ class EmploymentBuilderSpec extends PlaySpec with MockitoSugar {
             1,
             Some(100),
             false,
-            false
+            false,
+            PensionIncome
           ),
           Employment(
             "TestEmp2",
@@ -71,7 +72,8 @@ class EmploymentBuilderSpec extends PlaySpec with MockitoSugar {
             2,
             Some(100),
             false,
-            false
+            false,
+            PensionIncome
           )
         )
 
@@ -98,7 +100,8 @@ class EmploymentBuilderSpec extends PlaySpec with MockitoSugar {
             1,
             Some(100),
             false,
-            false
+            false,
+            PensionIncome
           )
         )
 
@@ -115,7 +118,8 @@ class EmploymentBuilderSpec extends PlaySpec with MockitoSugar {
             2,
             Some(100),
             false,
-            false
+            false,
+            PensionIncome
           )
         )
 
@@ -140,7 +144,8 @@ class EmploymentBuilderSpec extends PlaySpec with MockitoSugar {
               1,
               Some(100),
               false,
-              false
+              false,
+              PensionIncome
             ),
             Employment(
               "TestEmp2",
@@ -154,7 +159,8 @@ class EmploymentBuilderSpec extends PlaySpec with MockitoSugar {
               2,
               Some(100),
               false,
-              false
+              false,
+              PensionIncome
             )
           )
 
@@ -179,7 +185,8 @@ class EmploymentBuilderSpec extends PlaySpec with MockitoSugar {
               1,
               Some(100),
               false,
-              false
+              false,
+              PensionIncome
             )
           )
 
@@ -200,7 +207,8 @@ class EmploymentBuilderSpec extends PlaySpec with MockitoSugar {
             1,
             Some(100),
             false,
-            false
+            false,
+            PensionIncome
           ),
           Employment(
             "TestEmp2",
@@ -214,7 +222,8 @@ class EmploymentBuilderSpec extends PlaySpec with MockitoSugar {
             2,
             Some(100),
             false,
-            false
+            false,
+            PensionIncome
           )
         )
 
@@ -243,7 +252,8 @@ class EmploymentBuilderSpec extends PlaySpec with MockitoSugar {
             1,
             Some(100),
             false,
-            false
+            false,
+            PensionIncome
           )
         )
 
@@ -260,7 +270,8 @@ class EmploymentBuilderSpec extends PlaySpec with MockitoSugar {
             2,
             Some(100),
             false,
-            false
+            false,
+            PensionIncome
           )
         )
 
@@ -287,7 +298,8 @@ class EmploymentBuilderSpec extends PlaySpec with MockitoSugar {
             1,
             Some(100),
             false,
-            false
+            false,
+            PensionIncome
           ),
           Employment(
             "TEST2",
@@ -301,7 +313,8 @@ class EmploymentBuilderSpec extends PlaySpec with MockitoSugar {
             2,
             Some(100),
             false,
-            false
+            false,
+            PensionIncome
           )
         )
 
@@ -324,7 +337,8 @@ class EmploymentBuilderSpec extends PlaySpec with MockitoSugar {
             1,
             Some(100),
             false,
-            false
+            false,
+            PensionIncome
           ),
           Employment(
             "TEST2",
@@ -338,7 +352,8 @@ class EmploymentBuilderSpec extends PlaySpec with MockitoSugar {
             2,
             Some(100),
             false,
-            false
+            false,
+            PensionIncome
           )
         )
 
@@ -359,7 +374,8 @@ class EmploymentBuilderSpec extends PlaySpec with MockitoSugar {
             1,
             Some(100),
             false,
-            false
+            false,
+            PensionIncome
           ),
           Employment(
             "TEST2",
@@ -373,7 +389,8 @@ class EmploymentBuilderSpec extends PlaySpec with MockitoSugar {
             2,
             Some(100),
             false,
-            false
+            false,
+            PensionIncome
           )
         )
 
@@ -395,7 +412,8 @@ class EmploymentBuilderSpec extends PlaySpec with MockitoSugar {
             1,
             Some(100),
             false,
-            false
+            false,
+            PensionIncome
           ),
           Employment(
             "TEST2",
@@ -409,7 +427,8 @@ class EmploymentBuilderSpec extends PlaySpec with MockitoSugar {
             2,
             Some(100),
             false,
-            false
+            false,
+            PensionIncome
           )
         )
 
@@ -431,7 +450,8 @@ class EmploymentBuilderSpec extends PlaySpec with MockitoSugar {
               1,
               Some(100),
               false,
-              false
+              false,
+              PensionIncome
             ),
             Employment(
               "TEST2",
@@ -445,7 +465,8 @@ class EmploymentBuilderSpec extends PlaySpec with MockitoSugar {
               2,
               Some(100),
               false,
-              false
+              false,
+              PensionIncome
             )
           )
 
@@ -471,7 +492,8 @@ class EmploymentBuilderSpec extends PlaySpec with MockitoSugar {
               1,
               Some(100),
               false,
-              false
+              false,
+              PensionIncome
             ),
             Employment(
               "TEST2",
@@ -485,7 +507,8 @@ class EmploymentBuilderSpec extends PlaySpec with MockitoSugar {
               2,
               Some(100),
               false,
-              false
+              false,
+              PensionIncome
             )
           )
 

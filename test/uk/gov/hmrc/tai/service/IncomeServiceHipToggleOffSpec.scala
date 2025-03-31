@@ -146,7 +146,8 @@ class IncomeServiceHipToggleOffSpec extends BaseSpec {
         1,
         Some(100),
         hasPayrolledBenefit = false,
-        receivingOccupationalPension = true
+        receivingOccupationalPension = true,
+        PensionIncome
       )
       val employment2 = Employment(
         "company name",
@@ -160,7 +161,8 @@ class IncomeServiceHipToggleOffSpec extends BaseSpec {
         2,
         Some(100),
         hasPayrolledBenefit = false,
-        receivingOccupationalPension = true
+        receivingOccupationalPension = true,
+        PensionIncome
       )
 
       val mockEmploymentService = mock[EmploymentService]
@@ -338,7 +340,8 @@ class IncomeServiceHipToggleOffSpec extends BaseSpec {
       2,
       Some(100),
       hasPayrolledBenefit = false,
-      receivingOccupationalPension = true
+      receivingOccupationalPension = true,
+      PensionIncome
     )
     val employments = Seq(employment, employment.copy(sequenceNumber = 1))
     val employmentWithDifferentSeqNumber = Seq(employment.copy(sequenceNumber = 99))
@@ -530,7 +533,8 @@ class IncomeServiceHipToggleOffSpec extends BaseSpec {
               sequenceNumber = 1,
               cessationPay = Some(100),
               hasPayrolledBenefit = false,
-              receivingOccupationalPension = true
+              receivingOccupationalPension = true,
+              PensionIncome
             )
           )
         )
@@ -672,7 +676,8 @@ class IncomeServiceHipToggleOffSpec extends BaseSpec {
       2,
       Some(100),
       hasPayrolledBenefit = false,
-      receivingOccupationalPension = true
+      receivingOccupationalPension = true,
+      PensionIncome
     )
 
     "return list of non matching ceased employments when some employments do have an end date" in {
@@ -926,7 +931,8 @@ class IncomeServiceHipToggleOffSpec extends BaseSpec {
         2,
         Some(100),
         hasPayrolledBenefit = false,
-        receivingOccupationalPension = true
+        receivingOccupationalPension = true,
+        PensionIncome
       )
       val taxCodeIncomes = Seq(
         TaxCodeIncome(
@@ -1001,7 +1007,8 @@ class IncomeServiceHipToggleOffSpec extends BaseSpec {
                   0,
                   Some(100),
                   hasPayrolledBenefit = false,
-                  receivingOccupationalPension = false
+                  receivingOccupationalPension = false,
+                  PensionIncome
                 )
               )
             )
@@ -1066,7 +1073,8 @@ class IncomeServiceHipToggleOffSpec extends BaseSpec {
                   0,
                   Some(100),
                   hasPayrolledBenefit = false,
-                  receivingOccupationalPension = false
+                  receivingOccupationalPension = false,
+                  PensionIncome
                 )
               )
             )
@@ -1134,7 +1142,8 @@ class IncomeServiceHipToggleOffSpec extends BaseSpec {
                   0,
                   Some(100),
                   hasPayrolledBenefit = false,
-                  receivingOccupationalPension = false
+                  receivingOccupationalPension = false,
+                  PensionIncome
                 )
               )
             )
@@ -1203,7 +1212,8 @@ class IncomeServiceHipToggleOffSpec extends BaseSpec {
                   0,
                   Some(100),
                   hasPayrolledBenefit = false,
-                  receivingOccupationalPension = false
+                  receivingOccupationalPension = false,
+                  PensionIncome
                 )
               )
             )
@@ -1257,7 +1267,8 @@ class IncomeServiceHipToggleOffSpec extends BaseSpec {
                   0,
                   Some(100),
                   hasPayrolledBenefit = false,
-                  receivingOccupationalPension = false
+                  receivingOccupationalPension = false,
+                  PensionIncome
                 )
               )
             )
@@ -1322,7 +1333,8 @@ class IncomeServiceHipToggleOffSpec extends BaseSpec {
               0,
               Some(100),
               hasPayrolledBenefit = false,
-              receivingOccupationalPension = false
+              receivingOccupationalPension = false,
+              PensionIncome
             )
           )
         )
@@ -1362,7 +1374,8 @@ class IncomeServiceHipToggleOffSpec extends BaseSpec {
               0,
               Some(100),
               hasPayrolledBenefit = false,
-              receivingOccupationalPension = false
+              receivingOccupationalPension = false,
+              PensionIncome
             )
           )
         )

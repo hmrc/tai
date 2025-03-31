@@ -248,7 +248,8 @@ class IncomeControllerSpec extends BaseSpec {
       2,
       Some(100),
       hasPayrolledBenefit = false,
-      receivingOccupationalPension = true
+      receivingOccupationalPension = true,
+      PensionIncome
     )
 
     "return tax code incomes and employments JSON" in {
@@ -328,7 +329,8 @@ class IncomeControllerSpec extends BaseSpec {
       2,
       Some(100),
       hasPayrolledBenefit = false,
-      receivingOccupationalPension = true
+      receivingOccupationalPension = true,
+      PensionIncome
     )
 
     "return non matching ceased employments JSON" in {
@@ -491,4 +493,5 @@ class IncomeControllerSpec extends BaseSpec {
     }
     createSUT(mockIncomeService)
   }
+
 }

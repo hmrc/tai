@@ -32,7 +32,8 @@ case class IabdDetails(
   source: Option[Int],
   `type`: Option[Int],
   receiptDate: Option[LocalDate],
-  captureDate: Option[LocalDate]
+  captureDate: Option[LocalDate],
+  grossAmount: Option[BigDecimal] = None
 )
 
 object IabdDetailsToggleOff extends IabdTypeConstants with Logging {
@@ -44,7 +45,8 @@ object IabdDetailsToggleOff extends IabdTypeConstants with Logging {
       (JsPath \ "source").readNullable[Int] and
       (JsPath \ "type").readNullable[Int] and
       (JsPath \ "receiptDate").readNullable[LocalDate](dateReads) and
-      (JsPath \ "captureDate").readNullable[LocalDate](dateReads))(IabdDetails.apply _)
+      (JsPath \ "captureDate").readNullable[LocalDate](dateReads) and
+      (JsPath \ "grossAmount").readNullable[BigDecimal])(IabdDetails.apply _)
 
   implicit val reads: Reads[Seq[IabdDetails]] =
     __.read(Reads.seq(iabdReads))
@@ -134,10 +136,19 @@ object IabdDetailsToggleOn extends IabdTypeConstants with Logging {
       (JsPath \ "source").readNullable[Option[Int]](sourceReads) and
       (JsPath \ "type").read[(String, Int)](readsTypeTuple) and
       (JsPath \ "receiptDate").readNullable[LocalDate](dateReads) and
-      (JsPath \ "captureDate").readNullable[LocalDate](dateReads))(
-      (nino, employmentSequenceNumber, source, iabdType, receiptDate, captureDate) =>
+      (JsPath \ "captureDate").readNullable[LocalDate](dateReads) and
+      (JsPath \ "grossAmount").readNullable[BigDecimal])(
+      (nino, employmentSequenceNumber, source, iabdType, receiptDate, captureDate, grossAmount) =>
         IabdDetails
-          .apply(Some(nino), employmentSequenceNumber, source.flatten, Some(iabdType._2), receiptDate, captureDate)
+          .apply(
+            Some(nino),
+            employmentSequenceNumber,
+            source.flatten,
+            Some(iabdType._2),
+            receiptDate,
+            captureDate,
+            grossAmount
+          )
     )
 
   val reads: Reads[Seq[IabdDetails]] =
