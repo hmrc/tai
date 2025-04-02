@@ -31,19 +31,31 @@ object TotalTaxHipReads extends Logging {
     val tax = (json \ "tax").asOpt[BigDecimal]
     val lowerBand = (json \ "lowerBand").asOpt[BigDecimal]
     val upperBand = (json \ "upperBand").asOpt[BigDecimal]
-    val rate = (json \ "rate").as[BigDecimal]
+    val rateOpt = (json \ "rate").asOpt[BigDecimal]
 
-    (income, tax, rate) match {
-      case (Some(income), Some(tax), _) =>
+    def logMessageIncomeNoTax: String =
+      s"Income value was present but tax was not in tax band: $bandType, code: $code, rate: $rateOpt"
+    def logMessageTaxNoIncome: String =
+      s"Tax value was present at income was not in tax band: $bandType, code: $code, rate: $rateOpt"
+    def success(income: BigDecimal, tax: BigDecimal, rate: BigDecimal): JsSuccess[Some[TaxBand]] =
+      JsSuccess(Some(TaxBand(bandType, code, income, tax, lowerBand, upperBand, rate)))
+
+    (income, tax, rateOpt) match {
+      case (Some(income), Some(tax), Some(rate)) =>
+        success(income, tax, rate)
         JsSuccess(Some(TaxBand(bandType, code, income, tax, lowerBand, upperBand, rate)))
       case (None, None, _) => JsSuccess(None)
-      case (Some(income), None, r) if r > BigDecimal(0) =>
-        logException(s"Income value was present but tax was not in tax band: $bandType, code: $code")
-        JsSuccess(Some(TaxBand(bandType, code, income, 0, lowerBand, upperBand, rate)))
-      case (Some(income), None, _) =>
-        JsSuccess(Some(TaxBand(bandType, code, income, 0, lowerBand, upperBand, rate)))
+      case (Some(income), None, Some(rate)) if rate > BigDecimal(0) =>
+        logException(logMessageIncomeNoTax)
+        success(income, BigDecimal(0), rate)
+      case (Some(income), None, Some(rate)) =>
+        logger.info(logMessageIncomeNoTax)
+        success(income, BigDecimal(0), rate)
       case (None, Some(_), _) =>
-        logException(s"Tax value was present at income was not in tax band: $bandType, code: $code")
+        logException(logMessageTaxNoIncome)
+        JsSuccess(None)
+      case (_, _, None) =>
+        logException(s"Missing rate for tax band: $bandType, code: $code, rate: $rateOpt")
         JsSuccess(None)
     }
   }
