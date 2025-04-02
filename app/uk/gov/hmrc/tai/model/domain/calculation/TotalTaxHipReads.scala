@@ -36,13 +36,15 @@ object TotalTaxHipReads extends Logging {
     def logMessageTaxNoIncome: String =
       s"Tax value was present at income was not in tax band: $bandType, code: $code, rate: $rateOpt"
     def logMessageMissingRate: String = s"Missing rate for tax band: $bandType, code: $code, rate: $rateOpt"
-    def log: PartialFunction[(Option[BigDecimal], Option[BigDecimal], Option[BigDecimal]), Unit] = {
+
+    (income, tax, rateOpt) match {
       case (Some(income), None, Some(rate)) if rate > BigDecimal(0) => logException(logMessageIncomeNoTax)
       case (Some(income), None, Some(rate))                         => logger.info(logMessageIncomeNoTax)
       case (None, Some(_), _)                                       => logException(logMessageTaxNoIncome)
       case (_, _, None)                                             => logException(logMessageMissingRate)
+      case _                                                        => ()
     }
-    log.applyOrElse((income, tax, rateOpt), _ => (): Unit)
+
   }
 
   val taxBandReads: Reads[Option[TaxBand]] = (json: JsValue) => {
