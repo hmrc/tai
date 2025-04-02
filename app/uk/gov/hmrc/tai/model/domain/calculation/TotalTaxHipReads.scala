@@ -60,9 +60,9 @@ object TotalTaxHipReads extends Logging {
     def noTaxBand: JsSuccess[Option[TaxBand]] = JsSuccess(None)
 
     (income, tax, rate) match {
-      case (Some(income), Some(tax), Some(r)) => someTaxBand(income, tax, r)
-      case (Some(income), None, Some(r))      => someTaxBand(income, BigDecimal(0), r)
-      case _                                  => noTaxBand
+      case (Some(income), Some(tax), Some(rate)) => someTaxBand(income, tax, rate)
+      case (Some(income), None, Some(rate))      => someTaxBand(income, BigDecimal(0), rate)
+      case _                                     => noTaxBand
     }
   }
 
