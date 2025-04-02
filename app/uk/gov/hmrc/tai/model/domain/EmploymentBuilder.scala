@@ -95,10 +95,6 @@ class EmploymentBuilder @Inject() (auditor: Auditor) {
         "RTI Account Key"     -> account.sequenceNumber.toString
       )
     )
-
-    logger.warn(
-      "EmploymentRepository: Failed to identify an Employment match for an AnnualAccount instance. NPS and RTI data may not align."
-    )
     None
   }
 }
