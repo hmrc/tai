@@ -17,8 +17,8 @@
 package uk.gov.hmrc.tai.model.domain.income
 
 import play.api.Logger
-import play.api.libs.json._
-import uk.gov.hmrc.tai.model.domain._
+import play.api.libs.json.*
+import uk.gov.hmrc.tai.model.domain.*
 
 object TaxCodeIncomeHipReads {
 
@@ -111,9 +111,7 @@ object TaxCodeIncomeHipReads {
     }
     iabdSummary.map(_.amount) match {
       case Some(amount) => Some(amount)
-      case _ =>
-        logger.warn("TotalTaxableIncome is 0")
-        None
+      case _            => None
     }
   }
 

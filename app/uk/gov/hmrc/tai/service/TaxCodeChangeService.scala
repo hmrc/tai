@@ -62,7 +62,7 @@ class TaxCodeChangeServiceImpl @Inject() (
         }
       }
       .recover { case NonFatal(e) =>
-        logger.warn(s"Could not evaluate tax code history with message ${e.getMessage}", e)
+        logger.debug(s"Could not evaluate tax code history with message ${e.getMessage}", e)
         false
       }
 
@@ -97,14 +97,14 @@ class TaxCodeChangeServiceImpl @Inject() (
         taxCodeChange
 
       } else if (taxCodeRecordList.size == 1) {
-        logger.warn(s"Only one tax code record returned for $nino")
+        logger.debug(s"Only one tax code record returned for $nino")
 
         TaxCodeChange(Seq(TaxCodeSummary(taxCodeRecordList.head, TaxYear().end)), Seq())
       } else if (taxCodeRecordList.isEmpty) {
-        logger.warn(s"Zero tax code records returned for $nino")
+        logger.debug(s"Zero tax code records returned for $nino")
         TaxCodeChange(Seq.empty[TaxCodeSummary], Seq.empty[TaxCodeSummary])
       } else {
-        logger.warn(s"Returned list of tax codes is not valid for service: $nino")
+        logger.debug(s"Returned list of tax codes is not valid for service: $nino")
         TaxCodeChange(Seq.empty[TaxCodeSummary], Seq.empty[TaxCodeSummary])
       }
     }
