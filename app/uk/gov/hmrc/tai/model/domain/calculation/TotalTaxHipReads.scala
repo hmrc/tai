@@ -17,12 +17,13 @@
 package uk.gov.hmrc.tai.model.domain.calculation
 
 import play.api.Logging
-import play.api.libs.json._
+import play.api.libs.json.*
+import uk.gov.hmrc.tai.model.domain.calculation.TotalTaxSquidReads.logger
 
 import scala.language.postfixOps
 
 object TotalTaxHipReads extends Logging {
-
+  private def logException(message: String): Unit = logger.error(message, new RuntimeException(message))
   val taxBandReads: Reads[Option[TaxBand]] = (json: JsValue) => {
     val bandType = (json \ "bandType").as[String]
     val code = (json \ "taxCode").as[String]
@@ -31,18 +32,18 @@ object TotalTaxHipReads extends Logging {
     val lowerBand = (json \ "lowerBand").asOpt[BigDecimal]
     val upperBand = (json \ "upperBand").asOpt[BigDecimal]
     val rate = (json \ "rate").as[BigDecimal]
-    (income, tax) match {
-      case (Some(income), Some(tax)) =>
+
+    (income, tax, rate) match {
+      case (Some(income), Some(tax), _) =>
         JsSuccess(Some(TaxBand(bandType, code, income, tax, lowerBand, upperBand, rate)))
-      case (None, None) =>
-        logger.info("Empty tax returned, no income or tax")
-        JsSuccess(None)
-      case (Some(income), None) =>
-        logger.error(s"Income value was present but tax was not in tax band: $bandType, code: $code")
+      case (None, None, _) => JsSuccess(None)
+      case (Some(income), None, r) if r > BigDecimal(0) =>
+        logException(s"Income value was present but tax was not in tax band: $bandType, code: $code")
         JsSuccess(Some(TaxBand(bandType, code, income, 0, lowerBand, upperBand, rate)))
-      case (None, Some(_)) =>
-        val x = new RuntimeException(s"Tax value was present at income was not in tax band: $bandType, code: $code")
-        logger.error(x.getMessage, x)
+      case (Some(income), None, _) =>
+        JsSuccess(Some(TaxBand(bandType, code, income, 0, lowerBand, upperBand, rate)))
+      case (None, Some(_), _) =>
+        logException(s"Tax value was present at income was not in tax band: $bandType, code: $code")
         JsSuccess(None)
     }
   }
