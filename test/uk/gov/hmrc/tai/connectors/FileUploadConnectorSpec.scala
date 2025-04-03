@@ -24,7 +24,8 @@ import org.apache.pekko.stream.Materializer
 import play.api.http.Status.*
 import play.api.libs.json.{JsArray, Json}
 import play.api.libs.ws.ahc.AhcWSClient
-import uk.gov.hmrc.http.HeaderNames
+import play.shaded.ahc.org.asynchttpclient.exception.RemotelyClosedException
+import uk.gov.hmrc.http.{HeaderNames, UpstreamErrorResponse}
 import uk.gov.hmrc.tai.model.domain.MimeContentType
 import uk.gov.hmrc.tai.model.fileupload.{EnvelopeFile, EnvelopeSummary}
 
@@ -89,7 +90,7 @@ class FileUploadConnectorSpec extends ConnectorBaseSpec {
 
           result mustBe a[RuntimeException]
 
-          result.getMessage mustBe "File upload envelope creation failed"
+          result.getMessage mustBe s"File upload envelope creation failed with status: $httpStatus"
         }
       }
 
@@ -106,7 +107,7 @@ class FileUploadConnectorSpec extends ConnectorBaseSpec {
 
         result mustBe a[RuntimeException]
 
-        result.getMessage mustBe "File upload envelope creation failed"
+        result.getMessage mustBe "No envelope id returned by file upload service"
       }
 
       "the call to the file upload service create envelope endpoint fails" in {
@@ -120,9 +121,7 @@ class FileUploadConnectorSpec extends ConnectorBaseSpec {
 
         val result = sut.createEnvelope.failed.futureValue
 
-        result mustBe a[RuntimeException]
-
-        result.getMessage mustBe "File upload envelope creation failed"
+        result mustBe a[RemotelyClosedException]
       }
       "the call to the file upload service returns a failure response" in {
 
@@ -137,7 +136,7 @@ class FileUploadConnectorSpec extends ConnectorBaseSpec {
 
         result mustBe a[RuntimeException]
 
-        result.getMessage mustBe "File upload envelope creation failed"
+        result.getMessage mustBe s"File upload envelope creation failed with status: 400"
       }
     }
   }
@@ -373,7 +372,7 @@ class FileUploadConnectorSpec extends ConnectorBaseSpec {
 
         result mustBe a[RuntimeException]
 
-        result.getMessage mustBe "File upload envelope routing request failed"
+        result.getMessage mustBe "No envelope id returned by file upload service"
       }
 
       "the call to the file upload service routing request endpoint fails" in {
@@ -387,9 +386,7 @@ class FileUploadConnectorSpec extends ConnectorBaseSpec {
 
         val result = sut.closeEnvelope(envelopeId).failed.futureValue
 
-        result mustBe a[RuntimeException]
-
-        result.getMessage mustBe "File upload envelope routing request failed"
+        result mustBe a[RemotelyClosedException]
       }
 
       List(
@@ -410,9 +407,9 @@ class FileUploadConnectorSpec extends ConnectorBaseSpec {
 
           val result = sut.closeEnvelope(envelopeId).failed.futureValue
 
-          result mustBe a[RuntimeException]
+          result mustBe a[UpstreamErrorResponse]
 
-          result.getMessage mustBe "File upload envelope routing request failed"
+          result.getMessage contains s"returned $httpStatus" mustBe true
         }
       }
 
@@ -427,9 +424,9 @@ class FileUploadConnectorSpec extends ConnectorBaseSpec {
 
         val result = sut.closeEnvelope(envelopeId).failed.futureValue
 
-        result mustBe a[RuntimeException]
+        result mustBe a[UpstreamErrorResponse]
 
-        result.getMessage mustBe "File upload envelope routing request failed"
+        result.getMessage contains s"returned 400" mustBe true
       }
     }
   }

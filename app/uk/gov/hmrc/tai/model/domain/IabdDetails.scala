@@ -66,7 +66,7 @@ object IabdDetailsToggleOn extends IabdTypeConstants with Logging {
         case Some(iabdSource) => JsSuccess(Some(iabdSource))
         case _ =>
           val errorMessage = s"Unknown iabd source: $n"
-          logger.error(errorMessage, new RuntimeException(errorMessage))
+          logger.warn(errorMessage, new RuntimeException(errorMessage))
           JsSuccess(None)
 
       }

@@ -17,11 +17,35 @@
 package uk.gov.hmrc.tai.model.domain.calculation
 
 import play.api.Logging
-import play.api.libs.json._
+import play.api.libs.json.*
 
 import scala.language.postfixOps
 
 object TotalTaxHipReads extends Logging {
+
+  private def logging(
+    income: Option[BigDecimal],
+    tax: Option[BigDecimal],
+    bandType: String,
+    code: String,
+    rateOpt: Option[BigDecimal]
+  ): Unit = {
+    def logException(message: String): Unit = logger.error(message, new RuntimeException(message))
+    def logMessageIncomeNoTax: String =
+      s"Income value was present but tax was not in tax band: $bandType, code: $code, rate: $rateOpt"
+    def logMessageTaxNoIncome: String =
+      s"Tax value was present at income was not in tax band: $bandType, code: $code, rate: $rateOpt"
+    def logMessageMissingRate: String = s"Missing rate for tax band: $bandType, code: $code, rate: $rateOpt"
+
+    (income, tax, rateOpt) match {
+      case (Some(income), None, Some(rate)) if rate > BigDecimal(0) => logException(logMessageIncomeNoTax)
+      case (Some(income), None, Some(rate))                         => logger.info(logMessageIncomeNoTax)
+      case (None, Some(_), _)                                       => logException(logMessageTaxNoIncome)
+      case (_, _, None)                                             => logException(logMessageMissingRate)
+      case _                                                        => ()
+    }
+
+  }
 
   val taxBandReads: Reads[Option[TaxBand]] = (json: JsValue) => {
     val bandType = (json \ "bandType").as[String]
@@ -30,20 +54,17 @@ object TotalTaxHipReads extends Logging {
     val tax = (json \ "tax").asOpt[BigDecimal]
     val lowerBand = (json \ "lowerBand").asOpt[BigDecimal]
     val upperBand = (json \ "upperBand").asOpt[BigDecimal]
-    val rate = (json \ "rate").as[BigDecimal]
-    (income, tax) match {
-      case (Some(income), Some(tax)) =>
-        JsSuccess(Some(TaxBand(bandType, code, income, tax, lowerBand, upperBand, rate)))
-      case (None, None) =>
-        logger.info("Empty tax returned, no income or tax")
-        JsSuccess(None)
-      case (Some(income), None) =>
-        logger.error(s"Income value was present but tax was not in tax band: $bandType, code: $code")
-        JsSuccess(Some(TaxBand(bandType, code, income, 0, lowerBand, upperBand, rate)))
-      case (None, Some(_)) =>
-        val x = new RuntimeException(s"Tax value was present at income was not in tax band: $bandType, code: $code")
-        logger.error(x.getMessage, x)
-        JsSuccess(None)
+    val rate = (json \ "rate").asOpt[BigDecimal]
+    logging(income, tax, bandType, code, rate)
+
+    def someTaxBand(income: BigDecimal, tax: BigDecimal, rate: BigDecimal): JsSuccess[Some[TaxBand]] =
+      JsSuccess(Some(TaxBand(bandType, code, income, tax, lowerBand, upperBand, rate)))
+    def noTaxBand: JsSuccess[Option[TaxBand]] = JsSuccess(None)
+
+    (income, tax, rate) match {
+      case (Some(income), Some(tax), Some(rate)) => someTaxBand(income, tax, rate)
+      case (Some(income), None, Some(rate))      => someTaxBand(income, BigDecimal(0), rate)
+      case _                                     => noTaxBand
     }
   }
 
