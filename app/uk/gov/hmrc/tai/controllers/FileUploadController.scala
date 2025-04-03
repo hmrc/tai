@@ -36,6 +36,7 @@ class FileUploadController @Inject() (fileUploadService: FileUploadService, cc: 
       fileUploadService
         .fileUploadCallback(fileUploadCallback)
         .recover { case e: Exception =>
+          // We must recover exception as file upload service expects an OK response. Log warning here so as not to lose exception
           logger.warn("Exception during callback for file upload: " + e.getMessage, e)
         }
         .map(_ => Ok)
