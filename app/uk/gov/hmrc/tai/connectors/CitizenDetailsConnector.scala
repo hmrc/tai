@@ -70,6 +70,7 @@ class CitizenDetailsConnector @Inject() (metrics: Metrics, httpClientV2: HttpCli
         case Status.LOCKED =>
           Future.successful(Person.createLockedUser(nino))
         case _ =>
+          logger.warn(s"Calling person details from citizen details failed: ${httpResponse.status} url $url")
           metrics.incrementFailedCounter(api)
           Future.failed(new HttpException(httpResponse.body, httpResponse.status))
       }
