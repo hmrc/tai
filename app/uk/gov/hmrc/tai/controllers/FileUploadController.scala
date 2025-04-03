@@ -17,6 +17,7 @@
 package uk.gov.hmrc.tai.controllers
 
 import com.google.inject.{Inject, Singleton}
+import play.api.Logger
 import play.api.libs.json.JsValue
 import play.api.mvc.{Action, ControllerComponents}
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
@@ -29,10 +30,15 @@ import scala.concurrent.ExecutionContext
 class FileUploadController @Inject() (fileUploadService: FileUploadService, cc: ControllerComponents)(implicit
   ec: ExecutionContext
 ) extends BackendController(cc) {
-
+  private val logger: Logger = Logger(getClass.getName)
   def fileUploadCallback(): Action[JsValue] = Action.async(parse.json) { implicit request =>
     withJsonBody[FileUploadCallback] { fileUploadCallback =>
-      fileUploadService.fileUploadCallback(fileUploadCallback).map(_ => Ok)
+      fileUploadService
+        .fileUploadCallback(fileUploadCallback)
+        .recover { case e: Exception =>
+          logger.warn("Exception during callback for file upload: " + e.getMessage, e)
+        }
+        .map(_ => Ok)
     }
   }
 }

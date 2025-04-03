@@ -76,15 +76,15 @@ class FileUploadConnector @Inject() (
               throw new RuntimeException("No envelope id returned by file upload service")
             }
           } else {
-            throw new RuntimeException("File upload envelope creation failed")
+            throw new RuntimeException(s"File upload envelope creation failed with status: ${response.status}")
           }
         case Left(error) =>
           timerContext.stop()
-          throw new RuntimeException("File upload envelope creation failed")
+          throw new RuntimeException(s"File upload envelope creation failed with status: ${error.statusCode}")
       }
-      .recover { case _: Exception =>
+      .recover { case ex: Exception =>
         metrics.incrementFailedCounter(FusCreateEnvelope)
-        throw new RuntimeException("File upload envelope creation failed")
+        throw ex
       }
   }
 
@@ -144,7 +144,7 @@ class FileUploadConnector @Inject() (
           HttpResponse(response.status, "")
         } else {
           ahcWSClient.close()
-          throw new RuntimeException("File upload failed")
+          throw new RuntimeException(s"File upload failed with status: ${response.status}")
         }
       }
   }
@@ -167,15 +167,15 @@ class FileUploadConnector @Inject() (
               throw new RuntimeException("No envelope id returned by file upload service")
             }
           } else {
-            throw new RuntimeException("File upload envelope routing request failed")
+            throw new RuntimeException(s"File upload envelope routing request failed with status: ${response.status}")
           }
         case Left(error) =>
           timerContext.stop()
-          throw new RuntimeException("File upload envelope routing request failed")
+          throw error
       }
-      .recover { case _: Exception =>
+      .recover { case ex: Exception =>
         metrics.incrementFailedCounter(FusCloseEnvelope)
-        throw new RuntimeException("File upload envelope routing request failed")
+        throw ex
       }
   }
 
