@@ -16,13 +16,10 @@
 
 package uk.gov.hmrc.tai.model.domain.income
 
-import play.api.Logger
 import play.api.libs.json.*
 import uk.gov.hmrc.tai.model.domain.*
 
 object TaxCodeIncomeHipReads {
-
-  private val logger: Logger = Logger(getClass.getName)
 
   private val basisOperationReads = new Reads[BasisOperation] {
     override def reads(json: JsValue): JsResult[BasisOperation] = {

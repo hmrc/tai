@@ -23,16 +23,16 @@ import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 import uk.gov.hmrc.tai.model.FileUploadCallback
 import uk.gov.hmrc.tai.service.FileUploadService
 
-import scala.concurrent.Future
+import scala.concurrent.ExecutionContext
 
 @Singleton
-class FileUploadController @Inject() (fileUploadService: FileUploadService, cc: ControllerComponents)
-    extends BackendController(cc) {
+class FileUploadController @Inject() (fileUploadService: FileUploadService, cc: ControllerComponents)(implicit
+  ec: ExecutionContext
+) extends BackendController(cc) {
 
   def fileUploadCallback(): Action[JsValue] = Action.async(parse.json) { implicit request =>
     withJsonBody[FileUploadCallback] { fileUploadCallback =>
-      fileUploadService.fileUploadCallback(fileUploadCallback)
-      Future.successful(Ok)
+      fileUploadService.fileUploadCallback(fileUploadCallback).map(_ => Ok)
     }
   }
 }
