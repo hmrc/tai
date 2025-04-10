@@ -29,7 +29,7 @@ class EmploymentBuilder @Inject() (auditor: Auditor) {
   // scalastyle:off method.length
   def combineAccountsWithEmployments(
     employments: Seq[Employment],
-    rtiTuple: (Seq[AnnualAccount], Boolean),
+    rtiTuple: (Seq[AnnualAccount], Boolean), // rti annual accounts + whether exception returned from RTI
     nino: Nino,
     taxYear: TaxYear
   )(implicit hc: HeaderCarrier): Employments = {
@@ -64,21 +64,22 @@ class EmploymentBuilder @Inject() (auditor: Auditor) {
       }
 
     val accountAssignedEmployments = rtiTuple match {
-      case (annualAccount, false) =>
-        annualAccount flatMap { account =>
-          associatedEmployment(account, employments, nino, taxYear)
+      case (annualAccount, false) => annualAccount flatMap (associatedEmployment(_, employments, nino, taxYear))
+      case _                      => Seq.empty
+    }
+
+    val employmentsWithRTI: Seq[Employment] = combinedDuplicates(accountAssignedEmployments)
+    val employmentsWithNoRTI: Seq[Employment] = employments
+      .filterNot(emp => employmentsWithRTI.map(_.sequenceNumber).contains(emp.sequenceNumber))
+      .map { emp =>
+        if (rtiTuple._2) {
+          emp.copy(annualAccounts = Seq(AnnualAccount(emp.sequenceNumber, taxYear, TemporarilyUnavailable, Nil, Nil)))
+        } else {
+          emp
         }
-      case _ => Seq.empty
-    }
+      }
 
-    val unified = combinedDuplicates(accountAssignedEmployments)
-
-    val nonUnified = employments.filterNot(emp => unified.map(_.sequenceNumber).contains(emp.sequenceNumber)) map {
-      emp =>
-        emp.copy(annualAccounts = Seq(AnnualAccount(emp.sequenceNumber, taxYear, TemporarilyUnavailable, Nil, Nil)))
-    }
-
-    Employments(unified ++ nonUnified, None, rtiTuple._2)
+    Employments(employmentsWithRTI ++ employmentsWithNoRTI, None, rtiTuple._2)
   }
 
   private def auditAssociatedEmployment(

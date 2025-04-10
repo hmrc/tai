@@ -284,7 +284,7 @@ class EmploymentBuilderSpec extends PlaySpec with MockitoSugar {
     "unify stubbed Employment instances (having Nil accounts) with placeholder 'Unavailable' AnnualAccount instances" when {
       val ty = TaxYear(2017)
 
-      "one of the known employments has no corresponding AnnualAccount" in new EmploymentBuilderSetup {
+      "one of the known employments has no corresponding AnnualAccount & no rti api failure" in new EmploymentBuilderSetup {
         val employments: List[Employment] = List(
           Employment(
             "TEST",
@@ -346,7 +346,7 @@ class EmploymentBuilderSpec extends PlaySpec with MockitoSugar {
             Some("12346"),
             LocalDate.parse("2017-07-24"),
             None,
-            List(AnnualAccount(2, ty, TemporarilyUnavailable, Nil, Nil)),
+            List.empty,
             "tdNo",
             "payeNumber",
             2,
@@ -360,7 +360,80 @@ class EmploymentBuilderSpec extends PlaySpec with MockitoSugar {
         verify(mockAuditor, times(1)).sendDataEvent(meq(auditTransactionName), any())(any())
       }
 
-      "no AnnualAccount records are available" in new EmploymentBuilderSetup {
+      "one of the known employments has no corresponding AnnualAccount & an rti api failure" in new EmploymentBuilderSetup {
+        val employments: List[Employment] = List(
+          Employment(
+            "TEST",
+            Live,
+            Some("12345"),
+            LocalDate.parse("2017-07-24"),
+            None,
+            Nil,
+            "tdNo",
+            "payeNumber",
+            1,
+            Some(100),
+            false,
+            false,
+            PensionIncome
+          ),
+          Employment(
+            "TEST2",
+            Live,
+            Some("12346"),
+            LocalDate.parse("2017-07-24"),
+            None,
+            Nil,
+            "tdNo",
+            "payeNumber",
+            2,
+            Some(100),
+            false,
+            false,
+            PensionIncome
+          )
+        )
+
+        val unified: Seq[Employment] =
+          testEmploymentBuilder.combineAccountsWithEmployments(employments, (List.empty, true), nino, ty).employments
+
+        unified mustBe List(
+          Employment(
+            "TEST",
+            Live,
+            Some("12345"),
+            LocalDate.parse("2017-07-24"),
+            None,
+            List(AnnualAccount(1, ty, TemporarilyUnavailable, Nil, Nil)),
+            "tdNo",
+            "payeNumber",
+            1,
+            Some(100),
+            false,
+            false,
+            PensionIncome
+          ),
+          Employment(
+            "TEST2",
+            Live,
+            Some("12346"),
+            LocalDate.parse("2017-07-24"),
+            None,
+            List(AnnualAccount(2, ty, TemporarilyUnavailable, Nil, Nil)),
+            "tdNo",
+            "payeNumber",
+            2,
+            Some(100),
+            false,
+            false,
+            PensionIncome
+          )
+        )
+
+        verify(mockAuditor, times(0)).sendDataEvent(meq(auditTransactionName), any())(any())
+      }
+
+      "no AnnualAccount records are available & no rti api failure" in new EmploymentBuilderSetup {
         val employments: List[Employment] = List(
           Employment(
             "TEST",
@@ -406,7 +479,7 @@ class EmploymentBuilderSpec extends PlaySpec with MockitoSugar {
             Some("12345"),
             LocalDate.parse("2017-07-24"),
             None,
-            List(AnnualAccount(1, ty, TemporarilyUnavailable, Nil, Nil)),
+            List.empty,
             "tdNo",
             "payeNumber",
             1,
@@ -421,7 +494,7 @@ class EmploymentBuilderSpec extends PlaySpec with MockitoSugar {
             Some("12346"),
             LocalDate.parse("2017-07-24"),
             None,
-            List(AnnualAccount(2, ty, TemporarilyUnavailable, Nil, Nil)),
+            List.empty,
             "tdNo",
             "payeNumber",
             2,
@@ -436,7 +509,7 @@ class EmploymentBuilderSpec extends PlaySpec with MockitoSugar {
       }
 
       "multiple AnnualAccounts exist for one employment record, another record has no corresponding account records, " +
-        "and one of the account records matches none of the employment records" in new EmploymentBuilderSetup {
+        "and one of the account records matches none of the employment records & no rti api failure" in new EmploymentBuilderSetup {
           val employments: List[Employment] = List(
             Employment(
               "TEST",
@@ -501,7 +574,7 @@ class EmploymentBuilderSpec extends PlaySpec with MockitoSugar {
               Some("88888"),
               LocalDate.parse("2017-07-24"),
               None,
-              List(AnnualAccount(2, ty, TemporarilyUnavailable, Nil, Nil)),
+              List.empty,
               "tdNo",
               "payeNumber",
               2,
