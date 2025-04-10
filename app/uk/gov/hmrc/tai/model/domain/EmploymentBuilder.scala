@@ -29,7 +29,8 @@ class EmploymentBuilder @Inject() (auditor: Auditor) {
   // scalastyle:off method.length
   def combineAccountsWithEmployments(
     employments: Seq[Employment],
-    rtiTuple: (Seq[AnnualAccount], Boolean), // rti annual accounts + whether exception returned from RTI
+    rtiAnnualAccounts: Seq[AnnualAccount],
+    rtiIsRTIException: Boolean,
     nino: Nino,
     taxYear: TaxYear
   )(implicit hc: HeaderCarrier): Employments = {
@@ -63,7 +64,7 @@ class EmploymentBuilder @Inject() (auditor: Auditor) {
         duplicates.head.copy(annualAccounts = duplicates.flatMap(_.annualAccounts))
       }
 
-    val accountAssignedEmployments = rtiTuple match {
+    val accountAssignedEmployments = (rtiAnnualAccounts, rtiIsRTIException) match {
       case (annualAccount, false) => annualAccount flatMap (associatedEmployment(_, employments, nino, taxYear))
       case _                      => Seq.empty
     }
@@ -72,14 +73,14 @@ class EmploymentBuilder @Inject() (auditor: Auditor) {
     val employmentsWithNoRTI: Seq[Employment] = employments
       .filterNot(emp => employmentsWithRTI.map(_.sequenceNumber).contains(emp.sequenceNumber))
       .map { emp =>
-        if (rtiTuple._2) {
+        if (rtiIsRTIException) {
           emp.copy(annualAccounts = Seq(AnnualAccount(emp.sequenceNumber, taxYear, TemporarilyUnavailable, Nil, Nil)))
         } else {
           emp
         }
       }
 
-    Employments(employmentsWithRTI ++ employmentsWithNoRTI, None, rtiTuple._2)
+    Employments(employmentsWithRTI ++ employmentsWithNoRTI, None, rtiIsRTIException)
   }
 
   private def auditAssociatedEmployment(

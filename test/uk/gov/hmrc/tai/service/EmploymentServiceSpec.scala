@@ -147,11 +147,12 @@ class EmploymentServiceSpec extends BaseSpec {
       when(mockRtiConnector.getPaymentsForYear(any(), any())(any(), any())).thenReturn(
         EitherT.rightT(Seq(AnnualAccount(0, TaxYear(), Available, Nil, Nil)))
       )
-      when(mockEmploymentBuilder.combineAccountsWithEmployments(any(), any(), any(), any())(any())).thenReturn(
+      when(mockEmploymentBuilder.combineAccountsWithEmployments(any(), any(), any(), any(), any())(any())).thenReturn(
         Employments(employmentsForYear, None)
       )
       val employmentsCaptor = ArgumentCaptor.forClass(classOf[Seq[Employment]])
-      val accountCaptor = ArgumentCaptor.forClass(classOf[Tuple2[Seq[AnnualAccount], Boolean]])
+      val rtiAnnualAccountsCaptor = ArgumentCaptor.forClass(classOf[Seq[AnnualAccount]])
+      val rtiIsRTIExceptionCaptor = ArgumentCaptor.forClass(classOf[Boolean])
       val ninoCaptor = ArgumentCaptor.forClass(classOf[Nino])
       val taxYearCaptor = ArgumentCaptor.forClass(classOf[TaxYear])
 
@@ -171,20 +172,21 @@ class EmploymentServiceSpec extends BaseSpec {
       verify(mockEmploymentBuilder, times(1))
         .combineAccountsWithEmployments(
           employmentsCaptor.capture(),
-          accountCaptor.capture(),
+          rtiAnnualAccountsCaptor.capture(),
+          rtiIsRTIExceptionCaptor.capture(),
           ninoCaptor.capture(),
           taxYearCaptor.capture()
         )(any())
       val argsEmployments: Seq[Employment] = employmentsCaptor.getAllValues.asScala.toSeq.flatten
-      val argsAccount: Tuple2[Seq[AnnualAccount], Boolean] = accountCaptor.getValue
-      val argsAccounts: Seq[AnnualAccount] = argsAccount._1
+      val argsRTIException: Boolean = rtiIsRTIExceptionCaptor.getValue
+      val argsAccounts: Seq[AnnualAccount] = rtiAnnualAccountsCaptor.getValue
       val argsNino: Seq[Nino] = ninoCaptor.getAllValues.asScala.toSeq
       val argsTaxYear: Seq[TaxYear] = taxYearCaptor.getAllValues.asScala.toSeq
 
       val firstEmploymentInArray = (Json.parse(jsonEmployment) \ "individualsEmploymentDetails").as[JsArray].value(0)
       argsEmployments mustBe List(firstEmploymentInArray.as[Employment](employmentHodReads))
       argsAccounts mustBe List(AnnualAccount(0, TaxYear(), Available, List(), List()))
-      argsAccount._2 mustBe false
+      argsRTIException mustBe false
       argsNino mustBe List(nino)
       argsTaxYear mustBe List(TaxYear())
 
@@ -199,11 +201,12 @@ class EmploymentServiceSpec extends BaseSpec {
       when(mockRtiConnector.getPaymentsForYear(any(), any())(any(), any())).thenReturn(
         EitherT.leftT(UpstreamErrorResponse("Server Error", INTERNAL_SERVER_ERROR))
       )
-      when(mockEmploymentBuilder.combineAccountsWithEmployments(any(), any(), any(), any())(any())).thenReturn(
+      when(mockEmploymentBuilder.combineAccountsWithEmployments(any(), any(), any(), any(), any())(any())).thenReturn(
         Employments(employmentsForYear, None)
       )
       val employmentsCaptor = ArgumentCaptor.forClass(classOf[Seq[Employment]])
-      val accountCaptor = ArgumentCaptor.forClass(classOf[Tuple2[Seq[AnnualAccount], Boolean]])
+      val rtiAnnualAccountsCaptor = ArgumentCaptor.forClass(classOf[Seq[AnnualAccount]])
+      val rtiIsRTIExceptionCaptor = ArgumentCaptor.forClass(classOf[Boolean])
       val ninoCaptor = ArgumentCaptor.forClass(classOf[Nino])
       val taxYearCaptor = ArgumentCaptor.forClass(classOf[TaxYear])
 
@@ -223,17 +226,18 @@ class EmploymentServiceSpec extends BaseSpec {
       verify(mockEmploymentBuilder, times(1))
         .combineAccountsWithEmployments(
           employments = employmentsCaptor.capture(),
-          rtiTuple = accountCaptor.capture(),
+          rtiAnnualAccountsCaptor.capture(),
+          rtiIsRTIExceptionCaptor.capture(),
           nino = ninoCaptor.capture(),
           taxYear = taxYearCaptor.capture()
         )(any())
       val argsEmployments: Seq[Employment] = employmentsCaptor.getAllValues.asScala.toSeq.flatten
-      val argsAccount: Tuple2[Seq[AnnualAccount], Boolean] = accountCaptor.getValue
-      val argsAccounts = argsAccount._1
+      val argsRTIException: Boolean = rtiIsRTIExceptionCaptor.getValue
+      val argsAccounts: Seq[AnnualAccount] = rtiAnnualAccountsCaptor.getValue
       val argsNino: Seq[Nino] = ninoCaptor.getAllValues.asScala.toSeq
       val argsTaxYear: Seq[TaxYear] = taxYearCaptor.getAllValues.asScala.toSeq
       argsAccounts mustBe List.empty
-      argsAccount._2 mustBe true
+      argsRTIException mustBe true
       argsNino mustBe List(nino)
       argsTaxYear mustBe List(TaxYear())
       val firstEmploymentInArray = (Json.parse(jsonEmployment) \ "individualsEmploymentDetails").as[JsArray].value(0)
@@ -254,7 +258,7 @@ class EmploymentServiceSpec extends BaseSpec {
       when(mockRtiConnector.getPaymentsForYear(any(), any())(any(), any())).thenReturn(
         EitherT.rightT(Seq(AnnualAccount(0, TaxYear(), Available, Nil, Nil)))
       )
-      when(mockEmploymentBuilder.combineAccountsWithEmployments(any(), any(), any(), any())(any())).thenReturn(
+      when(mockEmploymentBuilder.combineAccountsWithEmployments(any(), any(), any(), any(), any())(any())).thenReturn(
         Employments(employmentsForYear, None)
       )
 
@@ -282,7 +286,7 @@ class EmploymentServiceSpec extends BaseSpec {
       when(mockRtiConnector.getPaymentsForYear(any(), any())(any(), any())).thenReturn(
         EitherT.rightT(Seq(AnnualAccount(0, TaxYear(), Available, Nil, Nil)))
       )
-      when(mockEmploymentBuilder.combineAccountsWithEmployments(any(), any(), any(), any())(any())).thenReturn(
+      when(mockEmploymentBuilder.combineAccountsWithEmployments(any(), any(), any(), any(), any())(any())).thenReturn(
         Employments(employmentsForYear, None)
       )
 
@@ -332,7 +336,7 @@ class EmploymentServiceSpec extends BaseSpec {
         when(mockRtiConnector.getPaymentsForYear(any(), any())(any(), any())).thenReturn(
           EitherT.rightT(Seq(AnnualAccount(0, TaxYear(), Available, Nil, Nil)))
         )
-        when(mockEmploymentBuilder.combineAccountsWithEmployments(any(), any(), any(), any())(any())).thenReturn(
+        when(mockEmploymentBuilder.combineAccountsWithEmployments(any(), any(), any(), any(), any())(any())).thenReturn(
           Employments(Seq.empty, None)
         )
 
@@ -370,7 +374,7 @@ class EmploymentServiceSpec extends BaseSpec {
       when(mockRtiConnector.getPaymentsForYear(any(), any())(any(), any())).thenReturn(
         EitherT.rightT(Seq(AnnualAccount(0, TaxYear(), Available, Nil, Nil)))
       )
-      when(mockEmploymentBuilder.combineAccountsWithEmployments(any(), any(), any(), any())(any())).thenReturn(
+      when(mockEmploymentBuilder.combineAccountsWithEmployments(any(), any(), any(), any(), any())(any())).thenReturn(
         Employments(Seq.empty, None)
       )
 
@@ -660,7 +664,7 @@ class EmploymentServiceSpec extends BaseSpec {
       when(mockEmploymentDetailsConnector.getEmploymentDetailsAsEitherT(any(), any())(any))
         .thenReturn(EitherT.rightT(HodResponse(Json.parse(jsonEmployment), None)))
 
-      when(mockEmploymentBuilder.combineAccountsWithEmployments(any(), any(), any(), any())(any()))
+      when(mockEmploymentBuilder.combineAccountsWithEmployments(any(), any(), any(), any(), any())(any()))
         .thenReturn(Employments(Seq(employment), None))
 
       val sut = createSut(
@@ -678,14 +682,14 @@ class EmploymentServiceSpec extends BaseSpec {
         sut.employmentWithoutRTIAsEitherT(nino, 1, TaxYear("2017"))(HeaderCarrier()).value.futureValue
 
       result mustBe Right(Some(employment.copy(annualAccounts = Seq.empty)))
-      verify(mockEmploymentBuilder, times(0)).combineAccountsWithEmployments(any(), any(), any(), any())(any())
+      verify(mockEmploymentBuilder, times(0)).combineAccountsWithEmployments(any(), any(), any(), any(), any())(any())
     }
 
     "return NOT_FOUND when employment does not exist" in {
       when(mockEmploymentDetailsConnector.getEmploymentDetailsAsEitherT(any(), any())(any))
         .thenReturn(EitherT.rightT(HodResponse(Json.parse(jsonEmployment), None)))
 
-      when(mockEmploymentBuilder.combineAccountsWithEmployments(any(), any(), any(), any())(any()))
+      when(mockEmploymentBuilder.combineAccountsWithEmployments(any(), any(), any(), any(), any())(any()))
         .thenReturn(Employments(Seq.empty, None))
 
       val sut = createSut(
@@ -711,7 +715,7 @@ class EmploymentServiceSpec extends BaseSpec {
       when(mockEmploymentDetailsConnector.getEmploymentDetailsAsEitherT(any(), any())(any))
         .thenReturn(EitherT.rightT(HodResponse(Json.parse(jsonEmployment), None)))
 
-      when(mockEmploymentBuilder.combineAccountsWithEmployments(any(), any(), any(), any())(any()))
+      when(mockEmploymentBuilder.combineAccountsWithEmployments(any(), any(), any(), any(), any())(any()))
         .thenReturn(Employments(Seq(employment), None))
 
       val sut = createSut(
@@ -728,7 +732,7 @@ class EmploymentServiceSpec extends BaseSpec {
       val result = sut.employmentsWithoutRtiAsEitherT(nino, TaxYear("2017"))(HeaderCarrier()).value.futureValue
 
       result mustBe Right(EmploymentCollection(Seq(employment.copy(annualAccounts = Seq.empty)), None))
-      verify(mockEmploymentBuilder, times(0)).combineAccountsWithEmployments(any(), any(), any(), any())(any())
+      verify(mockEmploymentBuilder, times(0)).combineAccountsWithEmployments(any(), any(), any(), any(), any())(any())
     }
 
     "return an empty list when no employments exist" in {
@@ -748,7 +752,7 @@ class EmploymentServiceSpec extends BaseSpec {
           )
         )
 
-      when(mockEmploymentBuilder.combineAccountsWithEmployments(any(), any(), any(), any())(any()))
+      when(mockEmploymentBuilder.combineAccountsWithEmployments(any(), any(), any(), any(), any())(any()))
         .thenReturn(Employments(Seq.empty, None))
 
       val sut = createSut(
@@ -765,7 +769,7 @@ class EmploymentServiceSpec extends BaseSpec {
       val result = sut.employmentsWithoutRtiAsEitherT(nino, TaxYear("2017"))(HeaderCarrier()).value.futureValue
 
       result mustBe Right(EmploymentCollection(Seq.empty, None))
-      verify(mockEmploymentBuilder, times(0)).combineAccountsWithEmployments(any(), any(), any(), any())(any())
+      verify(mockEmploymentBuilder, times(0)).combineAccountsWithEmployments(any(), any(), any(), any(), any())(any())
     }
   }
 }
