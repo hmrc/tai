@@ -123,7 +123,7 @@ class EmploymentServiceNpsSpec extends BaseSpec {
         Employments(employmentsForYear, None)
       )
       val employmentsCaptor = ArgumentCaptor.forClass(classOf[Seq[Employment]])
-      val accountCaptor = ArgumentCaptor.forClass(classOf[Seq[AnnualAccount]])
+      val accountCaptor = ArgumentCaptor.forClass(classOf[Tuple2[Seq[AnnualAccount], Boolean]])
       val ninoCaptor = ArgumentCaptor.forClass(classOf[Nino])
       val taxYearCaptor = ArgumentCaptor.forClass(classOf[TaxYear])
 
@@ -148,7 +148,8 @@ class EmploymentServiceNpsSpec extends BaseSpec {
           taxYearCaptor.capture()
         )(any())
       val argsEmployments: Seq[Employment] = employmentsCaptor.getAllValues.asScala.toSeq.flatten
-      val argsAccounts: Seq[AnnualAccount] = accountCaptor.getAllValues.asScala.toSeq.flatten
+      val argsAccount: Tuple2[Seq[AnnualAccount], Boolean] = accountCaptor.getValue
+      val argsAccounts: Seq[AnnualAccount] = argsAccount._1
       val argsNino: Seq[Nino] = ninoCaptor.getAllValues.asScala.toSeq
       val argsTaxYear: Seq[TaxYear] = taxYearCaptor.getAllValues.asScala.toSeq
 
@@ -176,7 +177,7 @@ class EmploymentServiceNpsSpec extends BaseSpec {
         Employments(employmentsForYear, None)
       )
       val employmentsCaptor = ArgumentCaptor.forClass(classOf[Seq[Employment]])
-      val accountCaptor = ArgumentCaptor.forClass(classOf[Seq[AnnualAccount]])
+      val accountCaptor = ArgumentCaptor.forClass(classOf[Tuple2[Seq[AnnualAccount], Boolean]])
       val ninoCaptor = ArgumentCaptor.forClass(classOf[Nino])
       val taxYearCaptor = ArgumentCaptor.forClass(classOf[TaxYear])
 
@@ -201,7 +202,8 @@ class EmploymentServiceNpsSpec extends BaseSpec {
           taxYearCaptor.capture()
         )(any())
       val argsEmployments: Seq[Employment] = employmentsCaptor.getAllValues.asScala.toSeq.flatten
-      val argsAccounts: Seq[AnnualAccount] = accountCaptor.getAllValues.asScala.toSeq.flatten
+      val argsAccount: Tuple2[Seq[AnnualAccount], Boolean] = accountCaptor.getValue
+      val argsAccounts: Seq[AnnualAccount] = argsAccount._1
       val argsNino: Seq[Nino] = ninoCaptor.getAllValues.asScala.toSeq
       val argsTaxYear: Seq[TaxYear] = taxYearCaptor.getAllValues.asScala.toSeq
 

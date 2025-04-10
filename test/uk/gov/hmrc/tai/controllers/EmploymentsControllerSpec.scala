@@ -38,19 +38,19 @@ class EmploymentsControllerSpec extends BaseSpec {
 
   val emp: Employment =
     Employment(
-      "company name",
-      Live,
-      Some("888"),
-      LocalDate.of(2017, 5, 26),
-      None,
-      Nil,
-      "",
-      "",
-      2,
-      Some(100),
+      name = "company name",
+      employmentStatus = Live,
+      payrollNumber = Some("888"),
+      startDate = LocalDate.of(2017, 5, 26),
+      endDate = None,
+      annualAccounts = Nil,
+      taxDistrictNumber = "",
+      payeNumber = "",
+      sequenceNumber = 2,
+      cessationPay = Some(100),
       hasPayrolledBenefit = false,
       receivingOccupationalPension = true,
-      PensionIncome
+      employmentType = PensionIncome
     )
 
   val mockEmploymentService: EmploymentService = mock[EmploymentService]
@@ -179,6 +179,38 @@ class EmploymentsControllerSpec extends BaseSpec {
             "sequenceNumber"               -> 2,
             "cessationPay"                 -> 100,
             "hasPayrolledBenefit"          -> false,
+            "isRtiServerFailure"           -> false,
+            "receivingOccupationalPension" -> true,
+            "employmentType"               -> "PensionIncome"
+          ),
+          "links" -> Json.arr()
+        )
+
+        status(result) mustBe OK
+        contentAsJson(result) mustBe jsonResult
+
+        verify(mockEmploymentService, times(1)).employmentAsEitherT(any(), meq(2))(any(), any())
+      }
+
+      "called with valid nino, year and id and rti server failure" in {
+        when(mockEmploymentService.employmentAsEitherT(any(), any())(any(), any()))
+          .thenReturn(EitherT.rightT(Some(emp copy (isRtiServerFailure = true))))
+
+        val result = sut.employment(nino, 2)(FakeRequest())
+
+        val jsonResult = Json.obj(
+          "data" -> Json.obj(
+            "name"                         -> "company name",
+            "employmentStatus"             -> Live.toString,
+            "payrollNumber"                -> "888",
+            "startDate"                    -> "2017-05-26",
+            "annualAccounts"               -> Json.arr(),
+            "taxDistrictNumber"            -> "",
+            "payeNumber"                   -> "",
+            "sequenceNumber"               -> 2,
+            "cessationPay"                 -> 100,
+            "hasPayrolledBenefit"          -> false,
+            "isRtiServerFailure"           -> true,
             "receivingOccupationalPension" -> true,
             "employmentType"               -> "PensionIncome"
           ),

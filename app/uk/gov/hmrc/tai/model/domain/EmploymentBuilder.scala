@@ -29,7 +29,7 @@ class EmploymentBuilder @Inject() (auditor: Auditor) {
   // scalastyle:off method.length
   def combineAccountsWithEmployments(
     employments: Seq[Employment],
-    accounts: Seq[AnnualAccount],
+    rtiTuple: (Seq[AnnualAccount], Boolean),
     nino: Nino,
     taxYear: TaxYear
   )(implicit hc: HeaderCarrier): Employments = {
@@ -63,8 +63,12 @@ class EmploymentBuilder @Inject() (auditor: Auditor) {
         duplicates.head.copy(annualAccounts = duplicates.flatMap(_.annualAccounts))
       }
 
-    val accountAssignedEmployments = accounts flatMap { account =>
-      associatedEmployment(account, employments, nino, taxYear)
+    val accountAssignedEmployments = rtiTuple match {
+      case (annualAccount, false) =>
+        annualAccount flatMap { account =>
+          associatedEmployment(account, employments, nino, taxYear)
+        }
+      case _ => Seq.empty
     }
 
     val unified = combinedDuplicates(accountAssignedEmployments)
@@ -74,7 +78,7 @@ class EmploymentBuilder @Inject() (auditor: Auditor) {
         emp.copy(annualAccounts = Seq(AnnualAccount(emp.sequenceNumber, taxYear, TemporarilyUnavailable, Nil, Nil)))
     }
 
-    Employments(unified ++ nonUnified, None)
+    Employments(unified ++ nonUnified, None, rtiTuple._2)
   }
 
   private def auditAssociatedEmployment(

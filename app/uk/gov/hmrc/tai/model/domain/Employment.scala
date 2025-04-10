@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.tai.model.domain
 
-import play.api.libs.json.{Format, Json, OFormat, Writes}
+import play.api.libs.json.{Format, JsObject, Json, OFormat, Writes}
 import uk.gov.hmrc.tai.model.domain.income.TaxCodeIncomeStatus
 import uk.gov.hmrc.tai.model.tai.TaxYear
 
@@ -37,7 +37,8 @@ case class Employment(
   hasPayrolledBenefit: Boolean,
   @deprecated("Use employmentType instead")
   receivingOccupationalPension: Boolean,
-  employmentType: TaxCodeIncomeComponentType
+  employmentType: TaxCodeIncomeComponentType,
+  isRtiServerFailure: Boolean = false
 ) {
 
   def tempUnavailableStubExistsForYear(year: TaxYear): Boolean =
@@ -52,7 +53,12 @@ case class Employment(
 }
 
 object Employment {
-  implicit val employmentWrites: Writes[Employment] = Json.writes[Employment]
+  // TODO: Once the new TES employment APIs (see DDCNL-9806) are fully live and the old APIs no longer
+  //  used we can get rid of the field isRtiServerFailure and the two writes below can revert to one.
+  implicit val employmentWrites: Writes[Employment] = { e =>
+    employmentWritesWithRTIStatus.writes(e).as[JsObject] - "isRtiServerFailure"
+  }
+  val employmentWritesWithRTIStatus: Writes[Employment] = Json.writes[Employment]
 
   private val numericWithLeadingZeros: Regex = """^([0]+)([1-9][0-9]*)""".r
   def numberChecked(stringVal: String): String =

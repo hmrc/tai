@@ -84,7 +84,7 @@ class EmploymentBuilderSpec extends PlaySpec with MockitoSugar {
 
         val unifiedEmployments: Seq[Employment] =
           testEmploymentBuilder
-            .combineAccountsWithEmployments(employmentsNoPayroll, accounts, nino, TaxYear(2017))
+            .combineAccountsWithEmployments(employmentsNoPayroll, (accounts, false), nino, TaxYear(2017))
             .employments
 
         unifiedEmployments must contain(
@@ -169,7 +169,7 @@ class EmploymentBuilderSpec extends PlaySpec with MockitoSugar {
 
           val unifiedEmployments: Seq[Employment] =
             testEmploymentBuilder
-              .combineAccountsWithEmployments(employmentsNoPayroll, accounts, nino, TaxYear(2017))
+              .combineAccountsWithEmployments(employmentsNoPayroll, (accounts, false), nino, TaxYear(2017))
               .employments
 
           unifiedEmployments must contain(
@@ -234,7 +234,7 @@ class EmploymentBuilderSpec extends PlaySpec with MockitoSugar {
 
         val unifiedEmployments: Seq[Employment] =
           testEmploymentBuilder
-            .combineAccountsWithEmployments(employmentsNoPayroll, accounts, nino, TaxYear(2017))
+            .combineAccountsWithEmployments(employmentsNoPayroll, (accounts, false), nino, TaxYear(2017))
             .employments
 
         unifiedEmployments must contain(
@@ -322,7 +322,7 @@ class EmploymentBuilderSpec extends PlaySpec with MockitoSugar {
           List(AnnualAccount(1, ty, Available, Nil, Nil), AnnualAccount(5, ty, Available, Nil, Nil))
 
         val unified: Seq[Employment] =
-          testEmploymentBuilder.combineAccountsWithEmployments(employments, accounts, nino, ty).employments
+          testEmploymentBuilder.combineAccountsWithEmployments(employments, (accounts, false), nino, ty).employments
 
         unified mustBe List(
           Employment(
@@ -397,7 +397,7 @@ class EmploymentBuilderSpec extends PlaySpec with MockitoSugar {
         val accounts: Nil.type = Nil
 
         val unified: Seq[Employment] =
-          testEmploymentBuilder.combineAccountsWithEmployments(employments, accounts, nino, ty).employments
+          testEmploymentBuilder.combineAccountsWithEmployments(employments, (accounts, false), nino, ty).employments
 
         unified mustBe List(
           Employment(
@@ -477,7 +477,7 @@ class EmploymentBuilderSpec extends PlaySpec with MockitoSugar {
           )
 
           val unified: Seq[Employment] =
-            testEmploymentBuilder.combineAccountsWithEmployments(employments, accounts, nino, ty).employments
+            testEmploymentBuilder.combineAccountsWithEmployments(employments, (accounts, false), nino, ty).employments
 
           unified mustBe List(
             Employment(
