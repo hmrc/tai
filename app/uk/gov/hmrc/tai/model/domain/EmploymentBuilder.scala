@@ -80,7 +80,7 @@ class EmploymentBuilder @Inject() (auditor: Auditor) {
         }
       }
 
-    Employments(employmentsWithRTI ++ employmentsWithNoRTI, None, rtiIsRTIException)
+    Employments(employmentsWithRTI ++ employmentsWithNoRTI, None)
   }
 
   private def auditAssociatedEmployment(

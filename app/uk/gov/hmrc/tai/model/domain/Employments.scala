@@ -19,7 +19,7 @@ package uk.gov.hmrc.tai.model.domain
 import uk.gov.hmrc.tai.model.tai.TaxYear
 
 //todo this is a duplicate of uk.gov.hmrc.tai.model.api.EmploymentCollection
-case class Employments(employments: Seq[Employment], etag: Option[Int], isRtiServerFailure: Boolean = false) {
+case class Employments(employments: Seq[Employment], etag: Option[Int]) {
 
   def accountsForYear(year: TaxYear): Employments = {
     val accountsForYear = employments.collect {
@@ -27,7 +27,7 @@ case class Employments(employments: Seq[Employment], etag: Option[Int], isRtiSer
         employment.copy(annualAccounts = employment.annualAccountsForYear(year))
     }
 
-    Employments(accountsForYear, None, false)
+    Employments(accountsForYear, None)
   }
 
   def employmentById(id: Int): Option[Employment] = employments.find(_.sequenceNumber == id)

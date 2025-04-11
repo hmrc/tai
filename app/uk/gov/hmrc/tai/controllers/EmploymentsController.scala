@@ -25,8 +25,8 @@ import uk.gov.hmrc.http.UpstreamErrorResponse
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 import uk.gov.hmrc.tai.controllers.auth.AuthJourney
 import uk.gov.hmrc.tai.model.api.{ApiResponse, EmploymentCollection}
-import uk.gov.hmrc.tai.model.domain.*
 import uk.gov.hmrc.tai.model.domain.income.TaxCodeIncomeStatus
+import uk.gov.hmrc.tai.model.domain.{AddEmployment, EndEmployment, IncorrectEmployment, TaxCodeIncomeComponentType}
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.service.EmploymentService
 
@@ -112,12 +112,7 @@ class EmploymentsController @Inject() (
         .bimap(
           error => errorToResponse(error),
           {
-            case Some(employment) =>
-              Ok(
-                Json.toJson(ApiResponse(employment, Nil))(
-                  ApiResponse.apiWrites[Employment](Employment.employmentWritesWithRTIStatus)
-                )
-              )
+            case Some(employment) => Ok(Json.toJson(ApiResponse(employment, Nil)))
             case None =>
               val message = s"employment id: $id not found in list of employments"
               logger.warn(message)

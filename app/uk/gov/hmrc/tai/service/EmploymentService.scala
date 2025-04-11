@@ -134,7 +134,7 @@ class EmploymentService @Inject() (
     request: Request[_]
   ): EitherT[Future, UpstreamErrorResponse, Option[Employment]] =
     employmentsAsEitherT(nino, TaxYear()).map { employments =>
-      employments.employmentById(id).map(_ copy (isRtiServerFailure = employments.isRtiServerFailure))
+      employments.employmentById(id)
     }
 
   def employmentsWithoutRtiAsEitherT(nino: Nino, taxYear: TaxYear)(implicit
