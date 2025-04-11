@@ -101,21 +101,33 @@ class EmploymentService @Inject() (
     )
   }
 
+  private def retrieveRTIPayments(nino: Nino, taxYear: TaxYear)(implicit
+    hc: HeaderCarrier,
+    request: Request[_]
+  ): EitherT[Future, UpstreamErrorResponse, (Seq[AnnualAccount], Boolean)] =
+    EitherT(
+      rtiConnector.getPaymentsForYear(nino, taxYear).value.map {
+        case Right(accounts) => Right(Tuple2(accounts, false))
+        case Left(e)         => Right(Tuple2(Seq.empty[AnnualAccount], true))
+      }
+    )
+
   def employmentsAsEitherT(nino: Nino, taxYear: TaxYear)(implicit
     hc: HeaderCarrier,
     request: Request[_]
-  ): EitherT[Future, UpstreamErrorResponse, Employments] = for {
-    employmentsCollection <- fetchEmploymentsCollection(nino, taxYear)
-    accounts <- rtiConnector.getPaymentsForYear(nino, taxYear).transform {
-                  case Right(accounts: Seq[AnnualAccount]) => Right(accounts)
-                  case Left(_)                             => Right(Seq.empty)
-                }
-  } yield employmentBuilder.combineAccountsWithEmployments(
-    employmentsCollection.employments,
-    accounts,
-    nino,
-    taxYear
-  )
+  ): EitherT[Future, UpstreamErrorResponse, Employments] =
+    retrieveRTIPayments(nino, taxYear).flatMap { case (rtiAnnualAccounts, rtiIsRTIException) =>
+      fetchEmploymentsCollection(nino, taxYear).map { employmentsCollection =>
+        employmentBuilder.combineAccountsWithEmployments(
+          employmentsCollection.employments,
+          rtiAnnualAccounts,
+          rtiIsRTIException,
+          nino,
+          taxYear
+        )
+      }
+
+    }
 
   def employmentAsEitherT(nino: Nino, id: Int)(implicit
     hc: HeaderCarrier,

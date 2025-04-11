@@ -119,11 +119,12 @@ class EmploymentServiceNpsSpec extends BaseSpec {
       when(mockRtiConnector.getPaymentsForYear(any(), any())(any(), any())).thenReturn(
         EitherT.rightT(Seq(AnnualAccount(0, TaxYear(), Available, Nil, Nil)))
       )
-      when(mockEmploymentBuilder.combineAccountsWithEmployments(any(), any(), any(), any())(any())).thenReturn(
+      when(mockEmploymentBuilder.combineAccountsWithEmployments(any(), any(), any(), any(), any())(any())).thenReturn(
         Employments(employmentsForYear, None)
       )
       val employmentsCaptor = ArgumentCaptor.forClass(classOf[Seq[Employment]])
-      val accountCaptor = ArgumentCaptor.forClass(classOf[Seq[AnnualAccount]])
+      val rtiAnnualAccountsCaptor = ArgumentCaptor.forClass(classOf[Seq[AnnualAccount]])
+      val rtiIsRTIExceptionCaptor = ArgumentCaptor.forClass(classOf[Boolean])
       val ninoCaptor = ArgumentCaptor.forClass(classOf[Nino])
       val taxYearCaptor = ArgumentCaptor.forClass(classOf[TaxYear])
 
@@ -143,17 +144,20 @@ class EmploymentServiceNpsSpec extends BaseSpec {
       verify(mockEmploymentBuilder, times(1))
         .combineAccountsWithEmployments(
           employmentsCaptor.capture(),
-          accountCaptor.capture(),
+          rtiAnnualAccountsCaptor.capture(),
+          rtiIsRTIExceptionCaptor.capture(),
           ninoCaptor.capture(),
           taxYearCaptor.capture()
         )(any())
       val argsEmployments: Seq[Employment] = employmentsCaptor.getAllValues.asScala.toSeq.flatten
-      val argsAccounts: Seq[AnnualAccount] = accountCaptor.getAllValues.asScala.toSeq.flatten
+      val argsAccounts: Seq[AnnualAccount] = rtiAnnualAccountsCaptor.getValue
+      val argsRTIException: Boolean = rtiIsRTIExceptionCaptor.getValue
       val argsNino: Seq[Nino] = ninoCaptor.getAllValues.asScala.toSeq
       val argsTaxYear: Seq[TaxYear] = taxYearCaptor.getAllValues.asScala.toSeq
 
       argsEmployments mustBe List(jsonEmployment.as[Employment](employmentHodNpsReads))
       argsAccounts mustBe List(AnnualAccount(0, TaxYear(), Available, List(), List()))
+      argsRTIException mustBe false
       argsNino mustBe List(nino)
       argsTaxYear mustBe List(TaxYear())
 
@@ -172,11 +176,12 @@ class EmploymentServiceNpsSpec extends BaseSpec {
       when(mockRtiConnector.getPaymentsForYear(any(), any())(any(), any())).thenReturn(
         EitherT.leftT(UpstreamErrorResponse("Server Error", INTERNAL_SERVER_ERROR))
       )
-      when(mockEmploymentBuilder.combineAccountsWithEmployments(any(), any(), any(), any())(any())).thenReturn(
+      when(mockEmploymentBuilder.combineAccountsWithEmployments(any(), any(), any(), any(), any())(any())).thenReturn(
         Employments(employmentsForYear, None)
       )
       val employmentsCaptor = ArgumentCaptor.forClass(classOf[Seq[Employment]])
-      val accountCaptor = ArgumentCaptor.forClass(classOf[Seq[AnnualAccount]])
+      val rtiAnnualAccountsCaptor = ArgumentCaptor.forClass(classOf[Seq[AnnualAccount]])
+      val rtiIsRTIExceptionCaptor = ArgumentCaptor.forClass(classOf[Boolean])
       val ninoCaptor = ArgumentCaptor.forClass(classOf[Nino])
       val taxYearCaptor = ArgumentCaptor.forClass(classOf[TaxYear])
 
@@ -196,17 +201,20 @@ class EmploymentServiceNpsSpec extends BaseSpec {
       verify(mockEmploymentBuilder, times(1))
         .combineAccountsWithEmployments(
           employmentsCaptor.capture(),
-          accountCaptor.capture(),
+          rtiAnnualAccountsCaptor.capture(),
+          rtiIsRTIExceptionCaptor.capture(),
           ninoCaptor.capture(),
           taxYearCaptor.capture()
         )(any())
       val argsEmployments: Seq[Employment] = employmentsCaptor.getAllValues.asScala.toSeq.flatten
-      val argsAccounts: Seq[AnnualAccount] = accountCaptor.getAllValues.asScala.toSeq.flatten
+      val argsRTIException: Boolean = rtiIsRTIExceptionCaptor.getValue
+      val argsAccounts: Seq[AnnualAccount] = rtiAnnualAccountsCaptor.getValue
       val argsNino: Seq[Nino] = ninoCaptor.getAllValues.asScala.toSeq
       val argsTaxYear: Seq[TaxYear] = taxYearCaptor.getAllValues.asScala.toSeq
 
       argsEmployments mustBe List(jsonEmployment.as[Employment](employmentHodNpsReads))
       argsAccounts mustBe List.empty
+      argsRTIException mustBe true
       argsNino mustBe List(nino)
       argsTaxYear mustBe List(TaxYear())
 
@@ -228,7 +236,7 @@ class EmploymentServiceNpsSpec extends BaseSpec {
       when(mockRtiConnector.getPaymentsForYear(any(), any())(any(), any())).thenReturn(
         EitherT.rightT(Seq(AnnualAccount(0, TaxYear(), Available, Nil, Nil)))
       )
-      when(mockEmploymentBuilder.combineAccountsWithEmployments(any(), any(), any(), any())(any())).thenReturn(
+      when(mockEmploymentBuilder.combineAccountsWithEmployments(any(), any(), any(), any(), any())(any())).thenReturn(
         Employments(employmentsForYear, None)
       )
 
@@ -259,7 +267,7 @@ class EmploymentServiceNpsSpec extends BaseSpec {
       when(mockRtiConnector.getPaymentsForYear(any(), any())(any(), any())).thenReturn(
         EitherT.rightT(Seq(AnnualAccount(0, TaxYear(), Available, Nil, Nil)))
       )
-      when(mockEmploymentBuilder.combineAccountsWithEmployments(any(), any(), any(), any())(any())).thenReturn(
+      when(mockEmploymentBuilder.combineAccountsWithEmployments(any(), any(), any(), any(), any())(any())).thenReturn(
         Employments(employmentsForYear, None)
       )
 
@@ -312,7 +320,7 @@ class EmploymentServiceNpsSpec extends BaseSpec {
         when(mockRtiConnector.getPaymentsForYear(any(), any())(any(), any())).thenReturn(
           EitherT.rightT(Seq(AnnualAccount(0, TaxYear(), Available, Nil, Nil)))
         )
-        when(mockEmploymentBuilder.combineAccountsWithEmployments(any(), any(), any(), any())(any())).thenReturn(
+        when(mockEmploymentBuilder.combineAccountsWithEmployments(any(), any(), any(), any(), any())(any())).thenReturn(
           Employments(Seq.empty, None)
         )
 
@@ -353,7 +361,7 @@ class EmploymentServiceNpsSpec extends BaseSpec {
       when(mockRtiConnector.getPaymentsForYear(any(), any())(any(), any())).thenReturn(
         EitherT.rightT(Seq(AnnualAccount(0, TaxYear(), Available, Nil, Nil)))
       )
-      when(mockEmploymentBuilder.combineAccountsWithEmployments(any(), any(), any(), any())(any())).thenReturn(
+      when(mockEmploymentBuilder.combineAccountsWithEmployments(any(), any(), any(), any(), any())(any())).thenReturn(
         Employments(Seq.empty, None)
       )
 

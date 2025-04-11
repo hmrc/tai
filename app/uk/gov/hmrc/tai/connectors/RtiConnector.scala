@@ -19,9 +19,9 @@ package uk.gov.hmrc.tai.connectors
 import cats.data.EitherT
 import cats.effect.IO
 import cats.effect.unsafe.implicits.global
-import cats.implicits._
+import cats.implicits.*
 import com.google.inject.{Inject, Singleton}
-import play.api.http.Status._
+import play.api.http.Status.*
 import play.api.libs.json.Format
 import play.api.mvc.Request
 import play.api.{Logger, Logging}
@@ -33,8 +33,8 @@ import uk.gov.hmrc.mongo.cache.DataKey
 import uk.gov.hmrc.mongoFeatureToggles.services.FeatureFlagService
 import uk.gov.hmrc.tai.config.{DesConfig, RtiConfig}
 import uk.gov.hmrc.tai.model.admin.RtiCallToggle
+import uk.gov.hmrc.tai.model.domain.*
 import uk.gov.hmrc.tai.model.domain.AnnualAccount.{annualAccountHodReads, format}
-import uk.gov.hmrc.tai.model.domain._
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.repositories.cache.TaiSessionCacheRepository
 import uk.gov.hmrc.tai.service.{LockService, SensitiveFormatService}

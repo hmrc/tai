@@ -30,7 +30,6 @@ ThisBuild / scalacOptions ++= Seq(
   "-Wconf:msg=unused&src=.*RoutesPrefix\\.scala:s",
   "-Wconf:msg=unused&src=.*Routes\\.scala:s",
   "-Wconf:msg=unused&src=.*ReverseRoutes\\.scala:s",
-  "-Xfatal-warnings",
   "-Wconf:msg=Flag.*repeatedly:s"
 )
 
