@@ -98,7 +98,8 @@ object CodingComponentHipReads {
     43 -> MarriageAllowanceTransferred,
     44 -> DividendTax,
     45 -> EstimatedTaxYouOweThisYear,
-    50 -> BRDifferenceTaxCharge
+    50 -> BRDifferenceTaxCharge,
+    51 -> HICBCPaye
   )
 
   private val hipComponentNonTaxCodeIncomeMap: Map[Int, NonTaxCodeIncomeComponentType] = Map(

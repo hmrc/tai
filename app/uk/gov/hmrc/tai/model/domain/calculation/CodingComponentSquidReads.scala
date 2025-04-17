@@ -96,7 +96,8 @@ object CodingComponentSquidReads {
     43 -> MarriageAllowanceTransferred,
     44 -> DividendTax,
     45 -> EstimatedTaxYouOweThisYear,
-    50 -> BRDifferenceTaxCharge
+    50 -> BRDifferenceTaxCharge,
+    51 -> HICBCPaye
   )
 
   private val npsComponentNonTaxCodeIncomeMap: Map[Int, NonTaxCodeIncomeComponentType] = Map(
