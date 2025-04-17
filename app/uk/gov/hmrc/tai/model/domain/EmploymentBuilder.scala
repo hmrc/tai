@@ -76,7 +76,7 @@ class EmploymentBuilder @Inject() (auditor: Auditor) {
         if (rtiIsRTIException) {
           emp.copy(annualAccounts = Seq(AnnualAccount(emp.sequenceNumber, taxYear, TemporarilyUnavailable, Nil, Nil)))
         } else {
-          emp
+          emp.copy(annualAccounts = Seq(AnnualAccount(emp.sequenceNumber, taxYear, Available, Nil, Nil)))
         }
       }
 
