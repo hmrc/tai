@@ -19,9 +19,8 @@ package uk.gov.hmrc.tai.service
 import cats.data.EitherT
 import cats.instances.future.*
 import org.mockito.ArgumentCaptor
-import org.mockito.ArgumentMatchers.{any, eq as eqTo}
-import org.mockito.ArgumentMatchers.{contains, eq as meq}
-import org.mockito.Mockito.{doNothing, reset, times, verify, when}
+import org.mockito.ArgumentMatchers.{any, contains, eq as meq}
+import org.mockito.Mockito.*
 import play.api.http.Status.INTERNAL_SERVER_ERROR
 import play.api.libs.json.{JsArray, Json}
 import play.api.test.FakeRequest
@@ -32,7 +31,6 @@ import uk.gov.hmrc.mongoFeatureToggles.services.FeatureFlagService
 import uk.gov.hmrc.tai.audit.Auditor
 import uk.gov.hmrc.tai.connectors.{DefaultEmploymentDetailsConnector, RtiConnector}
 import uk.gov.hmrc.tai.model.HodResponse
-import uk.gov.hmrc.tai.model.admin.HipToggleEmploymentDetails
 import uk.gov.hmrc.tai.model.api.EmploymentCollection
 import uk.gov.hmrc.tai.model.api.EmploymentCollection.employmentHodReads
 import uk.gov.hmrc.tai.model.domain.*
@@ -124,16 +122,12 @@ class EmploymentServiceSpec extends BaseSpec {
       iFormSubmissionService,
       fileUploadService,
       pdfService,
-      auditable,
-      mockFeatureFlagService
+      auditable
     )
 
   override def beforeEach(): Unit = {
     super.beforeEach()
     reset(mockEmploymentDetailsConnector, mockRtiConnector, mockEmploymentBuilder, mockFeatureFlagService)
-    when(mockFeatureFlagService.get(eqTo[FeatureFlagName](HipToggleEmploymentDetails))).thenReturn(
-      Future.successful(FeatureFlag(HipToggleEmploymentDetails, isEnabled = true))
-    )
     ()
   }
 

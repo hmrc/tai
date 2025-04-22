@@ -20,16 +20,13 @@ import cats.data.EitherT
 import com.google.inject.{Inject, Singleton}
 import play.api.Logger
 import play.api.http.Status.NOT_FOUND
-import play.api.libs.json.Reads
 import play.api.mvc.Request
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse, UpstreamErrorResponse}
-import uk.gov.hmrc.mongoFeatureToggles.services.FeatureFlagService
 import uk.gov.hmrc.tai.audit.Auditor
 import uk.gov.hmrc.tai.connectors.{EmploymentDetailsConnector, RtiConnector}
-import uk.gov.hmrc.tai.model.admin.HipToggleEmploymentDetails
 import uk.gov.hmrc.tai.model.api.EmploymentCollection
-import uk.gov.hmrc.tai.model.api.EmploymentCollection.{employmentCollectionHodReadsHIP, employmentCollectionHodReadsNPS}
+import uk.gov.hmrc.tai.model.api.EmploymentCollection.employmentCollectionHodReadsHIP
 import uk.gov.hmrc.tai.model.domain.*
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.model.templates.{EmploymentPensionViewModel, PdfSubmission}
@@ -52,8 +49,7 @@ class EmploymentService @Inject() (
   iFormSubmissionService: IFormSubmissionService,
   fileUploadService: FileUploadService,
   pdfService: PdfService,
-  auditable: Auditor,
-  featureFlagService: FeatureFlagService
+  auditable: Auditor
 )(implicit ec: ExecutionContext) {
 
   private val logger: Logger = Logger(getClass.getName)
@@ -76,30 +72,18 @@ class EmploymentService @Inject() (
 
   private def fetchEmploymentsCollection(nino: Nino, taxYear: TaxYear)(implicit
     hc: HeaderCarrier
-  ): EitherT[Future, UpstreamErrorResponse, EmploymentCollection] = {
-    val futureReads: Future[Reads[EmploymentCollection]] =
-      featureFlagService.get(HipToggleEmploymentDetails).map { toggle =>
-        if (toggle.isEnabled) {
-          employmentCollectionHodReadsHIP
-        } else {
-          employmentCollectionHodReadsNPS
-        }
-      }
-
+  ): EitherT[Future, UpstreamErrorResponse, EmploymentCollection] =
     EitherT(
-      employmentDetailsConnector.getEmploymentDetailsAsEitherT(nino, taxYear.year).value.flatMap {
-        case Left(e) => Future.successful(Left(e))
+      employmentDetailsConnector.getEmploymentDetailsAsEitherT(nino, taxYear.year).value.map {
+        case Left(e) => Left(e)
         case Right(hodResponse) =>
-          futureReads.map { reads =>
-            Right(
-              hodResponse.body
-                .as[EmploymentCollection](reads)
-                .copy(etag = hodResponse.etag)
-            )
-          }
+          Right(
+            hodResponse.body
+              .as[EmploymentCollection](employmentCollectionHodReadsHIP)
+              .copy(etag = hodResponse.etag)
+          )
       }
     )
-  }
 
   private def retrieveRTIPayments(nino: Nino, taxYear: TaxYear)(implicit
     hc: HeaderCarrier,

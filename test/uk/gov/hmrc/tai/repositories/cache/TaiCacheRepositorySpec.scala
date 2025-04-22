@@ -24,10 +24,11 @@ import play.api.libs.json.{JsObject, JsString, Json}
 import uk.gov.hmrc.crypto.json.JsonEncryption
 import uk.gov.hmrc.crypto.{ApplicationCrypto, Decrypter, Encrypter}
 import uk.gov.hmrc.mongo.cache.CacheItem
-import uk.gov.hmrc.tai.config.{MongoConfig, SensitiveT}
+import uk.gov.hmrc.tai.config.MongoConfig
 import uk.gov.hmrc.tai.connectors.cache.TaiCacheConnector
 import uk.gov.hmrc.tai.repositories.deprecated.TaiCacheRepository
 import uk.gov.hmrc.tai.util.BaseSpec
+import uk.gov.hmrc.tai.config.SensitiveT
 
 import java.time.Instant
 import scala.concurrent.Future

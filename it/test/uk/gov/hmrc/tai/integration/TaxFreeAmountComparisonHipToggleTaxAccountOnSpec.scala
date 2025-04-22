@@ -27,7 +27,7 @@ import play.api.test.Helpers.{status as getStatus, *}
 import uk.gov.hmrc.http.HeaderNames
 import uk.gov.hmrc.mongoFeatureToggles.model.{FeatureFlag, FeatureFlagName}
 import uk.gov.hmrc.tai.integration.utils.IntegrationSpec
-import uk.gov.hmrc.tai.model.admin.{HipToggleEmploymentDetails, HipToggleTaxAccount, RtiCallToggle}
+import uk.gov.hmrc.tai.model.admin.RtiCallToggle
 
 import scala.concurrent.Future
 
@@ -45,12 +45,9 @@ class TaxFreeAmountComparisonHipToggleTaxAccountOnSpec extends IntegrationSpec {
     when(mockFeatureFlagService.getAsEitherT(eqTo[FeatureFlagName](RtiCallToggle))).thenReturn(
       EitherT.rightT(FeatureFlag(RtiCallToggle, isEnabled = false))
     )
-    when(mockFeatureFlagService.get(eqTo[FeatureFlagName](HipToggleTaxAccount))).thenReturn(
-      Future.successful(FeatureFlag(HipToggleTaxAccount, isEnabled = true))
-    )
-    when(mockFeatureFlagService.get(eqTo[FeatureFlagName](HipToggleEmploymentDetails))).thenReturn(
-      Future.successful(FeatureFlag(HipToggleTaxAccount, isEnabled = false))
-    )
+//    when(mockFeatureFlagService.get(eqTo[FeatureFlagName](HipToggleEmploymentDetails))).thenReturn(
+//      Future.successful(FeatureFlag(HipToggleTaxAccount, isEnabled = false))
+//    )
     ()
   }
 

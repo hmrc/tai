@@ -18,22 +18,18 @@ package uk.gov.hmrc.tai.connectors
 
 import com.github.tomakehurst.wiremock.client.WireMock.*
 import com.github.tomakehurst.wiremock.matching.RequestPatternBuilder
-import org.mockito.ArgumentMatchers.eq as eqTo
-import org.mockito.Mockito.when
 import play.api.http.Status.*
 import play.api.libs.json.{JsObject, JsValue, Json}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.{BadRequestException, HeaderNames, HttpException, InternalServerException, LockedException, NotFoundException}
-import uk.gov.hmrc.mongoFeatureToggles.model.{FeatureFlag, FeatureFlagName}
 import uk.gov.hmrc.tai.config.{DesConfig, HipConfig, NpsConfig}
 import uk.gov.hmrc.tai.factory.TaxAccountHistoryFactory
-import uk.gov.hmrc.tai.model.admin.HipToggleTaxAccount
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.util.WireMockHelper
 
 import java.net.URL
 import scala.concurrent.duration.*
-import scala.concurrent.{Await, Future}
+import scala.concurrent.Await
 import scala.language.postfixOps
 
 // scalastyle:off number.of.methods
@@ -56,11 +52,9 @@ class TaxAccountConnectorSpec extends ConnectorBaseSpec with WireMockHelper {
 
     def sut: TaxAccountConnector = new DefaultTaxAccountConnector(
       inject[HttpHandler],
-      npsConfig,
       desConfig,
       taxAccountUrls,
-      app.injector.instanceOf[HipConfig],
-      mockFeatureFlagService
+      app.injector.instanceOf[HipConfig]
     )
 
     val taxYear: TaxYear = TaxYear()
@@ -104,9 +98,6 @@ class TaxAccountConnectorSpec extends ConnectorBaseSpec with WireMockHelper {
 
   override def beforeEach(): Unit = {
     super.beforeEach()
-    when(mockFeatureFlagService.get(eqTo[FeatureFlagName](HipToggleTaxAccount))).thenReturn(
-      Future.successful(FeatureFlag(HipToggleTaxAccount, isEnabled = true))
-    )
     ()
   }
 

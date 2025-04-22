@@ -22,10 +22,8 @@ import play.api.http.MimeTypes
 import play.api.libs.json.{JsObject, JsValue}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.{HeaderCarrier, *}
-import uk.gov.hmrc.mongoFeatureToggles.services.FeatureFlagService
-import uk.gov.hmrc.tai.config.{DesConfig, HipConfig, NpsConfig}
+import uk.gov.hmrc.tai.config.{DesConfig, HipConfig}
 import uk.gov.hmrc.tai.connectors.cache.CachingConnector
-import uk.gov.hmrc.tai.model.admin.HipToggleTaxAccount
 import uk.gov.hmrc.tai.model.enums.APITypes
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.service.SensitiveFormatService
@@ -64,11 +62,9 @@ class CachingTaxAccountConnector @Inject() (
 
 class DefaultTaxAccountConnector @Inject() (
   httpHandler: HttpHandler,
-  npsConfig: NpsConfig,
   desConfig: DesConfig,
   taxAccountUrls: TaxAccountUrls,
-  hipConfig: HipConfig,
-  featureFlagService: FeatureFlagService
+  hipConfig: HipConfig
 )(implicit ec: ExecutionContext)
     extends TaxAccountConnector {
   private def getUuid: String = UUID.randomUUID().toString
@@ -84,29 +80,19 @@ class DefaultTaxAccountConnector @Inject() (
       "CorrelationId"        -> getUuid
     )
 
-  def taxAccount(nino: Nino, taxYear: TaxYear)(implicit hc: HeaderCarrier): Future[JsValue] =
-    featureFlagService.get(HipToggleTaxAccount).flatMap { toggle =>
-      val (baseUrl, originatorId, extraInfo) =
-        if (toggle.isEnabled) {
-          (hipConfig.baseURL, hipConfig.originatorId, Some(Tuple2(hipConfig.clientId, hipConfig.clientSecret)))
-        } else {
-          (npsConfig.baseURL, npsConfig.originatorId, None)
-        }
+  def taxAccount(nino: Nino, taxYear: TaxYear)(implicit hc: HeaderCarrier): Future[JsValue] = {
+    val (baseUrl, originatorId, extraInfo) =
+      (hipConfig.baseURL, hipConfig.originatorId, Some(Tuple2(hipConfig.clientId, hipConfig.clientSecret)))
 
-      def pathUrl(nino: Nino): String = if (toggle.isEnabled) {
-        s"$baseUrl/person/${nino.nino}/tax-account/${taxYear.year}"
-      } else {
-        s"${npsConfig.baseURL}/person/${nino.nino}/tax-account/${taxYear.year}"
+    val urlToRead = s"$baseUrl/person/${nino.nino}/tax-account/${taxYear.year}"
+    httpHandler
+      .getFromApi(urlToRead, APITypes.NpsTaxAccountAPI, basicHeaders(originatorId, hc, extraInfo))
+      .map {
+        case response if response == JsObject.empty => throw new NotFoundException(response.toString)
+        case response                               => response
       }
 
-      val urlToRead = pathUrl(nino)
-      httpHandler
-        .getFromApi(urlToRead, APITypes.NpsTaxAccountAPI, basicHeaders(originatorId, hc, extraInfo))
-        .map {
-          case response if response == JsObject.empty => throw new NotFoundException(response.toString)
-          case response                               => response
-        }
-    }
+  }
 
   def taxAccountHistory(nino: Nino, iocdSeqNo: Int)(implicit hc: HeaderCarrier): Future[JsValue] = {
     val url = taxAccountUrls.taxAccountHistoricSnapshotUrl(nino, iocdSeqNo)

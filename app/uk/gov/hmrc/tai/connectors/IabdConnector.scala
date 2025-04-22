@@ -26,7 +26,7 @@ import uk.gov.hmrc.mongoFeatureToggles.services.FeatureFlagService
 import uk.gov.hmrc.tai.config.{DesConfig, HipConfig, NpsConfig}
 import uk.gov.hmrc.tai.connectors.cache.CachingConnector
 import uk.gov.hmrc.tai.controllers.auth.AuthenticatedRequest
-import uk.gov.hmrc.tai.model.admin.{HipToggleEmploymentIabds, HipToggleIabds}
+import uk.gov.hmrc.tai.model.admin.HipToggleIabds
 import uk.gov.hmrc.tai.model.domain.response.{HodUpdateFailure, HodUpdateResponse, HodUpdateSuccess}
 import uk.gov.hmrc.tai.model.enums.APITypes
 import uk.gov.hmrc.tai.model.enums.APITypes.{APITypes, HipIabdUpdateEmployeeExpensesAPI}
@@ -101,18 +101,11 @@ class DefaultIabdConnector @Inject() (
   npsConfig: NpsConfig,
   desConfig: DesConfig,
   hipConfig: HipConfig,
-  iabdUrls: IabdUrls,
   featureFlagService: FeatureFlagService
 )(implicit ec: ExecutionContext)
     extends IabdConnector {
 
   private def getUuid = UUID.randomUUID().toString
-
-  private def sessionOrUUID(implicit hc: HeaderCarrier): String =
-    hc.sessionId match {
-      case Some(sessionId) => sessionId.value
-      case None            => UUID.randomUUID().toString.replace("-", "")
-    }
 
   private def hipAuthHeaders(clientIdAndSecret: Option[(String, String)]): Seq[(String, String)] =
     clientIdAndSecret.fold[Seq[(String, String)]](Seq.empty) { case (clientId, clientSecret) =>
@@ -168,14 +161,14 @@ class DefaultIabdConnector @Inject() (
       }
     }
 
-  private def updateTaxCodeAmountHip(
+  override def updateTaxCodeAmount(
     nino: Nino,
     taxYear: TaxYear,
     empId: Int,
     version: Int,
     iabdType: Int,
     amount: Int
-  )(implicit hc: HeaderCarrier): Future[HodUpdateResponse] = {
+  )(implicit hc: HeaderCarrier, request: AuthenticatedRequest[_]): Future[HodUpdateResponse] = {
     val requestHeader: Seq[(String, String)] =
       Seq(
         HeaderNames.xSessionId -> hc.sessionId.fold("-")(_.value),
@@ -202,56 +195,6 @@ class DefaultIabdConnector @Inject() (
       .map(_ => HodUpdateSuccess)
       .recover { case _ => HodUpdateFailure }
   }
-
-  private def updateTaxCodeAmountSquid(
-    nino: Nino,
-    taxYear: TaxYear,
-    empId: Int,
-    version: Int,
-    iabdType: Int,
-    amount: Int
-  )(implicit hc: HeaderCarrier): Future[HodUpdateResponse] = {
-    val requestHeader: Seq[(String, String)] =
-      Seq(
-        HeaderNames.xSessionId -> hc.sessionId.fold("-")(_.value),
-        HeaderNames.xRequestId -> hc.requestId.fold("-")(_.value)
-      ) ++ Seq(
-        "ETag"                 -> version.toString,
-        "X-TXID"               -> sessionOrUUID,
-        "Gov-Uk-Originator-Id" -> npsConfig.originatorId,
-        "CorrelationId"        -> getUuid
-      )
-
-    httpHandler
-      .postToApi[IabdUpdateAmount](
-        url = iabdUrls.npsIabdEmploymentUrl(nino, taxYear, iabdType),
-        data = IabdUpdateAmount(employmentSequenceNumber = Some(empId), grossAmount = amount, source = Some(NpsSource)),
-        api = APITypes.NpsIabdUpdateEstPayManualAPI,
-        headers = requestHeader
-      )(
-        implicitly,
-        (updateAmount: IabdUpdateAmount) => Json.arr(Json.toJson(updateAmount))
-      )
-      .map(_ => HodUpdateSuccess)
-      .recover { case _ => HodUpdateFailure }
-  }
-
-  override def updateTaxCodeAmount(
-    nino: Nino,
-    taxYear: TaxYear,
-    empId: Int,
-    version: Int,
-    iabdType: Int,
-    amount: Int
-  )(implicit hc: HeaderCarrier, request: AuthenticatedRequest[_]): Future[HodUpdateResponse] =
-    featureFlagService.get(HipToggleEmploymentIabds).flatMap { toggle =>
-      if (toggle.isEnabled) {
-        updateTaxCodeAmountHip(nino, taxYear, empId, version, iabdType, amount)
-      } else {
-        updateTaxCodeAmountSquid(nino, taxYear, empId, version, iabdType, amount)
-      }
-
-    }
 
   override def getIabdsForType(nino: Nino, year: Int, iabdType: Int)(implicit
     hc: HeaderCarrier

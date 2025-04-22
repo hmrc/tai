@@ -27,7 +27,7 @@ import uk.gov.hmrc.http.{BadRequestException, HeaderNames, HttpException, Intern
 import uk.gov.hmrc.mongoFeatureToggles.model.{FeatureFlag, FeatureFlagName}
 import uk.gov.hmrc.tai.config.{DesConfig, HipConfig, NpsConfig}
 import uk.gov.hmrc.tai.controllers.auth.AuthenticatedRequest
-import uk.gov.hmrc.tai.model.admin.{HipToggleEmploymentIabds, HipToggleIabds}
+import uk.gov.hmrc.tai.model.admin.HipToggleIabds
 import uk.gov.hmrc.tai.model.domain.IabdDetails
 import uk.gov.hmrc.tai.model.domain.response.{HodUpdateFailure, HodUpdateSuccess}
 import uk.gov.hmrc.tai.model.enums.APITypes
@@ -57,7 +57,6 @@ class IabdConnectorSpec extends ConnectorBaseSpec {
     npsConfig,
     inject[DesConfig],
     hipConfig,
-    iabdUrls,
     mockFeatureFlagService
   )
   private val iabdTypeArgument: String = hipMapping(iabdType)
@@ -116,9 +115,9 @@ class IabdConnectorSpec extends ConnectorBaseSpec {
 
   override def beforeEach(): Unit = {
     super.beforeEach()
-    when(mockFeatureFlagService.get(eqTo[FeatureFlagName](HipToggleEmploymentIabds))).thenReturn(
-      Future.successful(FeatureFlag(HipToggleEmploymentIabds, isEnabled = false))
-    )
+//    when(mockFeatureFlagService.get(eqTo[FeatureFlagName](HipToggleEmploymentIabds))).thenReturn(
+//      Future.successful(FeatureFlag(HipToggleEmploymentIabds, isEnabled = false))
+//    )
     ()
   }
 
@@ -355,10 +354,6 @@ class IabdConnectorSpec extends ConnectorBaseSpec {
 
   "updateTaxCodeIncome with HipToggleEmploymentIabds on" when {
     "update nps with the new tax code income" in {
-
-      when(mockFeatureFlagService.get(eqTo[FeatureFlagName](HipToggleEmploymentIabds))).thenReturn(
-        Future.successful(FeatureFlag(HipToggleEmploymentIabds, isEnabled = true))
-      )
       val url: String =
         s"${hipConfig.path}/iabd/taxpayer/$nino/tax-year/${taxYear.year}/employment/1/type/$iabdTypeArgument"
 
@@ -385,11 +380,6 @@ class IabdConnectorSpec extends ConnectorBaseSpec {
     }
 
     "return a failure status if the update fails" in {
-
-      when(mockFeatureFlagService.get(eqTo[FeatureFlagName](HipToggleEmploymentIabds))).thenReturn(
-        Future.successful(FeatureFlag(HipToggleEmploymentIabds, isEnabled = true))
-      )
-
       val url: String =
         s"${hipConfig.path}/iabd/taxpayer/$nino/tax-year/${taxYear.year}/employment/1/type/$iabdTypeArgument"
 
@@ -421,9 +411,6 @@ class IabdConnectorSpec extends ConnectorBaseSpec {
     ).foreach { httpStatus =>
       s" return a failure status for $httpStatus  response" in {
 
-        when(mockFeatureFlagService.get(eqTo[FeatureFlagName](HipToggleEmploymentIabds))).thenReturn(
-          Future.successful(FeatureFlag(HipToggleEmploymentIabds, isEnabled = true))
-        )
         val url: String =
           s"${hipConfig.path}/iabd/taxpayer/$nino/tax-year/${taxYear.year}/employment/1/type/$iabdTypeArgument"
 

@@ -20,7 +20,7 @@ import play.api.libs.json.*
 import play.api.libs.json.Reads.localDateReads
 import uk.gov.hmrc.tai.model.domain.Employment.numberChecked
 import uk.gov.hmrc.tai.model.domain.income.TaxCodeIncomeStatus
-import uk.gov.hmrc.tai.model.domain.{Employment, EmploymentIncome, JobSeekerAllowanceIncome, OtherIncome, PensionIncome, TaxCodeIncomeComponentType}
+import uk.gov.hmrc.tai.model.domain.*
 import uk.gov.hmrc.tai.util.JsonHelper.*
 
 import java.time.LocalDate
@@ -85,6 +85,7 @@ object EmploymentCollection {
     }
   }
 
+  // scalastyle:off method.length
   def employmentHodReads: Reads[Employment] = new Reads[Employment] {
     private def splitEmpRef(empRef: String): JsResult[(String, String)] =
       empRef.split("/").toSeq match {
@@ -166,9 +167,4 @@ object EmploymentCollection {
    */
   lazy val employmentCollectionHodReadsHIP: Reads[EmploymentCollection] = readsHip orElseTry readsNps
 
-  /*
-    If toggle switched on then for some reason has to be switched off then we have to cater
-    for payloads in HIP format even though toggle is off.
-   */
-  lazy val employmentCollectionHodReadsNPS: Reads[EmploymentCollection] = readsNps orElseTry readsHip
 }

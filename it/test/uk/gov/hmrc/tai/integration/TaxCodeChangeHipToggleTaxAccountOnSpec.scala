@@ -29,7 +29,7 @@ import play.api.test.Helpers.{GET, contentAsJson, defaultAwaitTimeout, route, st
 import uk.gov.hmrc.http.HeaderNames
 import uk.gov.hmrc.mongoFeatureToggles.model.{FeatureFlag, FeatureFlagName}
 import uk.gov.hmrc.tai.integration.utils.{FileHelper, IntegrationSpec}
-import uk.gov.hmrc.tai.model.admin.{HipToggleEmploymentDetails, HipToggleIabds, HipToggleTaxAccount, RtiCallToggle}
+import uk.gov.hmrc.tai.model.admin.{HipToggleIabds, RtiCallToggle}
 import uk.gov.hmrc.tai.model.domain.income.BasisOperation.Week1Month1
 import uk.gov.hmrc.tai.model.tai.TaxYear
 
@@ -55,12 +55,10 @@ class TaxCodeChangeHipToggleTaxAccountOnSpec extends IntegrationSpec {
     when(mockFeatureFlagService.getAsEitherT(eqTo[FeatureFlagName](RtiCallToggle))).thenReturn(
       EitherT.rightT(FeatureFlag(RtiCallToggle, isEnabled = false))
     )
-    when(mockFeatureFlagService.get(eqTo[FeatureFlagName](HipToggleTaxAccount))).thenReturn(
-      Future.successful(FeatureFlag(HipToggleTaxAccount, isEnabled = true))
-    )
-    when(mockFeatureFlagService.get(eqTo[FeatureFlagName](HipToggleEmploymentDetails))).thenReturn(
-      Future.successful(FeatureFlag(HipToggleTaxAccount, isEnabled = false))
-    )
+
+//    when(mockFeatureFlagService.get(eqTo[FeatureFlagName](HipToggleEmploymentDetails))).thenReturn(
+//      Future.successful(FeatureFlag(HipToggleTaxAccount, isEnabled = false))
+//    )
     when(mockFeatureFlagService.get(eqTo[FeatureFlagName](HipToggleIabds))).thenReturn(
       Future.successful(FeatureFlag(HipToggleIabds, isEnabled = false))
     )
