@@ -27,7 +27,7 @@ import play.api.test.Helpers.{status as getStatus, *}
 import uk.gov.hmrc.http.HeaderNames
 import uk.gov.hmrc.mongoFeatureToggles.model.{FeatureFlag, FeatureFlagName}
 import uk.gov.hmrc.tai.integration.utils.IntegrationSpec
-import uk.gov.hmrc.tai.model.admin.{HipToggleIabds, RtiCallToggle}
+import uk.gov.hmrc.tai.model.admin.RtiCallToggle
 
 import scala.concurrent.Future
 
@@ -45,9 +45,9 @@ class TaxCodeMismatchSpec extends IntegrationSpec {
     when(mockFeatureFlagService.getAsEitherT(eqTo[FeatureFlagName](RtiCallToggle))).thenReturn(
       EitherT.rightT(FeatureFlag(RtiCallToggle, isEnabled = false))
     )
-    when(mockFeatureFlagService.get(eqTo[FeatureFlagName](HipToggleIabds))).thenReturn(
-      Future.successful(FeatureFlag(HipToggleIabds, isEnabled = false))
-    )
+//    when(mockFeatureFlagService.get(eqTo[FeatureFlagName](HipToggleIabds))).thenReturn(
+//      Future.successful(FeatureFlag(HipToggleIabds, isEnabled = false))
+//    )
     ()
 
   }

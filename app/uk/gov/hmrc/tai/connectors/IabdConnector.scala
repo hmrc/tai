@@ -22,20 +22,18 @@ import play.api.http.MimeTypes
 import play.api.libs.json.*
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.*
-import uk.gov.hmrc.mongoFeatureToggles.services.FeatureFlagService
-import uk.gov.hmrc.tai.config.{DesConfig, HipConfig, NpsConfig}
+import uk.gov.hmrc.tai.config.{DesConfig, HipConfig}
 import uk.gov.hmrc.tai.connectors.cache.CachingConnector
 import uk.gov.hmrc.tai.controllers.auth.AuthenticatedRequest
-import uk.gov.hmrc.tai.model.admin.HipToggleIabds
 import uk.gov.hmrc.tai.model.domain.response.{HodUpdateFailure, HodUpdateResponse, HodUpdateSuccess}
 import uk.gov.hmrc.tai.model.enums.APITypes
-import uk.gov.hmrc.tai.model.enums.APITypes.{APITypes, HipIabdUpdateEmployeeExpensesAPI}
+import uk.gov.hmrc.tai.model.enums.APITypes.APITypes
 import uk.gov.hmrc.tai.model.nps.NpsIabdRoot
 import uk.gov.hmrc.tai.model.nps.NpsIabdRoot.format
 import uk.gov.hmrc.tai.model.nps2.IabdType
 import uk.gov.hmrc.tai.model.nps2.IabdType.hipMapping
 import uk.gov.hmrc.tai.model.tai.TaxYear
-import uk.gov.hmrc.tai.model.{IabdUpdateAmount, UpdateHipIabdEmployeeExpense, UpdateIabdEmployeeExpense}
+import uk.gov.hmrc.tai.model.{IabdUpdateAmount, UpdateIabdEmployeeExpense}
 import uk.gov.hmrc.tai.service.SensitiveFormatService
 import uk.gov.hmrc.tai.service.SensitiveFormatService.SensitiveJsValue
 import uk.gov.hmrc.tai.util.HodsSource.NpsSource
@@ -98,10 +96,8 @@ class CachingIabdConnector @Inject() (
 
 class DefaultIabdConnector @Inject() (
   httpHandler: HttpHandler,
-  npsConfig: NpsConfig,
   desConfig: DesConfig,
-  hipConfig: HipConfig,
-  featureFlagService: FeatureFlagService
+  hipConfig: HipConfig
 )(implicit ec: ExecutionContext)
     extends IabdConnector {
 
@@ -142,23 +138,17 @@ class DefaultIabdConnector @Inject() (
     if (taxYear > TaxYear()) {
       Future.successful(JsArray(Seq.empty))
     } else {
-      featureFlagService.get(HipToggleIabds).flatMap { toggle =>
-        val (url, originatorId, extraInfo) =
-          if (toggle.isEnabled) {
-            (
-              s"${hipConfig.baseURL}/iabd/taxpayer/$nino/tax-year/${taxYear.year}",
-              hipConfig.originatorId,
-              Some(Tuple2(hipConfig.clientId, hipConfig.clientSecret))
-            )
-          } else {
-            (s"${npsConfig.baseURL}/person/${nino.nino}/iabds/${taxYear.year}", npsConfig.originatorId, None)
-          }
+      val (url, originatorId, extraInfo) = (
+        s"${hipConfig.baseURL}/iabd/taxpayer/$nino/tax-year/${taxYear.year}",
+        hipConfig.originatorId,
+        Some(Tuple2(hipConfig.clientId, hipConfig.clientSecret))
+      )
 
-        httpHandler.getFromApi(url, APITypes.NpsIabdAllAPI, headersForIabds(originatorId, hc, extraInfo)).recover {
-          case _: NotFoundException =>
-            Json.toJson(Json.obj("error" -> "NOT_FOUND"))
-        }
+      httpHandler.getFromApi(url, APITypes.NpsIabdAllAPI, headersForIabds(originatorId, hc, extraInfo)).recover {
+        case _: NotFoundException =>
+          Json.toJson(Json.obj("error" -> "NOT_FOUND"))
       }
+
     }
 
   override def updateTaxCodeAmount(
@@ -219,17 +209,17 @@ class DefaultIabdConnector @Inject() (
       "ETag"                 -> version.toString
     )
 
-  private def headersForHipUpdateExpensesData(version: Int)(implicit hc: HeaderCarrier): Seq[(String, String)] =
-    Seq(
-      "Environment"          -> hipConfig.environment,
-      "Authorization"        -> hipConfig.authorization,
-      "Content-Type"         -> TaiConstants.contentType,
-      HeaderNames.xSessionId -> hc.sessionId.fold("-")(_.value),
-      HeaderNames.xRequestId -> hc.requestId.fold("-")(_.value),
-      "CorrelationId"        -> UUID.randomUUID().toString,
-      "Originator-Id"        -> hipConfig.originatorId,
-      "ETag"                 -> version.toString
-    )
+//  private def headersForHipUpdateExpensesData(version: Int)(implicit hc: HeaderCarrier): Seq[(String, String)] =
+//    Seq(
+//      "Environment"          -> hipConfig.environment,
+//      "Authorization"        -> hipConfig.authorization,
+//      "Content-Type"         -> TaiConstants.contentType,
+//      HeaderNames.xSessionId -> hc.sessionId.fold("-")(_.value),
+//      HeaderNames.xRequestId -> hc.requestId.fold("-")(_.value),
+//      "CorrelationId"        -> UUID.randomUUID().toString,
+//      "Originator-Id"        -> hipConfig.originatorId,
+//      "ETag"                 -> version.toString
+//    )
 
   override def updateExpensesData(
     nino: Nino,
@@ -239,23 +229,23 @@ class DefaultIabdConnector @Inject() (
     expensesData: UpdateIabdEmployeeExpense,
     apiType: APITypes
   )(implicit hc: HeaderCarrier, request: AuthenticatedRequest[_]): Future[HttpResponse] =
-    featureFlagService.get(HipToggleIabds).flatMap { _ =>
-      if (false) {
-        httpHandler.putToApiHttpClientV2[UpdateHipIabdEmployeeExpense](
-          s"${hipConfig.baseURL}/iabd/taxpayer/$nino/tax-year/$year/type/${IabdType.hipMapping(iabdType)}",
-          UpdateHipIabdEmployeeExpense(version, expensesData.grossAmount),
-          HipIabdUpdateEmployeeExpensesAPI,
-          headersForHipUpdateExpensesData(version)
-        )
-      } else {
-        httpHandler.postToApi[List[UpdateIabdEmployeeExpense]](
-          s"${desConfig.baseURL}/pay-as-you-earn/individuals/$nino/iabds/$year/$iabdType",
-          List(expensesData),
-          apiType,
-          headersForUpdateExpensesData(version, desConfig.daPtaOriginatorId)
-        )
-      }
-    }
+//    featureFlagService.get(HipToggleIabds).flatMap { _ =>
+//      if (false) {
+//        httpHandler.putToApiHttpClientV2[UpdateHipIabdEmployeeExpense](
+//          s"${hipConfig.baseURL}/iabd/taxpayer/$nino/tax-year/$year/type/${IabdType.hipMapping(iabdType)}",
+//          UpdateHipIabdEmployeeExpense(version, expensesData.grossAmount),
+//          HipIabdUpdateEmployeeExpensesAPI,
+//          headersForHipUpdateExpensesData(version)
+//        )
+//      } else {
+    httpHandler.postToApi[List[UpdateIabdEmployeeExpense]](
+      s"${desConfig.baseURL}/pay-as-you-earn/individuals/$nino/iabds/$year/$iabdType",
+      List(expensesData),
+      apiType,
+      headersForUpdateExpensesData(version, desConfig.daPtaOriginatorId)
+    )
+//      }
+//    }
 }
 
 trait IabdConnector {

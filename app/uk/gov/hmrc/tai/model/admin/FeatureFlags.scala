@@ -16,7 +16,6 @@
 
 package uk.gov.hmrc.tai.model.admin
 
-import uk.gov.hmrc.mongoFeatureToggles.model.Environment.{Environment, Production}
 import uk.gov.hmrc.mongoFeatureToggles.model.FeatureFlagName
 
 case object RtiCallToggle extends FeatureFlagName {
@@ -24,12 +23,4 @@ case object RtiCallToggle extends FeatureFlagName {
   override val description: Option[String] = Some(
     "Enable/disable toggle for RTI in the RtiConnector, controlling access to the API: '/rti/individual/payments/nino/:nino'"
   )
-}
-
-case object HipToggleIabds extends FeatureFlagName {
-  override val name: String = "hip-toggle-iabds"
-  override val description: Option[String] = Some(
-    "Enable/disable use of HIP instead of Squid for the Iabds details API"
-  )
-  override val lockedEnvironments: Seq[Environment] = Seq(Production)
 }

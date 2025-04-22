@@ -22,8 +22,8 @@ import uk.gov.hmrc.tai.model.admin.*
 class ApplicationStartUp {
   FeatureFlagNamesLibrary.addFlags(
     List(
-      RtiCallToggle,
-      HipToggleIabds
+      RtiCallToggle // ,
+      // HipToggleIabds
     )
   )
 }

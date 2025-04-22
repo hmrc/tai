@@ -46,9 +46,9 @@ class UpdateIncomeSpec extends IntegrationSpec {
     when(mockFeatureFlagService.getAsEitherT(eqTo[FeatureFlagName](RtiCallToggle))).thenReturn(
       EitherT.rightT(FeatureFlag(RtiCallToggle, isEnabled = false))
     )
-    when(mockFeatureFlagService.get(eqTo[FeatureFlagName](HipToggleIabds))).thenReturn(
-      Future.successful(FeatureFlag(HipToggleIabds, isEnabled = false))
-    )
+//    when(mockFeatureFlagService.get(eqTo[FeatureFlagName](HipToggleIabds))).thenReturn(
+//      Future.successful(FeatureFlag(HipToggleIabds, isEnabled = false))
+//    )
     ()
   }
 
