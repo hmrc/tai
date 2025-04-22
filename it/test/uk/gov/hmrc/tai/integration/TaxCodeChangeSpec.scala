@@ -55,10 +55,6 @@ class TaxCodeChangeSpec extends IntegrationSpec {
     when(mockFeatureFlagService.getAsEitherT(eqTo[FeatureFlagName](RtiCallToggle))).thenReturn(
       EitherT.rightT(FeatureFlag(RtiCallToggle, isEnabled = false))
     )
-
-//    when(mockFeatureFlagService.get(eqTo[FeatureFlagName](HipToggleIabds))).thenReturn(
-//      Future.successful(FeatureFlag(HipToggleIabds, isEnabled = false))
-//    )
     ()
 
   }
@@ -112,15 +108,10 @@ class TaxCodeChangeSpec extends IntegrationSpec {
           .replace("<cyDate>", TaxYear().start.plusMonths(1).toString)
           .replace("<cyYear>", TaxYear().start.getYear.toString)
 
-        val iabds = FileHelper
-          .loadFile("nino1/iabdsNps.json")
-          .replace("<cyDate>", TaxYear().start.plusMonths(1).format(DateTimeFormatter.ofPattern("dd/MM/yyyy")))
-          .replace("<cyYear>", TaxYear().start.getYear.toString)
-
         server.stubFor(get(urlEqualTo(desTaxCodeHistoryUrl)).willReturn(ok(taxCodeHistory)))
         server.stubFor(get(urlEqualTo(hipTaxAccountUrl)).willReturn(ok(taxAccount)))
         server.stubFor(get(urlEqualTo(npsTaxAccountUrl)).willReturn(ok(taxAccountNps)))
-        server.stubFor(get(urlEqualTo(npsIabdsUrl)).willReturn(ok(iabds)))
+        server.stubFor(get(urlEqualTo(hipIabdsUrl)).willReturn(ok(hipIabdsJson)))
 
         val result = route(fakeApplication(), requestHasChanged).get
         getStatus(result) mustBe OK
@@ -141,14 +132,9 @@ class TaxCodeChangeSpec extends IntegrationSpec {
           .replace("<cyYear>", TaxYear().start.getYear.toString)
           .replace(""""basisOfOperation":"Cumulative",""", """"basisOfOperation":"Week1/Month1",""")
 
-        val iabds = FileHelper
-          .loadFile("nino1/iabdsNps.json")
-          .replace("<cyDate>", TaxYear().start.plusMonths(1).format(DateTimeFormatter.ofPattern("dd/MM/yyyy")))
-          .replace("<cyYear>", TaxYear().start.getYear.toString)
-
         server.stubFor(get(urlEqualTo(desTaxCodeHistoryUrl)).willReturn(ok(taxCodeHistory)))
         server.stubFor(get(urlEqualTo(hipTaxAccountUrl)).willReturn(ok(taxAccount)))
-        server.stubFor(get(urlEqualTo(npsIabdsUrl)).willReturn(ok(iabds)))
+        server.stubFor(get(urlEqualTo(hipIabdsUrl)).willReturn(ok(hipIabdsJson)))
 
         val result = route(fakeApplication(), requestHasChanged).get
         getStatus(result) mustBe OK
@@ -178,14 +164,9 @@ class TaxCodeChangeSpec extends IntegrationSpec {
           .replace("<cyDate>", TaxYear().start.plusMonths(1).toString)
           .replace("<cyYear>", TaxYear().start.getYear.toString)
 
-        val iabds = FileHelper
-          .loadFile("nino1/iabdsNps.json")
-          .replace("<cyDate>", TaxYear().start.plusMonths(1).format(DateTimeFormatter.ofPattern("dd/MM/yyyy")))
-          .replace("<cyYear>", TaxYear().start.getYear.toString)
-
         server.stubFor(get(urlEqualTo(desTaxCodeHistoryUrl)).willReturn(ok(newTaxCodeHistory)))
         server.stubFor(get(urlEqualTo(hipTaxAccountUrl)).willReturn(ok(taxAccount)))
-        server.stubFor(get(urlEqualTo(npsIabdsUrl)).willReturn(ok(iabds)))
+        server.stubFor(get(urlEqualTo(hipIabdsUrl)).willReturn(ok(hipIabdsJson)))
 
         val result = route(fakeApplication(), requestHasChanged).get
         getStatus(result) mustBe OK
@@ -205,14 +186,9 @@ class TaxCodeChangeSpec extends IntegrationSpec {
           .replace("<cyDate>", TaxYear().start.plusMonths(1).toString)
           .replace("<cyYear>", TaxYear().start.getYear.toString)
 
-        val iabds = FileHelper
-          .loadFile("nino1/iabdsNps.json")
-          .replace("<cyDate>", TaxYear().start.plusMonths(1).format(DateTimeFormatter.ofPattern("dd/MM/yyyy")))
-          .replace("<cyYear>", TaxYear().start.getYear.toString)
-
         server.stubFor(get(urlEqualTo(desTaxCodeHistoryUrl)).willReturn(ok(taxCodeHistory)))
         server.stubFor(get(urlEqualTo(hipTaxAccountUrl)).willReturn(ok(taxAccount)))
-        server.stubFor(get(urlEqualTo(npsIabdsUrl)).willReturn(ok(iabds)))
+        server.stubFor(get(urlEqualTo(hipIabdsUrl)).willReturn(ok(hipIabdsJson)))
 
         val result = route(fakeApplication(), requestHasChanged).get
         getStatus(result) mustBe OK

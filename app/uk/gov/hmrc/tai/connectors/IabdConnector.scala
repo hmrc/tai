@@ -143,7 +143,6 @@ class DefaultIabdConnector @Inject() (
         hipConfig.originatorId,
         Some(Tuple2(hipConfig.clientId, hipConfig.clientSecret))
       )
-
       httpHandler.getFromApi(url, APITypes.NpsIabdAllAPI, headersForIabds(originatorId, hc, extraInfo)).recover {
         case _: NotFoundException =>
           Json.toJson(Json.obj("error" -> "NOT_FOUND"))
@@ -167,7 +166,6 @@ class DefaultIabdConnector @Inject() (
         "gov-uk-originator-id" -> hipConfig.originatorId,
         "correlationId"        -> getUuid
       )
-    println("\n\n***11111")
     val iabdTypeArgument = URLEncoder.encode(hipMapping(iabdType), "UTF-8").replace("+", "%20")
 
     httpHandler

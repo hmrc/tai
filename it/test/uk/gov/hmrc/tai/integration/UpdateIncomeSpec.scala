@@ -39,16 +39,13 @@ class UpdateIncomeSpec extends IntegrationSpec {
     super.beforeEach()
 
     server.stubFor(get(urlEqualTo(hipTaxAccountUrl)).willReturn(ok(taxAccountHipJson)))
-    server.stubFor(get(urlEqualTo(npsIabdsUrl)).willReturn(ok(npsIabdsJson)))
+    server.stubFor(get(urlEqualTo(hipIabdsUrl)).willReturn(ok(hipIabdsJson)))
     server.stubFor(get(urlEqualTo(cidEtagUrl)).willReturn(ok(etagJson.toString)))
 
     reset(mockFeatureFlagService)
     when(mockFeatureFlagService.getAsEitherT(eqTo[FeatureFlagName](RtiCallToggle))).thenReturn(
       EitherT.rightT(FeatureFlag(RtiCallToggle, isEnabled = false))
     )
-//    when(mockFeatureFlagService.get(eqTo[FeatureFlagName](HipToggleIabds))).thenReturn(
-//      Future.successful(FeatureFlag(HipToggleIabds, isEnabled = false))
-//    )
     ()
   }
 
@@ -68,47 +65,46 @@ class UpdateIncomeSpec extends IntegrationSpec {
   "Update Income" must {
     "return an OK response for a valid user" in {
       server.stubFor(put(putNpsIabdsUrl).willReturn(ok()))
-
       val result = route(fakeApplication(), request)
 
       result.map(getStatus) mustBe Some(OK)
     }
 
-//    List(BAD_REQUEST, NOT_FOUND, IM_A_TEAPOT, INTERNAL_SERVER_ERROR, SERVICE_UNAVAILABLE).foreach { httpStatus =>
-//      s"return INTERNAL_SERVER_ERROR when the NPS IABDs POST fails with status code $httpStatus" in {
-//        server.stubFor(put(putNpsIabdsUrl).willReturn(aResponse().withStatus(httpStatus)))
-//
-//        val result = route(fakeApplication(), request)
-//
-//        result.map(getStatus) mustBe Some(INTERNAL_SERVER_ERROR)
-//      }
-//    }
-//
-//    List(BAD_REQUEST, NOT_FOUND, IM_A_TEAPOT, INTERNAL_SERVER_ERROR, SERVICE_UNAVAILABLE).foreach { httpStatus =>
-//      s"return INTERNAL_SERVER_ERROR for CID API failures with status code $httpStatus" in {
-//        server.stubFor(get(urlEqualTo(cidEtagUrl)).willReturn(aResponse().withStatus(httpStatus)))
-//
-//        val result = route(fakeApplication(), request)
-//        result.map(getStatus) mustBe Some(INTERNAL_SERVER_ERROR)
-//      }
-//    }
-//
-//    List(BAD_REQUEST, NOT_FOUND, IM_A_TEAPOT, INTERNAL_SERVER_ERROR, SERVICE_UNAVAILABLE).foreach { httpStatus =>
-//      s"return INTERNAL_SERVER_ERROR for Tax Account API failures with status code $httpStatus" in {
-//        server.stubFor(get(urlEqualTo(hipTaxAccountUrl)).willReturn(aResponse().withStatus(httpStatus)))
-//
-//        val result = route(fakeApplication(), request)
-//        result.map(getStatus) mustBe Some(INTERNAL_SERVER_ERROR)
-//      }
-//    }
-//
-//    List(BAD_REQUEST, NOT_FOUND, IM_A_TEAPOT, INTERNAL_SERVER_ERROR, SERVICE_UNAVAILABLE).foreach { httpStatus =>
-//      s"return INTERNAL_SERVER_ERROR for IABDs API failures with status code $httpStatus" in {
-//        server.stubFor(get(urlEqualTo(npsIabdsUrl)).willReturn(aResponse().withStatus(httpStatus)))
-//
-//        val result = route(fakeApplication(), request)
-//        result.map(getStatus) mustBe Some(INTERNAL_SERVER_ERROR)
-//      }
-//    }
+    List(BAD_REQUEST, NOT_FOUND, IM_A_TEAPOT, INTERNAL_SERVER_ERROR, SERVICE_UNAVAILABLE).foreach { httpStatus =>
+      s"return INTERNAL_SERVER_ERROR when the NPS IABDs POST fails with status code $httpStatus" in {
+        server.stubFor(put(putNpsIabdsUrl).willReturn(aResponse().withStatus(httpStatus)))
+
+        val result = route(fakeApplication(), request)
+
+        result.map(getStatus) mustBe Some(INTERNAL_SERVER_ERROR)
+      }
+    }
+
+    List(BAD_REQUEST, NOT_FOUND, IM_A_TEAPOT, INTERNAL_SERVER_ERROR, SERVICE_UNAVAILABLE).foreach { httpStatus =>
+      s"return INTERNAL_SERVER_ERROR for CID API failures with status code $httpStatus" in {
+        server.stubFor(get(urlEqualTo(cidEtagUrl)).willReturn(aResponse().withStatus(httpStatus)))
+
+        val result = route(fakeApplication(), request)
+        result.map(getStatus) mustBe Some(INTERNAL_SERVER_ERROR)
+      }
+    }
+
+    List(BAD_REQUEST, NOT_FOUND, IM_A_TEAPOT, INTERNAL_SERVER_ERROR, SERVICE_UNAVAILABLE).foreach { httpStatus =>
+      s"return INTERNAL_SERVER_ERROR for Tax Account API failures with status code $httpStatus" in {
+        server.stubFor(get(urlEqualTo(hipTaxAccountUrl)).willReturn(aResponse().withStatus(httpStatus)))
+
+        val result = route(fakeApplication(), request)
+        result.map(getStatus) mustBe Some(INTERNAL_SERVER_ERROR)
+      }
+    }
+
+    List(BAD_REQUEST, NOT_FOUND, IM_A_TEAPOT, INTERNAL_SERVER_ERROR, SERVICE_UNAVAILABLE).foreach { httpStatus =>
+      s"return INTERNAL_SERVER_ERROR for IABDs API failures with status code $httpStatus" in {
+        server.stubFor(get(urlEqualTo(npsIabdsUrl)).willReturn(aResponse().withStatus(httpStatus)))
+
+        val result = route(fakeApplication(), request)
+        result.map(getStatus) mustBe Some(INTERNAL_SERVER_ERROR)
+      }
+    }
   }
 }

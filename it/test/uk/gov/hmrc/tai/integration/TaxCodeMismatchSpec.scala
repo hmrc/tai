@@ -37,7 +37,7 @@ class TaxCodeMismatchSpec extends IntegrationSpec {
     super.beforeEach()
 
     server.stubFor(get(urlEqualTo(hipTaxAccountUrl)).willReturn(ok(taxAccountHipJson)))
-    server.stubFor(get(urlEqualTo(npsIabdsUrl)).willReturn(ok(npsIabdsJson)))
+    server.stubFor(get(urlEqualTo(hipIabdsUrl)).willReturn(ok(hipIabdsJson)))
     server.stubFor(get(urlEqualTo(desTaxCodeHistoryUrl)).willReturn(ok(taxCodeHistoryJson)))
     server.stubFor(get(urlEqualTo(npsEmploymentUrl)).willReturn(ok(employmentJson)))
     server.stubFor(get(urlEqualTo(rtiUrl)).willReturn(ok(rtiJson)))
@@ -45,9 +45,6 @@ class TaxCodeMismatchSpec extends IntegrationSpec {
     when(mockFeatureFlagService.getAsEitherT(eqTo[FeatureFlagName](RtiCallToggle))).thenReturn(
       EitherT.rightT(FeatureFlag(RtiCallToggle, isEnabled = false))
     )
-//    when(mockFeatureFlagService.get(eqTo[FeatureFlagName](HipToggleIabds))).thenReturn(
-//      Future.successful(FeatureFlag(HipToggleIabds, isEnabled = false))
-//    )
     ()
 
   }
@@ -67,8 +64,6 @@ class TaxCodeMismatchSpec extends IntegrationSpec {
 
       List(500, 501, 502, 503, 504).foreach { status =>
         s"return $status when we receive $status downstream" in {
-          val npsIabdsUrl = s"/nps-hod-service/services/nps/person/$nino/iabds/$year"
-
           server.stubFor(get(urlEqualTo(hipTaxAccountUrl)).willReturn(ok(taxAccountHipJson)))
           val npsEmploymentUrl = s"/nps-hod-service/services/nps/person/$nino/employment/$year"
           server.stubFor(get(urlEqualTo(npsEmploymentUrl)).willReturn(ok(employmentJson)))
@@ -80,7 +75,7 @@ class TaxCodeMismatchSpec extends IntegrationSpec {
             .withHeaders(HeaderNames.xSessionId -> generateSessionId)
             .withHeaders(HeaderNames.authorisation -> bearerToken)
 
-          server.stubFor(get(urlEqualTo(npsIabdsUrl)).willReturn(aResponse().withStatus(status)))
+          server.stubFor(get(urlEqualTo(hipIabdsUrl)).willReturn(aResponse().withStatus(status)))
           val result = route(fakeApplication(), request)
           result.map(getStatus) mustBe Some(BAD_GATEWAY)
         }
@@ -88,8 +83,6 @@ class TaxCodeMismatchSpec extends IntegrationSpec {
 
       List(400, 401, 403, 409, 412).foreach { status =>
         s"return $status when we receive $status downstream" in {
-          val npsIabdsUrl = s"/nps-hod-service/services/nps/person/$nino/iabds/$year"
-
           server.stubFor(get(urlEqualTo(hipTaxAccountUrl)).willReturn(ok(taxAccountHipJson)))
           val npsEmploymentUrl = s"/nps-hod-service/services/nps/person/$nino/employment/$year"
           server.stubFor(get(urlEqualTo(npsEmploymentUrl)).willReturn(ok(employmentJson)))
@@ -101,15 +94,13 @@ class TaxCodeMismatchSpec extends IntegrationSpec {
             .withHeaders(HeaderNames.xSessionId -> generateSessionId)
             .withHeaders(HeaderNames.authorisation -> bearerToken)
 
-          server.stubFor(get(urlEqualTo(npsIabdsUrl)).willReturn(aResponse().withStatus(status)))
+          server.stubFor(get(urlEqualTo(hipIabdsUrl)).willReturn(aResponse().withStatus(status)))
           val result = route(fakeApplication(), request)
           result.map(getStatus) mustBe Some(INTERNAL_SERVER_ERROR)
         }
       }
 
       "return 404 when we receive 404 from downstream" in {
-        val npsIabdsUrl = s"/nps-hod-service/services/nps/person/$nino/iabds/$year"
-
         server.stubFor(get(urlEqualTo(hipTaxAccountUrl)).willReturn(ok(taxAccountHipJson)))
         val npsEmploymentUrl = s"/nps-hod-service/services/nps/person/$nino/employment/$year"
         server.stubFor(get(urlEqualTo(npsEmploymentUrl)).willReturn(ok(employmentJson)))
@@ -121,7 +112,7 @@ class TaxCodeMismatchSpec extends IntegrationSpec {
           .withHeaders(HeaderNames.xSessionId -> generateSessionId)
           .withHeaders(HeaderNames.authorisation -> bearerToken)
 
-        server.stubFor(get(urlEqualTo(npsIabdsUrl)).willReturn(aResponse().withStatus(NOT_FOUND)))
+        server.stubFor(get(urlEqualTo(hipIabdsUrl)).willReturn(aResponse().withStatus(NOT_FOUND)))
         val result = route(fakeApplication(), request)
         result.map(getStatus) mustBe Some(NOT_FOUND)
       }
