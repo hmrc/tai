@@ -17,13 +17,17 @@
 package uk.gov.hmrc.tai.connectors
 
 import com.github.tomakehurst.wiremock.client.WireMock.*
+import org.mockito.ArgumentMatchers.eq as eqTo
+import org.mockito.Mockito.when
 import play.api.http.Status.*
 import play.api.libs.json.*
 import play.api.mvc.AnyContentAsEmpty
 import play.api.test.FakeRequest
 import uk.gov.hmrc.http.{BadRequestException, HeaderNames, HttpException, InternalServerException, NotFoundException}
+import uk.gov.hmrc.mongoFeatureToggles.model.{FeatureFlag, FeatureFlagName}
 import uk.gov.hmrc.tai.config.{DesConfig, HipConfig}
 import uk.gov.hmrc.tai.controllers.auth.AuthenticatedRequest
+import uk.gov.hmrc.tai.model.admin.HipToggleIabdsUpdateExpenses
 import uk.gov.hmrc.tai.model.domain.IabdDetails
 import uk.gov.hmrc.tai.model.domain.response.{HodUpdateFailure, HodUpdateSuccess}
 import uk.gov.hmrc.tai.model.enums.APITypes
@@ -34,8 +38,8 @@ import uk.gov.hmrc.tai.model.{IabdUpdateAmount, UpdateIabdEmployeeExpense}
 import uk.gov.hmrc.tai.util.TaiConstants
 
 import java.time.LocalDate
-import scala.concurrent.Await
 import scala.concurrent.duration.*
+import scala.concurrent.{Await, Future}
 import scala.language.postfixOps
 
 class IabdConnectorSpec extends ConnectorBaseSpec {
@@ -50,7 +54,8 @@ class IabdConnectorSpec extends ConnectorBaseSpec {
   def sut(): IabdConnector = new DefaultIabdConnector(
     inject[HttpHandler],
     inject[DesConfig],
-    hipConfig
+    hipConfig,
+    mockFeatureFlagService
   )
   private val iabdTypeArgument: String = hipMapping(iabdType)
   val taxYear: TaxYear = TaxYear()
@@ -105,6 +110,14 @@ class IabdConnectorSpec extends ConnectorBaseSpec {
   val updateAmount: List[IabdUpdateAmount] = List(IabdUpdateAmount(Some(1), 20000))
 
   implicit lazy val iabdFormats: Format[IabdUpdateAmount] = IabdUpdateAmount.formats
+
+  override def beforeEach(): Unit = {
+    super.beforeEach()
+    when(mockFeatureFlagService.get(eqTo[FeatureFlagName](HipToggleIabdsUpdateExpenses))).thenReturn(
+      Future.successful(FeatureFlag(HipToggleIabdsUpdateExpenses, isEnabled = false))
+    )
+    ()
+  }
 
   "iabds" when {
     "toggle to use HIP" must {

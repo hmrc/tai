@@ -24,3 +24,10 @@ case object RtiCallToggle extends FeatureFlagName {
     "Enable/disable toggle for RTI in the RtiConnector, controlling access to the API: '/rti/individual/payments/nino/:nino'"
   )
 }
+
+case object HipToggleIabdsUpdateExpenses extends FeatureFlagName {
+  override val name: String = "hip-iabds-update-expenses"
+  override val description: Option[String] = Some(
+    "Enable/disable toggle for IABDS update expenses PUT"
+  )
+}
