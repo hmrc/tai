@@ -18,9 +18,9 @@ package uk.gov.hmrc.tai.model.api
 
 import play.api.libs.json.*
 import play.api.libs.json.Reads.localDateReads
+import uk.gov.hmrc.tai.model.domain.*
 import uk.gov.hmrc.tai.model.domain.Employment.numberChecked
 import uk.gov.hmrc.tai.model.domain.income.TaxCodeIncomeStatus
-import uk.gov.hmrc.tai.model.domain.*
 import uk.gov.hmrc.tai.util.JsonHelper.*
 
 import java.time.LocalDate
@@ -137,12 +137,7 @@ object EmploymentCollection {
     }
   }
 
-  private def readsNps: Reads[EmploymentCollection] = { (json: JsValue) =>
-    implicit val rds: Reads[Employment] = employmentHodNpsReads
-    JsSuccess(EmploymentCollection(json.as[Seq[Employment]], None))
-  }
-
-  private def readsHip: Reads[EmploymentCollection] = { (json: JsValue) =>
+  lazy val employmentCollectionHodReadsHIP: Reads[EmploymentCollection] = { (json: JsValue) =>
     val readsSeqEmployment = json match {
       case _: JsArray => Reads[Seq[Employment]](_ => JsError("Unexpected array - Squid payload?"))
       case _ =>
@@ -156,11 +151,5 @@ object EmploymentCollection {
       EmploymentCollection(seqEmployment, None)
     }
   }
-
-  /*
-    If toggle switched on then we still need to cater for payloads in NPS format which may still be
-    present in the cache.
-   */
-  lazy val employmentCollectionHodReadsHIP: Reads[EmploymentCollection] = readsHip orElseTry readsNps
 
 }
