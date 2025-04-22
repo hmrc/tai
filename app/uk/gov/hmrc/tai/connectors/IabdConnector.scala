@@ -167,7 +167,7 @@ class DefaultIabdConnector @Inject() (
         "gov-uk-originator-id" -> hipConfig.originatorId,
         "correlationId"        -> getUuid
       )
-
+    println("\n\n***11111")
     val iabdTypeArgument = URLEncoder.encode(hipMapping(iabdType), "UTF-8").replace("+", "%20")
 
     httpHandler

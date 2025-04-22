@@ -93,7 +93,9 @@ class IncomeController @Inject() (
 
   def updateTaxCodeIncome(nino: Nino, snapshotId: TaxYear, employmentId: Int): Action[JsValue] =
     authentication.authWithUserDetails.async(parse.json) { implicit request =>
+      println("\n\n\nOOOOOOOOO1")
       withJsonBody[UpdateTaxCodeIncomeRequest] { updateTaxCodeIncomeRequest =>
+        println("\n\n\nOOOOOOOOO2")
         incomeService.updateTaxCodeIncome(nino, snapshotId, employmentId, updateTaxCodeIncomeRequest.amount) map {
           case IncomeUpdateSuccess         => Ok
           case InvalidAmount(message)      => BadRequest(message)
