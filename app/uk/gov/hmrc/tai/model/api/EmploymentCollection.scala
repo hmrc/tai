@@ -96,14 +96,11 @@ object EmploymentCollection {
     private val dateReadsFromHod: Reads[LocalDate] = localDateReads("yyyy-MM-dd")
 
     override def reads(json: JsValue): JsResult[Employment] = {
-
       val employerReference = numberChecked((json \ "employerReference").as[String])
-
       val name = (json \ "payeSchemeOperatorName").as[String]
       val payrollNumber = (json \ "worksNumber").asOpt[String]
       val startDate = (json \ "startDate").as[LocalDate](dateReadsFromHod)
       val endDate = (json \ "endDate").asOpt[LocalDate](dateReadsFromHod)
-
       splitEmpRef(employerReference) match {
         case JsSuccess(Tuple2(taxDistrictNumber, payeNumber), _) =>
           val sequenceNumber = (json \ "employmentSequenceNumber").as[Int]
@@ -137,7 +134,6 @@ object EmploymentCollection {
           )
         case errors @ JsError(_) => errors
       }
-
     }
   }
 
