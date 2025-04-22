@@ -113,14 +113,6 @@ class IabdConnectorSpec extends ConnectorBaseSpec {
 
   implicit lazy val iabdFormats: Format[IabdUpdateAmount] = IabdUpdateAmount.formats
 
-  override def beforeEach(): Unit = {
-    super.beforeEach()
-//    when(mockFeatureFlagService.get(eqTo[FeatureFlagName](HipToggleEmploymentIabds))).thenReturn(
-//      Future.successful(FeatureFlag(HipToggleEmploymentIabds, isEnabled = false))
-//    )
-    ()
-  }
-
   "iabds" when {
     "toggled to use NPS" must {
       "return IABD json" in {
