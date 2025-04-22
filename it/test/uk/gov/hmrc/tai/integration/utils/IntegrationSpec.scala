@@ -39,7 +39,7 @@ import uk.gov.hmrc.tai.model.admin.*
 import uk.gov.hmrc.tai.model.tai.TaxYear
 
 import java.util.UUID
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Random
 
 trait IntegrationSpec
@@ -88,9 +88,9 @@ trait IntegrationSpec
         .willReturn(ok("{\"code\": \"ACCESS_GRANTED\", \"message\": \"Access granted\"}"))
     )
 
-//    when(mockFeatureFlagService.get(eqTo[FeatureFlagName](HipToggleIabds))).thenReturn(
-//      Future.successful(FeatureFlag(HipToggleIabds, isEnabled = false))
-//    )
+    when(mockFeatureFlagService.get(eqTo[FeatureFlagName](HipToggleIabdsUpdateExpenses))).thenReturn(
+      Future.successful(FeatureFlag(HipToggleIabdsUpdateExpenses, isEnabled = false))
+    )
 
     when(mockFeatureFlagService.getAsEitherT(eqTo[FeatureFlagName](RtiCallToggle))).thenReturn(
       EitherT.rightT(FeatureFlag(RtiCallToggle, isEnabled = false))
