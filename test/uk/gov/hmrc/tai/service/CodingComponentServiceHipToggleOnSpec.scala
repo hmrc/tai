@@ -16,11 +16,9 @@
 
 package uk.gov.hmrc.tai.service
 
-import org.mockito.ArgumentMatchers.eq as eqTo
 import org.mockito.ArgumentMatchers.{any, eq as meq}
 import org.mockito.Mockito.{reset, when}
 import play.api.libs.json.*
-import uk.gov.hmrc.mongoFeatureToggles.model.{FeatureFlag, FeatureFlagName}
 import uk.gov.hmrc.mongoFeatureToggles.services.FeatureFlagService
 import uk.gov.hmrc.tai.connectors.TaxAccountConnector
 import uk.gov.hmrc.tai.model.domain.*
