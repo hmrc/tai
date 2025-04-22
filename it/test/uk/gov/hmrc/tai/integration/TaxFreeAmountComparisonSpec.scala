@@ -31,7 +31,7 @@ import uk.gov.hmrc.tai.model.admin.RtiCallToggle
 
 import scala.concurrent.Future
 
-class TaxFreeAmountComparisonHipToggleTaxAccountOnSpec extends IntegrationSpec {
+class TaxFreeAmountComparisonSpec extends IntegrationSpec {
 
   val apiUrl = s"/tai/$nino/tax-account/tax-free-amount-comparison"
   def request: FakeRequest[AnyContentAsEmpty.type] = FakeRequest(GET, apiUrl)
@@ -45,9 +45,6 @@ class TaxFreeAmountComparisonHipToggleTaxAccountOnSpec extends IntegrationSpec {
     when(mockFeatureFlagService.getAsEitherT(eqTo[FeatureFlagName](RtiCallToggle))).thenReturn(
       EitherT.rightT(FeatureFlag(RtiCallToggle, isEnabled = false))
     )
-//    when(mockFeatureFlagService.get(eqTo[FeatureFlagName](HipToggleEmploymentDetails))).thenReturn(
-//      Future.successful(FeatureFlag(HipToggleTaxAccount, isEnabled = false))
-//    )
     ()
   }
 

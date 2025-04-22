@@ -29,7 +29,7 @@ import uk.gov.hmrc.tai.util.BaseSpec
 import scala.concurrent.Future
 import scala.io.Source
 
-class CodingComponentServiceHipToggleOnSpec extends BaseSpec {
+class CodingComponentServiceSpec extends BaseSpec {
 
   private val basePath = "test/resources/data/TaxAccount/CodingComponentService/hip/"
   private def readFile(fileName: String): JsValue = {

@@ -31,7 +31,7 @@ import uk.gov.hmrc.tai.model.admin.RtiCallToggle
 
 import scala.concurrent.Future
 
-class GetEmploymentsHipToggleEmploymentDetailsOnSpec extends IntegrationSpec {
+class GetEmploymentsSpec extends IntegrationSpec {
 
   override def beforeEach(): Unit = {
     reset(mockFeatureFlagService)

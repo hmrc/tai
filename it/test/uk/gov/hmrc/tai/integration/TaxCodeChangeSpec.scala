@@ -36,7 +36,7 @@ import uk.gov.hmrc.tai.model.tai.TaxYear
 import java.time.format.DateTimeFormatter
 import scala.concurrent.Future
 
-class TaxCodeChangeHipToggleTaxAccountOnSpec extends IntegrationSpec {
+class TaxCodeChangeSpec extends IntegrationSpec {
 
   val apiUrl = s"/tai/$nino/tax-account/tax-code-change"
   def request: FakeRequest[AnyContentAsEmpty.type] = FakeRequest(GET, apiUrl)
@@ -55,10 +55,7 @@ class TaxCodeChangeHipToggleTaxAccountOnSpec extends IntegrationSpec {
     when(mockFeatureFlagService.getAsEitherT(eqTo[FeatureFlagName](RtiCallToggle))).thenReturn(
       EitherT.rightT(FeatureFlag(RtiCallToggle, isEnabled = false))
     )
-
-//    when(mockFeatureFlagService.get(eqTo[FeatureFlagName](HipToggleEmploymentDetails))).thenReturn(
-//      Future.successful(FeatureFlag(HipToggleTaxAccount, isEnabled = false))
-//    )
+    
     when(mockFeatureFlagService.get(eqTo[FeatureFlagName](HipToggleIabds))).thenReturn(
       Future.successful(FeatureFlag(HipToggleIabds, isEnabled = false))
     )

@@ -30,7 +30,7 @@ import uk.gov.hmrc.tai.audit.Auditor
 import uk.gov.hmrc.tai.connectors.{CitizenDetailsConnector, TaxAccountConnector}
 import uk.gov.hmrc.tai.controllers.auth.AuthenticatedRequest
 import uk.gov.hmrc.tai.model.ETag
-import uk.gov.hmrc.tai.model.domain.*
+import uk.gov.hmrc.tai.model.domain.{PensionIncome, *}
 import uk.gov.hmrc.tai.model.domain.income.*
 import uk.gov.hmrc.tai.model.domain.response.*
 import uk.gov.hmrc.tai.model.tai.TaxYear
@@ -42,8 +42,8 @@ import scala.concurrent.duration.*
 import scala.concurrent.{Await, Future}
 import scala.io.Source
 
-class IncomeServiceHipToggleOffSpec extends BaseSpec {
-  private val basePath = "test/resources/data/TaxAccount/IncomeService/nps/"
+class IncomeServiceSpec extends BaseSpec {
+  private val basePath = "test/resources/data/TaxAccount/IncomeService/hip/"
 
   private def readFile(fileName: String): JsValue = {
     val jsonFilePath = basePath + fileName
@@ -80,7 +80,7 @@ class IncomeServiceHipToggleOffSpec extends BaseSpec {
 
     "return untaxed interest" when {
       "it is present" in {
-        val untaxedInterest = UntaxedInterest(UntaxedInterestIncome, Some(1), 100, "desc")
+        val untaxedInterest = UntaxedInterest(UntaxedInterestIncome, Some(1), 100, "Untaxed Interest")
         when(mockTaxAccountConnector.taxAccount(any(), any())(any()))
           .thenReturn(Future.successful(readFile("TC01.json")))
 
@@ -840,39 +840,40 @@ class IncomeServiceHipToggleOffSpec extends BaseSpec {
         val result = sut.incomes(nino, TaxYear()).futureValue
 
         result.nonTaxCodeIncomes.otherNonTaxCodeIncomes mustBe Seq(
-          OtherNonTaxCodeIncome(NonCodedIncome, Some(1), 100, "desc"),
-          OtherNonTaxCodeIncome(Commission, Some(1), 100, "desc"),
-          OtherNonTaxCodeIncome(OtherIncomeEarned, Some(1), 100, "desc"),
-          OtherNonTaxCodeIncome(OtherIncomeNotEarned, Some(1), 100, "desc"),
-          OtherNonTaxCodeIncome(PartTimeEarnings, Some(1), 100, "desc"),
-          OtherNonTaxCodeIncome(Tips, Some(1), 100, "desc"),
-          OtherNonTaxCodeIncome(OtherEarnings, Some(1), 100, "desc"),
-          OtherNonTaxCodeIncome(CasualEarnings, Some(1), 100, "desc"),
-          OtherNonTaxCodeIncome(ForeignDividendIncome, Some(1), 100, "desc"),
-          OtherNonTaxCodeIncome(ForeignPropertyIncome, Some(1), 100, "desc"),
-          OtherNonTaxCodeIncome(ForeignInterestAndOtherSavings, Some(1), 100, "desc"),
-          OtherNonTaxCodeIncome(ForeignPensionsAndOtherIncome, Some(1), 100, "desc"),
-          OtherNonTaxCodeIncome(StatePension, Some(1), 100, "desc"),
-          OtherNonTaxCodeIncome(OccupationalPension, Some(1), 100, "desc"),
-          OtherNonTaxCodeIncome(PublicServicesPension, Some(1), 100, "desc"),
-          OtherNonTaxCodeIncome(ForcesPension, Some(1), 100, "desc"),
-          OtherNonTaxCodeIncome(PersonalPensionAnnuity, Some(1), 100, "desc"),
-          OtherNonTaxCodeIncome(Profit, Some(1), 100, "desc"),
-          OtherNonTaxCodeIncome(BankOrBuildingSocietyInterest, Some(1), 100, "desc"),
-          OtherNonTaxCodeIncome(UkDividend, Some(1), 100, "desc"),
-          OtherNonTaxCodeIncome(UnitTrust, Some(1), 100, "desc"),
-          OtherNonTaxCodeIncome(StockDividend, Some(1), 100, "desc"),
-          OtherNonTaxCodeIncome(NationalSavings, Some(1), 100, "desc"),
-          OtherNonTaxCodeIncome(SavingsBond, Some(1), 100, "desc"),
-          OtherNonTaxCodeIncome(PurchasedLifeAnnuities, Some(1), 100, "desc"),
-          OtherNonTaxCodeIncome(IncapacityBenefit, Some(1), 100, "desc"),
-          OtherNonTaxCodeIncome(JobSeekersAllowance, Some(1), 100, "desc"),
-          OtherNonTaxCodeIncome(EmploymentAndSupportAllowance, Some(1), 100, "desc")
+          OtherNonTaxCodeIncome(NonCodedIncome, Some(1), 100, "Non-Coded Income"),
+          OtherNonTaxCodeIncome(Commission, Some(1), 100, "Commission"),
+          OtherNonTaxCodeIncome(OtherIncomeEarned, Some(1), 100, "Other Income (Earned)"),
+          OtherNonTaxCodeIncome(OtherIncomeNotEarned, Some(1), 100, "Other Income (Not Earned)"),
+          OtherNonTaxCodeIncome(PartTimeEarnings, Some(1), 100, "Part Time Earnings"),
+          OtherNonTaxCodeIncome(Tips, Some(1), 100, "Tips"),
+          OtherNonTaxCodeIncome(OtherEarnings, Some(1), 100, "Other Earnings"),
+          OtherNonTaxCodeIncome(CasualEarnings, Some(1), 100, "Casual Earnings"),
+          OtherNonTaxCodeIncome(ForeignDividendIncome, Some(1), 100, "Foreign Dividend Income"),
+          OtherNonTaxCodeIncome(ForeignPropertyIncome, Some(1), 100, "Foreign Property Income"),
+          OtherNonTaxCodeIncome(ForeignInterestAndOtherSavings, Some(1), 100, "Foreign Interest & Other Savings"),
+          OtherNonTaxCodeIncome(ForeignPensionsAndOtherIncome, Some(1), 100, "Foreign Pensions & Other Income"),
+          OtherNonTaxCodeIncome(StatePension, Some(1), 100, "State Pension"),
+          OtherNonTaxCodeIncome(OccupationalPension, Some(1), 100, "Occupational Pension"),
+          OtherNonTaxCodeIncome(PublicServicesPension, Some(1), 100, "Public Services Pension"),
+          OtherNonTaxCodeIncome(ForcesPension, Some(1), 100, "Forces Pension"),
+          OtherNonTaxCodeIncome(PersonalPensionAnnuity, Some(1), 100, "Personal Pension Annuity"),
+          OtherNonTaxCodeIncome(Profit, Some(1), 100, "Profit"),
+          OtherNonTaxCodeIncome(BankOrBuildingSocietyInterest, Some(1), 100, "Taxed Interest"),
+          OtherNonTaxCodeIncome(UkDividend, Some(1), 100, "UK Dividend"),
+          OtherNonTaxCodeIncome(UnitTrust, Some(1), 100, "Unit Trust"),
+          OtherNonTaxCodeIncome(StockDividend, Some(1), 100, "Stock Dividend"),
+          OtherNonTaxCodeIncome(NationalSavings, Some(1), 100, "National Savings"),
+          OtherNonTaxCodeIncome(SavingsBond, Some(1), 100, "Savings Bond"),
+          OtherNonTaxCodeIncome(PurchasedLifeAnnuities, Some(1), 100, "Purchased Life Annuities"),
+          OtherNonTaxCodeIncome(IncapacityBenefit, Some(1), 100, "Incapacity Benefit"),
+          OtherNonTaxCodeIncome(JobSeekersAllowance, Some(1), 100, "Job Seekers Allowance"),
+          OtherNonTaxCodeIncome(EmploymentAndSupportAllowance, Some(1), 100, "Employment and Support Allowance")
         )
 
         result.nonTaxCodeIncomes.untaxedInterest mustBe Some(
-          UntaxedInterest(UntaxedInterestIncome, Some(1), 100, "desc")
+          UntaxedInterest(UntaxedInterestIncome, Some(1), 100, "Untaxed Interest")
         )
+
       }
 
       "non-tax-code income and bank accounts are present" in {
@@ -884,8 +885,9 @@ class IncomeServiceHipToggleOffSpec extends BaseSpec {
         val result = sut.incomes(nino, TaxYear()).futureValue
 
         result.nonTaxCodeIncomes.untaxedInterest mustBe Some(
-          UntaxedInterest(UntaxedInterestIncome, Some(1), 100, "desc")
+          UntaxedInterest(UntaxedInterestIncome, Some(1), 100, "Untaxed Interest")
         )
+
       }
 
       "bypass any bank account retrieval and return no untaxed interest" when {
@@ -910,7 +912,7 @@ class IncomeServiceHipToggleOffSpec extends BaseSpec {
         val result = sut.incomes(nino, TaxYear()).futureValue
 
         result.nonTaxCodeIncomes.untaxedInterest mustBe Some(
-          UntaxedInterest(UntaxedInterestIncome, Some(1), 100, "desc")
+          UntaxedInterest(UntaxedInterestIncome, Some(1), 100, "Untaxed Interest")
         )
       }
     }

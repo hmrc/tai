@@ -32,7 +32,7 @@ import uk.gov.hmrc.tai.model.admin.{HipToggleIabds, RtiCallToggle}
 
 import scala.concurrent.Future
 
-class TaxAccountSummaryHipToggleTaxAccountOnSpec extends IntegrationSpec {
+class TaxAccountSummarySpec extends IntegrationSpec {
 
   override def beforeEach(): Unit = {
     super.beforeEach()
@@ -44,9 +44,6 @@ class TaxAccountSummaryHipToggleTaxAccountOnSpec extends IntegrationSpec {
     when(mockFeatureFlagService.getAsEitherT(eqTo[FeatureFlagName](RtiCallToggle))).thenReturn(
       EitherT.rightT(FeatureFlag(RtiCallToggle, isEnabled = false))
     )
-//    when(mockFeatureFlagService.get(eqTo[FeatureFlagName](HipToggleEmploymentDetails))).thenReturn(
-//      Future.successful(FeatureFlag(HipToggleTaxAccount, isEnabled = false))
-//    )
     when(mockFeatureFlagService.get(eqTo[FeatureFlagName](HipToggleIabds))).thenReturn(
       Future.successful(FeatureFlag(HipToggleIabds, isEnabled = false))
     )
