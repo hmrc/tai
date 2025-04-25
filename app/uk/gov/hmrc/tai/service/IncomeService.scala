@@ -212,6 +212,7 @@ class IncomeService @Inject() (
         case None => Future.successful(IncomeUpdateFailed("Could not find an ETag"))
       }
       .recover { case ex: Exception =>
+        ex.printStackTrace()
         logger.error(s"IncomeService.updateTaxCodeIncome - failed to update income: ${ex.getMessage}")
         IncomeUpdateFailed("Could not parse etag")
       }

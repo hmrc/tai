@@ -18,9 +18,9 @@ package uk.gov.hmrc.tai.model.api
 
 import play.api.libs.json.*
 import play.api.libs.json.Reads.localDateReads
+import uk.gov.hmrc.tai.model.domain.*
 import uk.gov.hmrc.tai.model.domain.Employment.numberChecked
 import uk.gov.hmrc.tai.model.domain.income.TaxCodeIncomeStatus
-import uk.gov.hmrc.tai.model.domain.{Employment, EmploymentIncome, JobSeekerAllowanceIncome, OtherIncome, PensionIncome, TaxCodeIncomeComponentType}
 import uk.gov.hmrc.tai.util.JsonHelper.*
 
 import java.time.LocalDate
@@ -85,6 +85,7 @@ object EmploymentCollection {
     }
   }
 
+  // scalastyle:off method.length
   def employmentHodReads: Reads[Employment] = new Reads[Employment] {
     private def splitEmpRef(empRef: String): JsResult[(String, String)] =
       empRef.split("/").toSeq match {
@@ -95,14 +96,11 @@ object EmploymentCollection {
     private val dateReadsFromHod: Reads[LocalDate] = localDateReads("yyyy-MM-dd")
 
     override def reads(json: JsValue): JsResult[Employment] = {
-
       val employerReference = numberChecked((json \ "employerReference").as[String])
-
       val name = (json \ "payeSchemeOperatorName").as[String]
       val payrollNumber = (json \ "worksNumber").asOpt[String]
       val startDate = (json \ "startDate").as[LocalDate](dateReadsFromHod)
       val endDate = (json \ "endDate").asOpt[LocalDate](dateReadsFromHod)
-
       splitEmpRef(employerReference) match {
         case JsSuccess(Tuple2(taxDistrictNumber, payeNumber), _) =>
           val sequenceNumber = (json \ "employmentSequenceNumber").as[Int]
@@ -136,16 +134,10 @@ object EmploymentCollection {
           )
         case errors @ JsError(_) => errors
       }
-
     }
   }
 
-  private def readsNps: Reads[EmploymentCollection] = { (json: JsValue) =>
-    implicit val rds: Reads[Employment] = employmentHodNpsReads
-    JsSuccess(EmploymentCollection(json.as[Seq[Employment]], None))
-  }
-
-  private def readsHip: Reads[EmploymentCollection] = { (json: JsValue) =>
+  lazy val employmentCollectionHodReadsHIP: Reads[EmploymentCollection] = { (json: JsValue) =>
     val readsSeqEmployment = json match {
       case _: JsArray => Reads[Seq[Employment]](_ => JsError("Unexpected array - Squid payload?"))
       case _ =>
@@ -160,15 +152,4 @@ object EmploymentCollection {
     }
   }
 
-  /*
-    If toggle switched on then we still need to cater for payloads in NPS format which may still be
-    present in the cache.
-   */
-  lazy val employmentCollectionHodReadsHIP: Reads[EmploymentCollection] = readsHip orElseTry readsNps
-
-  /*
-    If toggle switched on then for some reason has to be switched off then we have to cater
-    for payloads in HIP format even though toggle is off.
-   */
-  lazy val employmentCollectionHodReadsNPS: Reads[EmploymentCollection] = readsNps orElseTry readsHip
 }

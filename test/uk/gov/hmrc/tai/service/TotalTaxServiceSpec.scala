@@ -28,7 +28,7 @@ import uk.gov.hmrc.tai.util.BaseSpec
 
 import scala.concurrent.Future
 
-class TotalTaxServiceHipToggleOnSpec extends BaseSpec {
+class TotalTaxServiceSpec extends BaseSpec {
   val mockTaxAccountConnector: TaxAccountConnector = mock[TaxAccountConnector]
   val mockTaxAccountHelper: TaxAccountHelper = mock[TaxAccountHelper]
   val mockTaxAccountSummaryService: TaxAccountSummaryService = mock[TaxAccountSummaryService]

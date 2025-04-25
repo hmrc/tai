@@ -34,7 +34,7 @@ import uk.gov.hmrc.domain.{Generator, Nino}
 import uk.gov.hmrc.http.{HeaderCarrier, HttpException, RequestId, SessionId}
 import uk.gov.hmrc.mongoFeatureToggles.model.{FeatureFlag, FeatureFlagName}
 import uk.gov.hmrc.mongoFeatureToggles.services.FeatureFlagService
-import uk.gov.hmrc.tai.model.admin.{HipToggleEmploymentDetails, HipToggleIabds, RtiCallToggle}
+import uk.gov.hmrc.tai.model.admin.{HipToggleIabdsUpdateExpenses, RtiCallToggle}
 import uk.gov.hmrc.tai.service.LockService
 import uk.gov.hmrc.tai.util.{FakeAsyncCacheApi, WireMockHelper}
 
@@ -92,11 +92,8 @@ trait ConnectorBaseSpec
     when(mockFeatureFlagService.getAsEitherT(eqTo[FeatureFlagName](RtiCallToggle))).thenReturn(
       EitherT.rightT(FeatureFlag(RtiCallToggle, isEnabled = false))
     )
-    when(mockFeatureFlagService.get(eqTo[FeatureFlagName](HipToggleEmploymentDetails))).thenReturn(
-      Future.successful(FeatureFlag(HipToggleEmploymentDetails, isEnabled = false))
-    )
-    when(mockFeatureFlagService.get(eqTo[FeatureFlagName](HipToggleIabds))).thenReturn(
-      Future.successful(FeatureFlag(HipToggleIabds, isEnabled = false))
+    when(mockFeatureFlagService.get(eqTo[FeatureFlagName](HipToggleIabdsUpdateExpenses))).thenReturn(
+      Future.successful(FeatureFlag(HipToggleIabdsUpdateExpenses, isEnabled = false))
     )
     ()
   }

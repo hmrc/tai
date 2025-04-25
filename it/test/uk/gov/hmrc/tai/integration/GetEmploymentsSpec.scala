@@ -20,31 +20,28 @@ import cats.data.EitherT
 import cats.instances.future.*
 import com.github.tomakehurst.wiremock.client.WireMock.{aResponse, get, ok, urlEqualTo}
 import org.mockito.ArgumentMatchers.eq as eqTo
-import org.mockito.Mockito.when
+import org.mockito.Mockito.{reset, when}
 import play.api.mvc.AnyContentAsEmpty
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{status as getStatus, *}
 import uk.gov.hmrc.http.HeaderNames
 import uk.gov.hmrc.mongoFeatureToggles.model.{FeatureFlag, FeatureFlagName}
 import uk.gov.hmrc.tai.integration.utils.IntegrationSpec
-import uk.gov.hmrc.tai.model.admin.{HipToggleEmploymentDetails, RtiCallToggle}
+import uk.gov.hmrc.tai.model.admin.RtiCallToggle
 
 import scala.concurrent.Future
 
 class GetEmploymentsSpec extends IntegrationSpec {
 
   override def beforeEach(): Unit = {
+    reset(mockFeatureFlagService)
     super.beforeEach()
 
     when(mockFeatureFlagService.getAsEitherT(eqTo[FeatureFlagName](RtiCallToggle))).thenReturn(
       EitherT.rightT(FeatureFlag(RtiCallToggle, isEnabled = false))
     )
 
-    when(mockFeatureFlagService.get(eqTo[FeatureFlagName](HipToggleEmploymentDetails))).thenReturn(
-      Future.successful(FeatureFlag(HipToggleEmploymentDetails, isEnabled = false))
-    )
-
-    server.stubFor(get(urlEqualTo(npsEmploymentUrl)).willReturn(ok(employmentJson)))
+    server.stubFor(get(urlEqualTo(hipEmploymentUrl)).willReturn(ok(employmentHipJson)))
     server.stubFor(get(urlEqualTo(rtiUrl)).willReturn(ok(rtiJson)))
     ()
   }
@@ -54,7 +51,7 @@ class GetEmploymentsSpec extends IntegrationSpec {
     .withHeaders(HeaderNames.xSessionId -> generateSessionId)
     .withHeaders(HeaderNames.authorisation -> bearerToken)
 
-  "Get Employment (NPS)" must {
+  "Get Employment" must {
     "return an OK response for a valid user" in {
       val result = route(fakeApplication(), request)
       result.map(getStatus) mustBe Some(OK)
@@ -69,7 +66,7 @@ class GetEmploymentsSpec extends IntegrationSpec {
         SERVICE_UNAVAILABLE   -> BAD_GATEWAY
       ).foreach { case (httpStatus, error) =>
         s"return $error when the NPS employments API returns a $httpStatus" in {
-          server.stubFor(get(urlEqualTo(npsEmploymentUrl)).willReturn(aResponse().withStatus(httpStatus)))
+          server.stubFor(get(urlEqualTo(hipEmploymentUrl)).willReturn(aResponse().withStatus(httpStatus)))
 
           val result = route(fakeApplication(), request)
           result.map(getStatus) mustBe Some(error)

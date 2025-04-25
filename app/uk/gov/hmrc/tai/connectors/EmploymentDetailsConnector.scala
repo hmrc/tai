@@ -21,17 +21,15 @@ import com.google.inject.name.Named
 import com.google.inject.{Inject, Singleton}
 import play.api.http.MimeTypes
 import uk.gov.hmrc.domain.Nino
-import uk.gov.hmrc.http._
-import uk.gov.hmrc.mongoFeatureToggles.services.FeatureFlagService
-import uk.gov.hmrc.tai.config.{HipConfig, NpsConfig}
+import uk.gov.hmrc.http.*
+import uk.gov.hmrc.tai.config.HipConfig
 import uk.gov.hmrc.tai.connectors.cache.CachingConnector
 import uk.gov.hmrc.tai.model.HodResponse
-import uk.gov.hmrc.tai.model.admin.HipToggleEmploymentDetails
 import uk.gov.hmrc.tai.service.SensitiveFormatService
 
 import java.nio.charset.StandardCharsets
 import java.util.{Base64, UUID}
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.Future
 
 @Singleton
 class CachingEmploymentDetailsConnector @Inject() (
@@ -50,32 +48,17 @@ class CachingEmploymentDetailsConnector @Inject() (
 
 class DefaultEmploymentDetailsConnector @Inject() (
   httpHandler: HttpHandler,
-  npsConfig: NpsConfig,
-  hipConfig: HipConfig,
-  featureFlagService: FeatureFlagService
-)(implicit ec: ExecutionContext)
-    extends EmploymentDetailsConnector {
+  hipConfig: HipConfig
+) extends EmploymentDetailsConnector {
 
   def getEmploymentDetailsAsEitherT(nino: Nino, year: Int)(implicit
     hc: HeaderCarrier
-  ): EitherT[Future, UpstreamErrorResponse, HodResponse] =
-    EitherT(featureFlagService.get(HipToggleEmploymentDetails).flatMap { toggle =>
-      val (baseUrl, originatorId, extraInfo) =
-        if (toggle.isEnabled) {
-          (hipConfig.baseURL, hipConfig.originatorId, Some(Tuple2(hipConfig.clientId, hipConfig.clientSecret)))
-        } else {
-          (npsConfig.baseURL, npsConfig.originatorId, None)
-        }
-
-      def pathUrl(nino: Nino): String = if (toggle.isEnabled) {
-        s"$baseUrl/employment/employee/$nino/tax-year/$year/employment-details"
-      } else {
-        s"$baseUrl/person/$nino/employment/$year"
-      }
-
-      val urlToRead = pathUrl(nino)
-      httpHandler.getFromApiAsEitherT(urlToRead, basicHeaders(originatorId, hc, extraInfo)).value
-    })
+  ): EitherT[Future, UpstreamErrorResponse, HodResponse] = {
+    val (baseUrl, originatorId, extraInfo) =
+      (hipConfig.baseURL, hipConfig.originatorId, Some(Tuple2(hipConfig.clientId, hipConfig.clientSecret)))
+    val urlToRead = s"$baseUrl/employment/employee/$nino/tax-year/$year/employment-details"
+    EitherT(httpHandler.getFromApiAsEitherT(urlToRead, basicHeaders(originatorId, hc, extraInfo)).value)
+  }
 }
 
 trait EmploymentDetailsConnector {

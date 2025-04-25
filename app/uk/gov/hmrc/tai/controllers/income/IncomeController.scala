@@ -95,9 +95,10 @@ class IncomeController @Inject() (
     authentication.authWithUserDetails.async(parse.json) { implicit request =>
       withJsonBody[UpdateTaxCodeIncomeRequest] { updateTaxCodeIncomeRequest =>
         incomeService.updateTaxCodeIncome(nino, snapshotId, employmentId, updateTaxCodeIncomeRequest.amount) map {
-          case IncomeUpdateSuccess         => Ok
-          case InvalidAmount(message)      => BadRequest(message)
-          case IncomeUpdateFailed(message) => InternalServerError(message)
+          case IncomeUpdateSuccess    => Ok
+          case InvalidAmount(message) => BadRequest(message)
+          case IncomeUpdateFailed(message) =>
+            InternalServerError(message)
         }
       }.recover { case _ =>
         InternalServerError

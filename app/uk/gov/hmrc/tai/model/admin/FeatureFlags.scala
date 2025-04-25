@@ -16,7 +16,6 @@
 
 package uk.gov.hmrc.tai.model.admin
 
-import uk.gov.hmrc.mongoFeatureToggles.model.Environment.{Environment, Production}
 import uk.gov.hmrc.mongoFeatureToggles.model.FeatureFlagName
 
 case object RtiCallToggle extends FeatureFlagName {
@@ -26,34 +25,9 @@ case object RtiCallToggle extends FeatureFlagName {
   )
 }
 
-case object HipToggleEmploymentDetails extends FeatureFlagName {
-  override val name: String = "hip-toggle-employment-details"
+case object HipToggleIabdsUpdateExpenses extends FeatureFlagName {
+  override val name: String = "hip-iabds-update-expenses"
   override val description: Option[String] = Some(
-    "Enable/disable use of HIP instead of Squid for the employment details API"
+    "Enable/disable toggle for IABDS update expenses PUT"
   )
-  override val lockedEnvironments: Seq[Environment] = Seq(Production)
-}
-
-case object HipToggleTaxAccount extends FeatureFlagName {
-  override val name: String = "hip-toggle-tax-account"
-  override val description: Option[String] = Some(
-    "Enable/disable use of HIP instead of Squid for the tax account API"
-  )
-  override val lockedEnvironments: Seq[Environment] = Seq(Production)
-}
-
-case object HipToggleIabds extends FeatureFlagName {
-  override val name: String = "hip-toggle-iabds"
-  override val description: Option[String] = Some(
-    "Enable/disable use of HIP instead of Squid for the Iabds details API"
-  )
-  override val lockedEnvironments: Seq[Environment] = Seq(Production)
-}
-
-case object HipToggleEmploymentIabds extends FeatureFlagName {
-  override val name: String = "hip-toggle-employment-iabds"
-  override val description: Option[String] = Some(
-    "Enable/disable use of HIP instead of Squid for the update Iabds employment API"
-  )
-  override val lockedEnvironments: Seq[Environment] = Seq(Production)
 }
