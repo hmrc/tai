@@ -22,9 +22,10 @@ import com.google.inject.Inject
 import org.mockito.Mockito.when
 import play.api.Logging
 import play.api.libs.json.Json
-import play.api.mvc.{Action, AnyContent, ControllerComponents}
+import play.api.mvc.*
 import play.api.test.FakeRequest
 import play.api.test.Helpers.*
+import uk.gov.hmrc.auth.core.InsufficientConfidenceLevel
 import uk.gov.hmrc.http.{BadRequestException, GatewayTimeoutException, HttpException, NotFoundException, UpstreamErrorResponse}
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 import uk.gov.hmrc.tai.controllers.auth.AuthJourney
@@ -69,6 +70,18 @@ class ErrorHandlingOnControllerSpec extends BaseSpec {
 
   private val sut: DummyController = new DummyController(loggedInAuthenticationAuthJourney, cc, mockDummyService)
 
+  private val errorHandler = app.injector.instanceOf[TempErrorHandler]
+
+  private def callOnServerErrorWhenFailed(futureResult: Future[Result], requestHeader: RequestHeader): Future[Result] =
+    futureResult.recoverWith { case t: Throwable =>
+      errorHandler.onServerError(requestHeader, t)
+    }
+
+  private def runTest: Future[Result] = {
+    val request = FakeRequest()
+    callOnServerErrorWhenFailed(sut.testMethod()(request), request)
+  }
+
   private def failedResponse(ex: Throwable, expectedResponseCode: Int): Unit =
     s"return $expectedResponseCode response when service response is Future failed ${ex.toString}" in {
       when(mockDummyService.call())
@@ -77,25 +90,22 @@ class ErrorHandlingOnControllerSpec extends BaseSpec {
             Future.failed(ex)
           )
         )
-      val result = sut.testMethod()(FakeRequest())
-      status(result) mustBe expectedResponseCode
+      status(runTest) mustBe expectedResponseCode
     }
 
   override protected def beforeEach(): Unit = super.beforeEach()
 
-  "test method" must {
+  "A dummy controller method with standard handling for exception responses in conjuction with the standard error handler" must {
     "return correct response when method maps service response to OK" in {
       when(mockDummyService.call())
         .thenReturn(EitherT(Future.successful[Either[UpstreamErrorResponse, Option[Int]]](Right(Some(3)))))
-      val result = sut.testMethod()(FakeRequest())
-      status(result) mustBe OK
+      status(runTest) mustBe OK
     }
 
     "return correct response when method maps service response to NOT_FOUND" in {
       when(mockDummyService.call())
         .thenReturn(EitherT(Future.successful[Either[UpstreamErrorResponse, Option[Int]]](Right(None))))
-      val result = sut.testMethod()(FakeRequest())
-      status(result) mustBe NOT_FOUND
+      status(runTest) mustBe NOT_FOUND
     }
 
     Set(INTERNAL_SERVER_ERROR, 508).foreach { responseCode =>
@@ -108,8 +118,7 @@ class ErrorHandlingOnControllerSpec extends BaseSpec {
               )
             )
           )
-        val result = sut.testMethod()(FakeRequest())
-        status(result) mustBe BAD_GATEWAY
+        status(runTest) mustBe BAD_GATEWAY
       }
     }
 
@@ -123,8 +132,7 @@ class ErrorHandlingOnControllerSpec extends BaseSpec {
               )
             )
           )
-        val result = sut.testMethod()(FakeRequest())
-        status(result) mustBe 429
+        status(runTest) mustBe 429
       }
     }
 
@@ -133,6 +141,23 @@ class ErrorHandlingOnControllerSpec extends BaseSpec {
     behave like failedResponse(GatewayTimeoutException("dummy response"), BAD_GATEWAY)
     behave like failedResponse(HttpException("502 Bad Gateway", 502), BAD_GATEWAY)
     behave like failedResponse(RuntimeException("Runtime exception"), INTERNAL_SERVER_ERROR)
+    behave like failedResponse(UpstreamErrorResponse("Upstream exception", 504), GATEWAY_TIMEOUT)
+    behave like failedResponse(HttpException("Http exception", 504), GATEWAY_TIMEOUT)
+    behave like failedResponse(InsufficientConfidenceLevel("Insufficient confidence exception"), UNAUTHORIZED)
+    
+    // TODO: Test scenarios where authentication returns error responses:-
+    /*
+      private val actionBuilderFixture = new ActionBuilderFixture {
+    override def invokeBlock[A](request: Request[A], block: AuthenticatedRequest[A] => Future[Result]): Future[Result] =
+      block(AuthenticatedRequest(request, Nino("AA000003A")))
+  }
+
+  lazy val loggedInAuthenticationAuthJourney: AuthJourney = new AuthJourney {
+    val authWithUserDetails: ActionBuilder[AuthenticatedRequest, AnyContent] = actionBuilderFixture
+
+    val authForEmployeeExpenses: ActionBuilder[AuthenticatedRequest, AnyContent] = actionBuilderFixture
+  }
+     */
   }
 
 }
