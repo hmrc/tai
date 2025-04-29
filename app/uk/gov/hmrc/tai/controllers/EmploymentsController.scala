@@ -16,21 +16,22 @@
 
 package uk.gov.hmrc.tai.controllers
 
+import cats.data.EitherT
 import com.google.inject.{Inject, Singleton}
 import play.api.Logging
 import play.api.libs.json.{JsValue, Json}
-import play.api.mvc.{Action, AnyContent, ControllerComponents}
+import play.api.mvc.{Action, AnyContent, ControllerComponents, Result}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.UpstreamErrorResponse
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 import uk.gov.hmrc.tai.controllers.auth.AuthJourney
 import uk.gov.hmrc.tai.model.api.{ApiResponse, EmploymentCollection}
+import uk.gov.hmrc.tai.model.domain.*
 import uk.gov.hmrc.tai.model.domain.income.TaxCodeIncomeStatus
-import uk.gov.hmrc.tai.model.domain.{AddEmployment, EndEmployment, IncorrectEmployment, TaxCodeIncomeComponentType}
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.service.EmploymentService
 
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class EmploymentsController @Inject() (
@@ -40,15 +41,27 @@ class EmploymentsController @Inject() (
 )(implicit ec: ExecutionContext)
     extends BackendController(cc) with ControllerErrorHandler with Logging {
 
+  private def resultOrException(a: EitherT[Future, UpstreamErrorResponse, Result]): Future[Result] =
+    a.value.flatMap {
+      case Left(e)  => Future.failed(e)
+      case Right(r) => Future.successful(r)
+    }
+
   def employments(nino: Nino, year: TaxYear): Action[AnyContent] = authentication.authForEmployeeExpenses.async {
     implicit request =>
-      employmentService
-        .employmentsAsEitherT(nino, year)
-        .bimap(
-          error => errorToResponse(error),
-          employments => Ok(Json.toJson(ApiResponse(EmploymentCollection(employments.employments, None), Nil)))
-        )
-        .merge recoverWith taxAccountErrorHandler()
+      resultOrException(
+        employmentService
+          .employmentsAsEitherT(nino, year)
+          .map(employments => Ok(Json.toJson(ApiResponse(EmploymentCollection(employments.employments, None), Nil))))
+      )
+
+//      employmentService
+//        .employmentsAsEitherT(nino, year)
+//        .bimap(
+//          error => errorToResponse(error),
+//          employments => Ok(Json.toJson(ApiResponse(EmploymentCollection(employments.employments, None), Nil)))
+//        )
+//        .merge recoverWith taxAccountErrorHandler()
   }
 
   def employmentOnly(nino: Nino, id: Int, year: TaxYear): Action[AnyContent] =
