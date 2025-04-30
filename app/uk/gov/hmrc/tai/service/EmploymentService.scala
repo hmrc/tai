@@ -100,9 +100,6 @@ class EmploymentService @Inject() (
     hc: HeaderCarrier,
     request: Request[_]
   ): EitherT[Future, UpstreamErrorResponse, Employments] =
-//    EitherT[Future, UpstreamErrorResponse, Employments](
-//      Future.successful(Left(UpstreamErrorResponse("AN ERROR!!!", 500)))
-//    )
     retrieveRTIPayments(nino, taxYear).flatMap { case (rtiAnnualAccounts, rtiIsRTIException) =>
       fetchEmploymentsCollection(nino, taxYear).map { employmentsCollection =>
         employmentBuilder.combineAccountsWithEmployments(
@@ -113,6 +110,7 @@ class EmploymentService @Inject() (
           taxYear
         )
       }
+
     }
 
   def employmentAsEitherT(nino: Nino, id: Int)(implicit
