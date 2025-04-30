@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.tai.controllers
+package uk.gov.hmrc.tai.config
 
 import cats.data.EitherT
 import cats.instances.future.*
@@ -28,6 +28,7 @@ import play.api.test.Helpers.*
 import uk.gov.hmrc.auth.core.InsufficientConfidenceLevel
 import uk.gov.hmrc.http.{BadRequestException, GatewayTimeoutException, HttpException, NotFoundException, UpstreamErrorResponse}
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
+import uk.gov.hmrc.tai.controllers.ControllerErrorHandler
 import uk.gov.hmrc.tai.controllers.auth.AuthJourney
 import uk.gov.hmrc.tai.model.api.ApiResponse
 import uk.gov.hmrc.tai.util.BaseSpec
@@ -36,7 +37,10 @@ import scala.concurrent.duration.Duration
 import scala.concurrent.{Await, Future}
 import scala.util.{Failure, Try}
 
-class ErrorHandlingOnControllerSpec extends BaseSpec {
+/*
+  Tests for interaction of a dummy controller with custom error handler.
+ */
+class CustomErrorHandlerInteractionSpec extends BaseSpec {
 
   private class DummyService @Inject() (
   ) {
