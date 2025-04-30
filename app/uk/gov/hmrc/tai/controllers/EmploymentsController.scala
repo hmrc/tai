@@ -34,11 +34,11 @@ import scala.concurrent.ExecutionContext
 
 @Singleton
 class EmploymentsController @Inject() (
-                                        employmentService: EmploymentService,
-                                        authentication: AuthJourney,
-                                        cc: ControllerComponents
-                                      )(implicit ec: ExecutionContext)
-  extends BackendController(cc) with ControllerErrorHandler with Logging {
+  employmentService: EmploymentService,
+  authentication: AuthJourney,
+  cc: ControllerComponents
+)(implicit ec: ExecutionContext)
+    extends BackendController(cc) with ControllerErrorHandler with Logging {
 
   def employments(nino: Nino, year: TaxYear): Action[AnyContent] = authentication.authForEmployeeExpenses.async {
     implicit request =>
@@ -80,11 +80,11 @@ class EmploymentsController @Inject() (
   }
 
   def getEmploymentsByStatusAndType(
-                                     nino: Nino,
-                                     year: TaxYear,
-                                     incomeType: TaxCodeIncomeComponentType,
-                                     status: TaxCodeIncomeStatus
-                                   ): Action[AnyContent] = authentication.authWithUserDetails.async { implicit request =>
+    nino: Nino,
+    year: TaxYear,
+    incomeType: TaxCodeIncomeComponentType,
+    status: TaxCodeIncomeStatus
+  ): Action[AnyContent] = authentication.authWithUserDetails.async { implicit request =>
     employmentService
       .employmentsWithoutRtiAsEitherT(nino, year)
       .bimap(
@@ -139,7 +139,7 @@ class EmploymentsController @Inject() (
       withJsonBody[AddEmployment] { employment =>
         employmentService.addEmployment(nino, employment) map (envelopeId =>
           Ok(Json.toJson(ApiResponse(envelopeId, Nil)))
-          )
+        )
       }
   }
 
@@ -148,7 +148,7 @@ class EmploymentsController @Inject() (
       withJsonBody[IncorrectEmployment] { employment =>
         employmentService.incorrectEmployment(nino, id, employment) map (envelopeId =>
           Ok(Json.toJson(ApiResponse(envelopeId, Nil)))
-          )
+        )
       }
   }
 
@@ -157,7 +157,7 @@ class EmploymentsController @Inject() (
       withJsonBody[IncorrectEmployment] { employment =>
         employmentService.updatePreviousYearIncome(nino, taxYear, employment) map (envelopeId =>
           Ok(Json.toJson(ApiResponse(envelopeId, Nil)))
-          )
+        )
       }
     }
 

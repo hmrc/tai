@@ -16,12 +16,12 @@
 
 package uk.gov.hmrc.tai.config
 
-import play.api.http.Status.*
-import play.api.mvc.Results.{BadGateway, BadRequest, InternalServerError, NotFound, Status, TooManyRequests}
+import play.api.http.Status.{BAD_REQUEST, INTERNAL_SERVER_ERROR, NOT_FOUND}
+import play.api.mvc.Results.Status
 import play.api.mvc.{RequestHeader, Result}
 import play.api.{Configuration, Logging}
 import uk.gov.hmrc.auth.core.AuthorisationException
-import uk.gov.hmrc.http.{BadGatewayException, BadRequestException, GatewayTimeoutException, HeaderCarrier, HttpException, JsValidationException, NotFoundException, UpstreamErrorResponse}
+import uk.gov.hmrc.http.{HeaderCarrier, JsValidationException, NotFoundException}
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 import uk.gov.hmrc.play.bootstrap.backend.http.JsonErrorHandler
 import uk.gov.hmrc.play.bootstrap.config.HttpAuditEvent
@@ -61,31 +61,11 @@ class CustomErrorHandler @Inject() (
     }
   }
 
-// TAI OLD
-
-  private def errorToResponse(error: UpstreamErrorResponse): Result =
-    error.statusCode match {
-      case NOT_FOUND               => NotFound(error.getMessage) // OK
-      case BAD_REQUEST             => BadRequest(error.getMessage) // OK
-      case TOO_MANY_REQUESTS       => TooManyRequests(error.getMessage) // OK
-      case status if status >= 499 => BadGateway(error.getMessage) // 499 BAD GATEWAY OK
-      case _                       => InternalServerError(error.getMessage) // OK
-    }
-
-// END TAI OLD
-
   override def onClientError(request: RequestHeader, statusCode: Int, message: String): Future[Result] = {
-    println("\n\nON CLIENT ERROR: statusCode = " + statusCode + " and message = " + message)
     implicit val headerCarrier: HeaderCarrier = hc(request)
     val requestId = headerCarrier.requestId.map(_.value).getOrElse("None")
 
-    val mappedStatusCode: Int = statusCode match {
-      case NOT_FOUND | BAD_REQUEST | TOO_MANY_REQUESTS => statusCode
-      case 499                                         => BAD_GATEWAY
-      case _                                           => INTERNAL_SERVER_ERROR
-    }
-
-    val result = mappedStatusCode match {
+    val result = statusCode match {
       case NOT_FOUND =>
         auditConnector.sendEvent(
           httpAuditEvent.dataEvent(
@@ -130,13 +110,11 @@ class CustomErrorHandler @Inject() (
             detail = Map.empty
           )
         )
-        val msg =
-          if (suppress4xxErrorMessages) "Other error"
-          else constructErrorMessage(message)
+
         Status(statusCode)(
           ApiResponseFromPERTAX(
             "CLIENT_ERROR",
-            msg + s" [auditSource=${appConfig.appName}, X-Request-ID=$requestId]",
+            s"Other error [auditSource=${appConfig.appName}, X-Request-ID=$requestId]",
             reportAs = statusCode
           )
         )
@@ -144,18 +122,7 @@ class CustomErrorHandler @Inject() (
     Future.successful(result)
   }
 
-  private val serverErrorHandler: PartialFunction[Throwable, Option[Result]] = {
-    case ex: BadRequestException                                     => Some(BadRequest(ex.message))
-    case ex: NotFoundException                                       => Some(NotFound(ex.message))
-    case ex: GatewayTimeoutException                                 => Some(BadGateway(ex.getMessage))
-    case ex: BadGatewayException                                     => Some(BadGateway(ex.getMessage))
-    case ex: HttpException if ex.message.contains("502 Bad Gateway") => Some(BadGateway(ex.getMessage))
-    case ex                                                          => None
-  }
-
   override def onServerError(request: RequestHeader, ex: Throwable): Future[Result] = {
-    println("\n\nON SERVER ERROR:")
-    ex.printStackTrace()
     implicit val headerCarrier: HeaderCarrier = hc(request)
     val requestId = headerCarrier.requestId.map(_.value).getOrElse("None")
     val eventType = ex match {
@@ -179,18 +146,12 @@ class CustomErrorHandler @Inject() (
       )
     )
 
-    val result = serverErrorHandler(ex) match {
-      case Some(result) => result
-      case None =>
-        ApiResponseFromPERTAX(
-          "INTERNAL_ERROR",
-          s"An error has occurred. This has been audited with auditSource=${appConfig.appName}, X-Request-ID=$requestId",
-          reportAs = INTERNAL_SERVER_ERROR
-        ).toResult
-
-    }
-    println("result status=" + result.header.status)
-    Future.successful(result)
-
+    Future.successful(
+      ApiResponseFromPERTAX(
+        "INTERNAL_ERROR",
+        s"An error has occurred. This has been audited with auditSource=${appConfig.appName}, X-Request-ID=$requestId",
+        reportAs = INTERNAL_SERVER_ERROR
+      ).toResult
+    )
   }
 }

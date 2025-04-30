@@ -40,7 +40,7 @@ object ApiResponseFromPERTAX {
 
   private def removeNulls(jsObject: JsObject): JsValue =
     JsObject(jsObject.fields.collect {
-      case (s, j: JsObject)            =>
+      case (s, j: JsObject) =>
         (s, removeNulls(j))
       case other if other._2 != JsNull =>
         other

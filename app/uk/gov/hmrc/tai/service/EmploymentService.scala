@@ -100,19 +100,20 @@ class EmploymentService @Inject() (
     hc: HeaderCarrier,
     request: Request[_]
   ): EitherT[Future, UpstreamErrorResponse, Employments] =
-    EitherT[Future, UpstreamErrorResponse, Employments].apply(
-      Future.successful(Left(UpstreamErrorResponse("AN ERROR!!!", 500)))
-    )
-//    retrieveRTIPayments(nino, taxYear).flatMap { case (rtiAnnualAccounts, rtiIsRTIException) =>
-//      fetchEmploymentsCollection(nino, taxYear).map { employmentsCollection =>
-//        employmentBuilder.combineAccountsWithEmployments(
-//          employmentsCollection.employments,
-//          rtiAnnualAccounts,
-//          rtiIsRTIException,
-//          nino,
-//          taxYear
-//        )
-//      }
+//    EitherT[Future, UpstreamErrorResponse, Employments](
+//      Future.successful(Left(UpstreamErrorResponse("AN ERROR!!!", 500)))
+//    )
+    retrieveRTIPayments(nino, taxYear).flatMap { case (rtiAnnualAccounts, rtiIsRTIException) =>
+      fetchEmploymentsCollection(nino, taxYear).map { employmentsCollection =>
+        employmentBuilder.combineAccountsWithEmployments(
+          employmentsCollection.employments,
+          rtiAnnualAccounts,
+          rtiIsRTIException,
+          nino,
+          taxYear
+        )
+      }
+    }
 
   def employmentAsEitherT(nino: Nino, id: Int)(implicit
     hc: HeaderCarrier,
