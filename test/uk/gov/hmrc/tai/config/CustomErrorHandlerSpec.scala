@@ -86,7 +86,7 @@ class CustomErrorHandlerSpec extends BaseSpec with ScalaCheckDrivenPropertyCheck
 
     "return a Not found ApiResponse" in {
       val customErrorHandler = inject[CustomErrorHandler]
-      val url = "/pertax/notFound"
+      val url = "/tai/notFound"
       val message = s"The resource `$url` has not been found"
       val result = customErrorHandler.onClientError(FakeRequest(GET, url), NOT_FOUND, message)
       val json = Json.parse(contentAsString(result))
