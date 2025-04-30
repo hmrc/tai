@@ -16,52 +16,39 @@
 
 package uk.gov.hmrc.tai.controllers
 
-import cats.data.EitherT
 import com.google.inject.{Inject, Singleton}
 import play.api.Logging
 import play.api.libs.json.{JsValue, Json}
-import play.api.mvc.{Action, AnyContent, ControllerComponents, Result}
+import play.api.mvc.{Action, AnyContent, ControllerComponents}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.UpstreamErrorResponse
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 import uk.gov.hmrc.tai.controllers.auth.AuthJourney
 import uk.gov.hmrc.tai.model.api.{ApiResponse, EmploymentCollection}
-import uk.gov.hmrc.tai.model.domain.*
 import uk.gov.hmrc.tai.model.domain.income.TaxCodeIncomeStatus
+import uk.gov.hmrc.tai.model.domain.{AddEmployment, EndEmployment, IncorrectEmployment, TaxCodeIncomeComponentType}
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.service.EmploymentService
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.ExecutionContext
 
 @Singleton
 class EmploymentsController @Inject() (
-  employmentService: EmploymentService,
-  authentication: AuthJourney,
-  cc: ControllerComponents
-)(implicit ec: ExecutionContext)
-    extends BackendController(cc) with ControllerErrorHandler with Logging {
-
-  private def resultOrException(a: EitherT[Future, UpstreamErrorResponse, Result]): Future[Result] =
-    a.value.flatMap {
-      case Left(e)  => Future.failed(e)
-      case Right(r) => Future.successful(r)
-    }
+                                        employmentService: EmploymentService,
+                                        authentication: AuthJourney,
+                                        cc: ControllerComponents
+                                      )(implicit ec: ExecutionContext)
+  extends BackendController(cc) with ControllerErrorHandler with Logging {
 
   def employments(nino: Nino, year: TaxYear): Action[AnyContent] = authentication.authForEmployeeExpenses.async {
     implicit request =>
-      resultOrException(
-        employmentService
-          .employmentsAsEitherT(nino, year)
-          .map(employments => Ok(Json.toJson(ApiResponse(EmploymentCollection(employments.employments, None), Nil))))
-      )
-
-//      employmentService
-//        .employmentsAsEitherT(nino, year)
-//        .bimap(
-//          error => errorToResponse(error),
-//          employments => Ok(Json.toJson(ApiResponse(EmploymentCollection(employments.employments, None), Nil)))
-//        )
-//        .merge recoverWith taxAccountErrorHandler()
+      employmentService
+        .employmentsAsEitherT(nino, year)
+        .bimap(
+          error => errorToResponse(error),
+          employments => Ok(Json.toJson(ApiResponse(EmploymentCollection(employments.employments, None), Nil)))
+        )
+        .merge recoverWith taxAccountErrorHandler()
   }
 
   def employmentOnly(nino: Nino, id: Int, year: TaxYear): Action[AnyContent] =
@@ -93,11 +80,11 @@ class EmploymentsController @Inject() (
   }
 
   def getEmploymentsByStatusAndType(
-    nino: Nino,
-    year: TaxYear,
-    incomeType: TaxCodeIncomeComponentType,
-    status: TaxCodeIncomeStatus
-  ): Action[AnyContent] = authentication.authWithUserDetails.async { implicit request =>
+                                     nino: Nino,
+                                     year: TaxYear,
+                                     incomeType: TaxCodeIncomeComponentType,
+                                     status: TaxCodeIncomeStatus
+                                   ): Action[AnyContent] = authentication.authWithUserDetails.async { implicit request =>
     employmentService
       .employmentsWithoutRtiAsEitherT(nino, year)
       .bimap(
@@ -152,7 +139,7 @@ class EmploymentsController @Inject() (
       withJsonBody[AddEmployment] { employment =>
         employmentService.addEmployment(nino, employment) map (envelopeId =>
           Ok(Json.toJson(ApiResponse(envelopeId, Nil)))
-        )
+          )
       }
   }
 
@@ -161,7 +148,7 @@ class EmploymentsController @Inject() (
       withJsonBody[IncorrectEmployment] { employment =>
         employmentService.incorrectEmployment(nino, id, employment) map (envelopeId =>
           Ok(Json.toJson(ApiResponse(envelopeId, Nil)))
-        )
+          )
       }
   }
 
@@ -170,7 +157,7 @@ class EmploymentsController @Inject() (
       withJsonBody[IncorrectEmployment] { employment =>
         employmentService.updatePreviousYearIncome(nino, taxYear, employment) map (envelopeId =>
           Ok(Json.toJson(ApiResponse(envelopeId, Nil)))
-        )
+          )
       }
     }
 
