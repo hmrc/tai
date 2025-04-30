@@ -130,7 +130,7 @@ class EmploymentsControllerSpec extends BaseSpec {
 
         val result = sut.employments(nino, TaxYear("2017"))(FakeRequest())
         status(result) mustBe BAD_REQUEST
-        contentAsString(result) mustBe "bad request"
+        contentAsString(result) mustBe "bad request, cause: REDACTED"
       }
 
       "the employments service returns a bad request exception" in {
@@ -141,7 +141,7 @@ class EmploymentsControllerSpec extends BaseSpec {
 
         val result = sut.employments(nino, TaxYear("2017"))(FakeRequest())
         status(result) mustBe BAD_REQUEST
-        contentAsString(result) mustBe "bad request"
+        contentAsString(result) mustBe "bad request, cause: REDACTED"
       }
 
       "the employments service returns a server error" in {

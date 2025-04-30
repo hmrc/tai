@@ -66,22 +66,25 @@ class CustomErrorHandler @Inject() (
   }
 
   def taxAccountErrorHandler(): PartialFunction[Throwable, Future[Result]] = {
-    case ex: BadRequestException                                     => Future.successful(BadRequest(ex.message))
-    case ex: NotFoundException                                       => Future.successful(NotFound(ex.message))
-    case ex: GatewayTimeoutException                                 => Future.successful(BadGateway(ex.getMessage))
-    case ex: BadGatewayException                                     => Future.successful(BadGateway(ex.getMessage))
-    case ex: HttpException if ex.message.contains("502 Bad Gateway") => Future.successful(BadGateway(ex.getMessage))
-    case ex                                                          => throw ex
+    case ex: BadRequestException     => Future.successful(BadRequest(constructErrorMessage(ex.message)))
+    case ex: NotFoundException       => Future.successful(NotFound(constructErrorMessage(ex.message)))
+    case ex: GatewayTimeoutException => Future.successful(BadGateway(constructErrorMessage(ex.getMessage)))
+    case ex: BadGatewayException     => Future.successful(BadGateway(constructErrorMessage(ex.getMessage)))
+    case ex: HttpException if ex.message.contains("502 Bad Gateway") =>
+      Future.successful(BadGateway(constructErrorMessage(ex.getMessage)))
+    case ex => throw ex
   }
 
-  def errorToResponse(error: UpstreamErrorResponse): Result =
+  def errorToResponse(error: UpstreamErrorResponse): Result = {
+    val constructedErrorMessage = constructErrorMessage(error.getMessage)
     error.statusCode match {
-      case NOT_FOUND               => NotFound(error.getMessage)
-      case BAD_REQUEST             => BadRequest(error.getMessage)
-      case TOO_MANY_REQUESTS       => TooManyRequests(error.getMessage)
-      case status if status >= 499 => BadGateway(error.getMessage)
-      case _                       => InternalServerError(error.getMessage)
+      case NOT_FOUND               => NotFound(constructedErrorMessage)
+      case BAD_REQUEST             => BadRequest(constructedErrorMessage)
+      case TOO_MANY_REQUESTS       => TooManyRequests(constructedErrorMessage)
+      case status if status >= 499 => BadGateway(constructedErrorMessage)
+      case _                       => InternalServerError(constructedErrorMessage)
     }
+  }
 
   override def onClientError(request: RequestHeader, statusCode: Int, message: String): Future[Result] = {
     implicit val headerCarrier: HeaderCarrier = hc(request)

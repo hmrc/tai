@@ -23,7 +23,7 @@ import org.scalacheck.Gen
 import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
 import play.api.Application
 import play.api.cache.AsyncCacheApi
-import play.api.http.Status.{BAD_GATEWAY, BAD_REQUEST, GATEWAY_TIMEOUT, IM_A_TEAPOT, INTERNAL_SERVER_ERROR, NOT_FOUND, SERVICE_UNAVAILABLE, TOO_MANY_REQUESTS, UNPROCESSABLE_ENTITY}
+import play.api.http.Status.*
 import play.api.inject.bind
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.json.{JsString, Json}
@@ -152,23 +152,33 @@ class CustomErrorHandlerSpec extends BaseSpec with ScalaCheckDrivenPropertyCheck
     }
   }
 
-  private val exceptionMessage = "test message"
+  private val exceptionMessage = s"""The nino provided `$nino` is invalid"""
 
   "taxAccountErrorHandler" must {
     Set(
-      new BadRequestException(exceptionMessage)                  -> BAD_REQUEST,
-      new NotFoundException(exceptionMessage)                    -> NOT_FOUND,
-      new GatewayTimeoutException(exceptionMessage)              -> BAD_GATEWAY,
-      new BadGatewayException(exceptionMessage)                  -> BAD_GATEWAY,
-      new HttpException("error containing 502 Bad Gateway", 500) -> BAD_GATEWAY
+      new BadRequestException(exceptionMessage)     -> BAD_REQUEST,
+      new NotFoundException(exceptionMessage)       -> NOT_FOUND,
+      new GatewayTimeoutException(exceptionMessage) -> BAD_GATEWAY,
+      new BadGatewayException(exceptionMessage)     -> BAD_GATEWAY
     ).foreach { case (exception, response) =>
-      s"return $response" when {
+      s"return $response with cause redacted" when {
         s"there is hod ${exception.toString} exception" in {
           val customErrorHandler = inject[CustomErrorHandler]
           val pf = customErrorHandler.taxAccountErrorHandler()
           val result = pf(exception)
           status(result) mustBe response
+          contentAsString(result) mustBe "The nino provided is invalid"
         }
+      }
+    }
+
+    "return 500 with cause redacted" when {
+      "there is hod error containing 502 Bad Gateway exception" in {
+        val customErrorHandler = inject[CustomErrorHandler]
+        val pf = customErrorHandler.taxAccountErrorHandler()
+        val result = pf(new HttpException("error containing 502 Bad Gateway", 500))
+        status(result) mustBe BAD_GATEWAY
+        contentAsString(result) mustBe "bad request, cause: REDACTED"
       }
     }
 
@@ -198,10 +208,11 @@ class CustomErrorHandlerSpec extends BaseSpec with ScalaCheckDrivenPropertyCheck
       BAD_REQUEST,
       TOO_MANY_REQUESTS
     ).foreach { status =>
-      s"return $status for $status response" in {
+      s"return $status and redacted message for $status response" in {
         val customErrorHandler = inject[CustomErrorHandler]
         val result = customErrorHandler.errorToResponse(UpstreamErrorResponse(exceptionMessage, status))
         result.header.status mustBe status
+        contentAsString(Future(result)) mustBe "The nino provided is invalid"
       }
     }
 
@@ -211,10 +222,11 @@ class CustomErrorHandlerSpec extends BaseSpec with ScalaCheckDrivenPropertyCheck
       SERVICE_UNAVAILABLE,
       GATEWAY_TIMEOUT
     ).foreach { status =>
-      s"return BAD GATEWAY status for $status response" in {
+      s"return BAD GATEWAY status and redacted message for $status response" in {
         val customErrorHandler = inject[CustomErrorHandler]
         val result = customErrorHandler.errorToResponse(UpstreamErrorResponse(exceptionMessage, status))
         result.header.status mustBe BAD_GATEWAY
+        contentAsString(Future(result)) mustBe "The nino provided is invalid"
       }
     }
 
@@ -222,10 +234,11 @@ class CustomErrorHandlerSpec extends BaseSpec with ScalaCheckDrivenPropertyCheck
       IM_A_TEAPOT,
       UNPROCESSABLE_ENTITY
     ).foreach { status =>
-      s"return internal server error status for $status response" in {
+      s"return internal server error status and redacted message for $status response" in {
         val customErrorHandler = inject[CustomErrorHandler]
         val result = customErrorHandler.errorToResponse(UpstreamErrorResponse(exceptionMessage, status))
         result.header.status mustBe INTERNAL_SERVER_ERROR
+        contentAsString(Future(result)) mustBe "The nino provided is invalid"
       }
     }
   }

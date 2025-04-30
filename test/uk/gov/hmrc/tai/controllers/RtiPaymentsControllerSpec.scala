@@ -76,7 +76,7 @@ class RtiPaymentsControllerSpec extends BaseSpec {
       val result = sut.rtiPayments(Nino(nino.nino), TaxYear("2023"))(FakeRequest())
 
       status(result) mustBe BAD_REQUEST
-      contentAsString(result) mustBe "Bad request"
+      contentAsString(result) mustBe "bad request, cause: REDACTED"
     }
 
     "return INTERNAL_SERVER_ERROR when service returns an unexpected error" in {
