@@ -32,12 +32,14 @@ import uk.gov.hmrc.tai.controllers.auth.AuthJourney
 import uk.gov.hmrc.tai.model.api.ApiResponse
 import uk.gov.hmrc.tai.util.BaseSpec
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.duration.Duration
+import scala.concurrent.{Await, Future}
+import scala.util.{Failure, Try}
 
 class ErrorHandlingOnControllerSpec extends BaseSpec {
 
   private class DummyService @Inject() (
-  )(implicit ec: ExecutionContext) {
+  ) {
     def call(): EitherT[Future, UpstreamErrorResponse, Option[Int]] = EitherT(
       Future.successful[Either[UpstreamErrorResponse, Option[Int]]](Right(None))
     )
@@ -49,8 +51,7 @@ class ErrorHandlingOnControllerSpec extends BaseSpec {
     authentication: AuthJourney,
     cc: ControllerComponents,
     dummyService: DummyService
-  )(implicit ec: ExecutionContext)
-      extends BackendController(cc) with ControllerErrorHandler with Logging {
+  ) extends BackendController(cc) with ControllerErrorHandler with Logging {
     def testMethod(): Action[AnyContent] = authentication.authForEmployeeExpenses.async { implicit request =>
       dummyService
         .call()
@@ -70,19 +71,10 @@ class ErrorHandlingOnControllerSpec extends BaseSpec {
 
   private val sut: DummyController = new DummyController(loggedInAuthenticationAuthJourney, cc, mockDummyService)
 
-  private val errorHandler = app.injector.instanceOf[TempErrorHandler]
+  private def runTest: Future[Result] =
+    sut.testMethod()(FakeRequest())
 
-  private def callOnServerErrorWhenFailed(futureResult: Future[Result], requestHeader: RequestHeader): Future[Result] =
-    futureResult.recoverWith { case t: Throwable =>
-      errorHandler.onServerError(requestHeader, t)
-    }
-
-  private def runTest: Future[Result] = {
-    val request = FakeRequest()
-    callOnServerErrorWhenFailed(sut.testMethod()(request), request)
-  }
-
-  private def failedResponse(ex: Throwable, expectedResponseCode: Int): Unit =
+  private def failedResponseHandledByController(ex: Throwable, expectedResponseCode: Int): Unit =
     s"return $expectedResponseCode response when service response is Future failed ${ex.toString}" in {
       when(mockDummyService.call())
         .thenReturn(
@@ -91,6 +83,16 @@ class ErrorHandlingOnControllerSpec extends BaseSpec {
           )
         )
       status(runTest) mustBe expectedResponseCode
+    }
+  private def failedResponseHandledByErrorHandler(ex: Throwable): Unit =
+    s"return exception to be handled by error handler when service response is Future failed ${ex.toString}" in {
+      when(mockDummyService.call())
+        .thenReturn(
+          EitherT(
+            Future.failed(ex)
+          )
+        )
+      Try(Await.result(runTest, Duration.Inf)) mustBe Failure(ex)
     }
 
   override protected def beforeEach(): Unit = super.beforeEach()
@@ -136,28 +138,15 @@ class ErrorHandlingOnControllerSpec extends BaseSpec {
       }
     }
 
-    behave like failedResponse(BadRequestException("dummy response"), BAD_REQUEST)
-    behave like failedResponse(NotFoundException("dummy response"), NOT_FOUND)
-    behave like failedResponse(GatewayTimeoutException("dummy response"), BAD_GATEWAY)
-    behave like failedResponse(HttpException("502 Bad Gateway", 502), BAD_GATEWAY)
-    behave like failedResponse(RuntimeException("Runtime exception"), INTERNAL_SERVER_ERROR)
-    behave like failedResponse(UpstreamErrorResponse("Upstream exception", 504), GATEWAY_TIMEOUT)
-    behave like failedResponse(HttpException("Http exception", 504), GATEWAY_TIMEOUT)
-    behave like failedResponse(InsufficientConfidenceLevel("Insufficient confidence exception"), UNAUTHORIZED)
-    
-    // TODO: Test scenarios where authentication returns error responses:-
-    /*
-      private val actionBuilderFixture = new ActionBuilderFixture {
-    override def invokeBlock[A](request: Request[A], block: AuthenticatedRequest[A] => Future[Result]): Future[Result] =
-      block(AuthenticatedRequest(request, Nino("AA000003A")))
-  }
+    behave like failedResponseHandledByController(BadRequestException("dummy response"), BAD_REQUEST)
+    behave like failedResponseHandledByController(NotFoundException("dummy response"), NOT_FOUND)
+    behave like failedResponseHandledByController(GatewayTimeoutException("dummy response"), BAD_GATEWAY)
+    behave like failedResponseHandledByController(HttpException("502 Bad Gateway", 502), BAD_GATEWAY)
 
-  lazy val loggedInAuthenticationAuthJourney: AuthJourney = new AuthJourney {
-    val authWithUserDetails: ActionBuilder[AuthenticatedRequest, AnyContent] = actionBuilderFixture
-
-    val authForEmployeeExpenses: ActionBuilder[AuthenticatedRequest, AnyContent] = actionBuilderFixture
-  }
-     */
+    behave like failedResponseHandledByErrorHandler(RuntimeException("Runtime exception"))
+    behave like failedResponseHandledByErrorHandler(UpstreamErrorResponse("Upstream exception", 504))
+    behave like failedResponseHandledByErrorHandler(HttpException("Http exception", 504))
+    behave like failedResponseHandledByErrorHandler(InsufficientConfidenceLevel("Insufficient confidence exception"))
   }
 
 }
