@@ -28,7 +28,6 @@ import play.api.test.Helpers.*
 import uk.gov.hmrc.auth.core.InsufficientConfidenceLevel
 import uk.gov.hmrc.http.{BadRequestException, GatewayTimeoutException, HttpException, NotFoundException, UpstreamErrorResponse}
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
-import uk.gov.hmrc.tai.controllers.ControllerErrorHandler
 import uk.gov.hmrc.tai.controllers.auth.AuthJourney
 import uk.gov.hmrc.tai.model.api.ApiResponse
 import uk.gov.hmrc.tai.util.BaseSpec
@@ -54,26 +53,28 @@ class CustomErrorHandlerInteractionSpec extends BaseSpec {
   private class DummyController @Inject() (
     authentication: AuthJourney,
     cc: ControllerComponents,
-    dummyService: DummyService
-  ) extends BackendController(cc) with ControllerErrorHandler with Logging {
+    dummyService: DummyService,
+    customErrorHandler: CustomErrorHandler
+  ) extends BackendController(cc) with Logging {
     def testMethod(): Action[AnyContent] = authentication.authForEmployeeExpenses.async { implicit request =>
       dummyService
         .call()
         .bimap(
-          error => errorToResponse(error),
+          error => customErrorHandler.errorToResponse(error),
           {
             case Some(i) => Ok(Json.toJson(ApiResponse(i, Nil)))
             case None =>
               val message = s"dummy message"
               logger.warn(message)
-              errorToResponse(UpstreamErrorResponse(message, NOT_FOUND))
+              customErrorHandler.errorToResponse(UpstreamErrorResponse(message, NOT_FOUND))
           }
         )
-        .merge recoverWith taxAccountErrorHandler()
+        .merge recoverWith customErrorHandler.taxAccountErrorHandler()
     }
   }
 
-  private val sut: DummyController = new DummyController(loggedInAuthenticationAuthJourney, cc, mockDummyService)
+  private val sut: DummyController =
+    new DummyController(loggedInAuthenticationAuthJourney, cc, mockDummyService, inject[CustomErrorHandler])
 
   private def runTest: Future[Result] =
     sut.testMethod()(FakeRequest())

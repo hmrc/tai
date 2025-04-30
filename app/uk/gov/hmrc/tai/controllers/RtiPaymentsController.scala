@@ -21,6 +21,7 @@ import play.api.libs.json.Json
 import play.api.mvc.{Action, AnyContent, ControllerComponents}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
+import uk.gov.hmrc.tai.config.CustomErrorHandler
 import uk.gov.hmrc.tai.controllers.auth.AuthJourney
 import uk.gov.hmrc.tai.model.api.ApiResponse
 import uk.gov.hmrc.tai.model.tai.TaxYear
@@ -32,18 +33,19 @@ import scala.concurrent.ExecutionContext
 class RtiPaymentsController @Inject() (
   rtiPaymentsService: RtiPaymentsService,
   authentication: AuthJourney,
-  cc: ControllerComponents
+  cc: ControllerComponents,
+  customErrorHandler: CustomErrorHandler
 )(implicit ec: ExecutionContext)
-    extends BackendController(cc) with ControllerErrorHandler {
+    extends BackendController(cc) {
 
   def rtiPayments(nino: Nino, taxYear: TaxYear): Action[AnyContent] =
     authentication.authWithUserDetails.async { implicit request =>
       rtiPaymentsService
         .getRtiPayments(nino, taxYear)
         .bimap(
-          error => errorToResponse(error),
+          error => customErrorHandler.errorToResponse(error),
           payments => Ok(Json.toJson(ApiResponse(payments, Nil)))
         )
-        .merge recoverWith taxAccountErrorHandler()
+        .merge recoverWith customErrorHandler.taxAccountErrorHandler()
     }
 }

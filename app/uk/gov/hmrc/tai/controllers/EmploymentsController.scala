@@ -23,6 +23,7 @@ import play.api.mvc.{Action, AnyContent, ControllerComponents}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.UpstreamErrorResponse
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
+import uk.gov.hmrc.tai.config.CustomErrorHandler
 import uk.gov.hmrc.tai.controllers.auth.AuthJourney
 import uk.gov.hmrc.tai.model.api.{ApiResponse, EmploymentCollection}
 import uk.gov.hmrc.tai.model.domain.income.TaxCodeIncomeStatus
@@ -36,19 +37,20 @@ import scala.concurrent.ExecutionContext
 class EmploymentsController @Inject() (
   employmentService: EmploymentService,
   authentication: AuthJourney,
-  cc: ControllerComponents
+  cc: ControllerComponents,
+  customErrorHandler: CustomErrorHandler
 )(implicit ec: ExecutionContext)
-    extends BackendController(cc) with ControllerErrorHandler with Logging {
+    extends BackendController(cc) with Logging {
 
   def employments(nino: Nino, year: TaxYear): Action[AnyContent] = authentication.authForEmployeeExpenses.async {
     implicit request =>
       employmentService
         .employmentsAsEitherT(nino, year)
         .bimap(
-          error => errorToResponse(error),
+          error => customErrorHandler.errorToResponse(error),
           employments => Ok(Json.toJson(ApiResponse(EmploymentCollection(employments.employments, None), Nil)))
         )
-        .merge recoverWith taxAccountErrorHandler()
+        .merge recoverWith customErrorHandler.taxAccountErrorHandler()
   }
 
   def employmentOnly(nino: Nino, id: Int, year: TaxYear): Action[AnyContent] =
@@ -56,16 +58,16 @@ class EmploymentsController @Inject() (
       employmentService
         .employmentWithoutRTIAsEitherT(nino, id, year)
         .bimap(
-          error => errorToResponse(error),
+          error => customErrorHandler.errorToResponse(error),
           {
             case Some(employment) => Ok(Json.toJson(ApiResponse(employment, Nil)))
             case None =>
               val message = s"employment id: $id not found in list of employments"
               logger.warn(message)
-              errorToResponse(UpstreamErrorResponse(message, NOT_FOUND))
+              customErrorHandler.errorToResponse(UpstreamErrorResponse(message, NOT_FOUND))
           }
         )
-        .merge recoverWith taxAccountErrorHandler()
+        .merge recoverWith customErrorHandler.taxAccountErrorHandler()
     }
 
   def employmentsOnly(nino: Nino, year: TaxYear): Action[AnyContent] = authentication.authWithUserDetails.async {
@@ -73,10 +75,10 @@ class EmploymentsController @Inject() (
       employmentService
         .employmentsWithoutRtiAsEitherT(nino, year)
         .bimap(
-          error => errorToResponse(error),
+          error => customErrorHandler.errorToResponse(error),
           employments => Ok(Json.toJson(ApiResponse(employments, Nil)))
         )
-        .merge recoverWith taxAccountErrorHandler()
+        .merge recoverWith customErrorHandler.taxAccountErrorHandler()
   }
 
   def getEmploymentsByStatusAndType(
@@ -88,7 +90,7 @@ class EmploymentsController @Inject() (
     employmentService
       .employmentsWithoutRtiAsEitherT(nino, year)
       .bimap(
-        error => errorToResponse(error),
+        error => customErrorHandler.errorToResponse(error),
         employmentsCollection => {
           val filteredEmployments = employmentsCollection.employments.filter(employment =>
             employment.employmentType == incomeType && employment.employmentStatus == status
@@ -102,7 +104,7 @@ class EmploymentsController @Inject() (
           }
         }
       )
-      .merge recoverWith taxAccountErrorHandler()
+      .merge recoverWith customErrorHandler.taxAccountErrorHandler()
   }
 
   def employment(nino: Nino, id: Int): Action[AnyContent] = authentication.authWithUserDetails.async {
@@ -110,16 +112,16 @@ class EmploymentsController @Inject() (
       employmentService
         .employmentAsEitherT(nino, id)
         .bimap(
-          error => errorToResponse(error),
+          error => customErrorHandler.errorToResponse(error),
           {
             case Some(employment) => Ok(Json.toJson(ApiResponse(employment, Nil)))
             case None =>
               val message = s"employment id: $id not found in list of employments"
               logger.warn(message)
-              errorToResponse(UpstreamErrorResponse(message, NOT_FOUND))
+              customErrorHandler.errorToResponse(UpstreamErrorResponse(message, NOT_FOUND))
           }
         )
-        .merge recoverWith taxAccountErrorHandler()
+        .merge recoverWith customErrorHandler.taxAccountErrorHandler()
   }
 
   def endEmployment(nino: Nino, id: Int): Action[JsValue] = authentication.authWithUserDetails.async(parse.json) {
@@ -128,7 +130,7 @@ class EmploymentsController @Inject() (
         employmentService
           .endEmployment(nino, id, endEmployment)
           .fold(
-            error => errorToResponse(error),
+            error => customErrorHandler.errorToResponse(error),
             envelopeId => Ok(Json.toJson(ApiResponse(envelopeId, Nil)))
           )
       }

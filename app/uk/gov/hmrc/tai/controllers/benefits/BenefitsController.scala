@@ -21,7 +21,7 @@ import play.api.libs.json.{JsValue, Json}
 import play.api.mvc.{Action, AnyContent, ControllerComponents}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
-import uk.gov.hmrc.tai.controllers.ControllerErrorHandler
+import uk.gov.hmrc.tai.config.CustomErrorHandler
 import uk.gov.hmrc.tai.controllers.auth.AuthJourney
 import uk.gov.hmrc.tai.model.api.ApiResponse
 import uk.gov.hmrc.tai.model.domain.benefits.{Benefits, RemoveCompanyBenefit}
@@ -34,16 +34,17 @@ import scala.concurrent.ExecutionContext
 class BenefitsController @Inject() (
   benefitService: BenefitsService,
   authentication: AuthJourney,
-  cc: ControllerComponents
+  cc: ControllerComponents,
+  customErrorHandler: CustomErrorHandler
 )(implicit
   ec: ExecutionContext
-) extends BackendController(cc) with ControllerErrorHandler {
+) extends BackendController(cc) {
 
   def benefits(nino: Nino, taxYear: TaxYear): Action[AnyContent] = authentication.authWithUserDetails.async {
     implicit request =>
       benefitService.benefits(nino, taxYear).map { (benefitsFromService: Benefits) =>
         Ok(Json.toJson(ApiResponse(benefitsFromService, Nil)))
-      } recoverWith taxAccountErrorHandler()
+      } recoverWith customErrorHandler.taxAccountErrorHandler()
   }
 
   def removeCompanyBenefits(nino: Nino, empId: Int): Action[JsValue] =

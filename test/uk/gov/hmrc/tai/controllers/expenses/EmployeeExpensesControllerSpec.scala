@@ -22,6 +22,7 @@ import play.api.libs.json.Json
 import play.api.test.Helpers.*
 import play.api.test.{FakeHeaders, FakeRequest}
 import uk.gov.hmrc.http.{BadRequestException, HttpResponse, NotFoundException}
+import uk.gov.hmrc.tai.config.CustomErrorHandler
 import uk.gov.hmrc.tai.controllers.auth.AuthJourney
 import uk.gov.hmrc.tai.model.nps.NpsIabdRoot
 import uk.gov.hmrc.tai.model.tai.TaxYear
@@ -36,7 +37,7 @@ class EmployeeExpensesControllerSpec extends BaseSpec {
   private val mockEmployeeExpensesService = mock[EmployeeExpensesService]
 
   private def controller(authentication: AuthJourney = loggedInAuthenticationAuthJourney) =
-    new EmployeeExpensesController(authentication, mockEmployeeExpensesService, cc)
+    new EmployeeExpensesController(authentication, mockEmployeeExpensesService, cc, inject[CustomErrorHandler])
 
   private val iabd = 56
   val grossAmount = 100

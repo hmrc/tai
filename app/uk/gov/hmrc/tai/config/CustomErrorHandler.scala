@@ -16,16 +16,18 @@
 
 package uk.gov.hmrc.tai.config
 
-import play.api.http.Status.{BAD_REQUEST, INTERNAL_SERVER_ERROR, NOT_FOUND}
-import play.api.mvc.Results.Status
+import play.api.http.Status.{BAD_REQUEST, INTERNAL_SERVER_ERROR, NOT_FOUND, TOO_MANY_REQUESTS}
+import play.api.http.{ContentTypeOf, ContentTypes, Writeable}
+import play.api.libs.json.*
+import play.api.mvc.Results.{BadGateway, BadRequest, InternalServerError, NotFound, Status, TooManyRequests}
 import play.api.mvc.{RequestHeader, Result}
 import play.api.{Configuration, Logging}
 import uk.gov.hmrc.auth.core.AuthorisationException
-import uk.gov.hmrc.http.{HeaderCarrier, JsValidationException, NotFoundException}
+import uk.gov.hmrc.http.{BadGatewayException, BadRequestException, GatewayTimeoutException, HeaderCarrier, HttpException, JsValidationException, NotFoundException, UpstreamErrorResponse}
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 import uk.gov.hmrc.play.bootstrap.backend.http.JsonErrorHandler
 import uk.gov.hmrc.play.bootstrap.config.HttpAuditEvent
-import uk.gov.hmrc.tai.model.ApiResponseFromPERTAX
+import uk.gov.hmrc.tai.model.ErrorView
 
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
@@ -38,6 +40,8 @@ class CustomErrorHandler @Inject() (
   configuration: Configuration
 )(implicit ec: ExecutionContext)
     extends JsonErrorHandler(auditConnector, httpAuditEvent, configuration) with Logging {
+
+  import CustomErrorHandler.*
 
   private def constructErrorMessage(input: String): String = {
     val unrecognisedTokenJsonError = "^Invalid Json: Unrecognized token '(.*)':.*".r
@@ -61,6 +65,24 @@ class CustomErrorHandler @Inject() (
     }
   }
 
+  def taxAccountErrorHandler(): PartialFunction[Throwable, Future[Result]] = {
+    case ex: BadRequestException                                     => Future.successful(BadRequest(ex.message))
+    case ex: NotFoundException                                       => Future.successful(NotFound(ex.message))
+    case ex: GatewayTimeoutException                                 => Future.successful(BadGateway(ex.getMessage))
+    case ex: BadGatewayException                                     => Future.successful(BadGateway(ex.getMessage))
+    case ex: HttpException if ex.message.contains("502 Bad Gateway") => Future.successful(BadGateway(ex.getMessage))
+    case ex                                                          => throw ex
+  }
+
+  def errorToResponse(error: UpstreamErrorResponse): Result =
+    error.statusCode match {
+      case NOT_FOUND               => NotFound(error.getMessage)
+      case BAD_REQUEST             => BadRequest(error.getMessage)
+      case TOO_MANY_REQUESTS       => TooManyRequests(error.getMessage)
+      case status if status >= 499 => BadGateway(error.getMessage)
+      case _                       => InternalServerError(error.getMessage)
+    }
+
   override def onClientError(request: RequestHeader, statusCode: Int, message: String): Future[Result] = {
     implicit val headerCarrier: HeaderCarrier = hc(request)
     val requestId = headerCarrier.requestId.map(_.value).getOrElse("None")
@@ -75,7 +97,7 @@ class CustomErrorHandler @Inject() (
             detail = Map.empty
           )
         )
-        ApiResponseFromPERTAX(
+        ApiResponse(
           "NOT_FOUND",
           s"The resource `${request.uri}` has not been found",
           reportAs = NOT_FOUND
@@ -95,7 +117,7 @@ class CustomErrorHandler @Inject() (
           if (suppress4xxErrorMessages) "Bad request"
           else constructErrorMessage(message)
 
-        ApiResponseFromPERTAX(
+        ApiResponse(
           "BAD_REQUEST",
           msg + s" [auditSource=${appConfig.appName}, X-Request-ID=$requestId]",
           reportAs = BAD_REQUEST
@@ -112,7 +134,7 @@ class CustomErrorHandler @Inject() (
         )
 
         Status(statusCode)(
-          ApiResponseFromPERTAX(
+          ApiResponse(
             "CLIENT_ERROR",
             s"Other error [auditSource=${appConfig.appName}, X-Request-ID=$requestId]",
             reportAs = statusCode
@@ -147,11 +169,50 @@ class CustomErrorHandler @Inject() (
     )
 
     Future.successful(
-      ApiResponseFromPERTAX(
+      ApiResponse(
         "INTERNAL_ERROR",
         s"An error has occurred. This has been audited with auditSource=${appConfig.appName}, X-Request-ID=$requestId",
         reportAs = INTERNAL_SERVER_ERROR
       ).toResult
     )
   }
+}
+
+object CustomErrorHandler {
+  private case class ApiResponse(
+    code: String,
+    message: String,
+    errorView: Option[ErrorView] = None,
+    redirect: Option[String] = None,
+    reportAs: Int
+  ) {
+    def toResult: Result = Status(reportAs)(this)
+  }
+
+  private object ApiResponse {
+    implicit def writable[T](implicit writes: Writes[T]): Writeable[T] = {
+      implicit val contentType: ContentTypeOf[T] = ContentTypeOf[T](Some(ContentTypes.JSON))
+      Writeable(Writeable.writeableOf_JsValue.transform.compose(writes.writes))
+    }
+
+    private def removeNulls(jsObject: JsObject): JsValue =
+      JsObject(jsObject.fields.collect {
+        case (s, j: JsObject) =>
+          (s, removeNulls(j))
+        case other if other._2 != JsNull =>
+          other
+      })
+
+    implicit val writes: Writes[ApiResponse] = new Writes[ApiResponse] {
+      override def writes(o: ApiResponse): JsValue = removeNulls(
+        Json.obj(
+          "code"      -> JsString(o.code),
+          "message"   -> JsString(o.message),
+          "errorView" -> o.errorView.map(errorView => Json.toJson(errorView)),
+          "redirect"  -> o.redirect.map(JsString.apply)
+        )
+      )
+    }
+  }
+
 }

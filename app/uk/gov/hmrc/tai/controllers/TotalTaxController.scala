@@ -21,6 +21,7 @@ import play.api.libs.json.Json
 import play.api.mvc.{Action, AnyContent, ControllerComponents}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
+import uk.gov.hmrc.tai.config.CustomErrorHandler
 import uk.gov.hmrc.tai.controllers.auth.AuthJourney
 import uk.gov.hmrc.tai.model.api.ApiResponse
 import uk.gov.hmrc.tai.model.tai.TaxYear
@@ -33,14 +34,15 @@ import scala.concurrent.ExecutionContext
 class TotalTaxController @Inject() (
   totalTaxService: TotalTaxService,
   authentication: AuthJourney,
-  cc: ControllerComponents
+  cc: ControllerComponents,
+  customErrorHandler: CustomErrorHandler
 )(implicit ec: ExecutionContext)
-    extends BackendController(cc) with NpsExceptions with ControllerErrorHandler {
+    extends BackendController(cc) with NpsExceptions {
 
   def totalTax(nino: Nino, year: TaxYear): Action[AnyContent] = authentication.authWithUserDetails.async {
     implicit request =>
       totalTaxService.totalTax(nino, year) map { totalTax =>
         Ok(Json.toJson(ApiResponse(totalTax, Nil)))
-      } recoverWith taxAccountErrorHandler()
+      } recoverWith customErrorHandler.taxAccountErrorHandler()
   }
 }

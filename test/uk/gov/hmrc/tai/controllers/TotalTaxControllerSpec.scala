@@ -22,6 +22,7 @@ import play.api.libs.json.Json
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{status, *}
 import uk.gov.hmrc.http.{BadRequestException, LockedException}
+import uk.gov.hmrc.tai.config.CustomErrorHandler
 import uk.gov.hmrc.tai.controllers.auth.AuthJourney
 import uk.gov.hmrc.tai.model.domain.calculation.{IncomeCategory, TaxBand, TotalTax, UkDividendsIncomeCategory}
 import uk.gov.hmrc.tai.model.domain.taxAdjustments.*
@@ -196,6 +197,6 @@ class TotalTaxControllerSpec extends BaseSpec with NpsExceptions {
     totalTaxService: TotalTaxService,
     authentication: AuthJourney = loggedInAuthenticationAuthJourney
   ) =
-    new TotalTaxController(totalTaxService, authentication, cc)
+    new TotalTaxController(totalTaxService, authentication, cc, inject[CustomErrorHandler])
 
 }

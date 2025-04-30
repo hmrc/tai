@@ -24,6 +24,7 @@ import play.api.libs.json.Json
 import play.api.test.Helpers.*
 import play.api.test.{FakeHeaders, FakeRequest}
 import uk.gov.hmrc.http.{BadRequestException, NotFoundException, UpstreamErrorResponse}
+import uk.gov.hmrc.tai.config.CustomErrorHandler
 import uk.gov.hmrc.tai.model.api.{ApiResponse, EmploymentCollection}
 import uk.gov.hmrc.tai.model.domain.*
 import uk.gov.hmrc.tai.model.domain.income.{Live, NotLive, PotentiallyCeased}
@@ -55,7 +56,8 @@ class EmploymentsControllerSpec extends BaseSpec {
 
   val mockEmploymentService: EmploymentService = mock[EmploymentService]
 
-  val sut = new EmploymentsController(mockEmploymentService, loggedInAuthenticationAuthJourney, cc)
+  val sut =
+    new EmploymentsController(mockEmploymentService, loggedInAuthenticationAuthJourney, cc, inject[CustomErrorHandler])
 
   override protected def beforeEach(): Unit = {
     reset(mockEmploymentService)

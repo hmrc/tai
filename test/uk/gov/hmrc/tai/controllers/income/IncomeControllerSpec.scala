@@ -24,6 +24,7 @@ import play.api.libs.json.*
 import play.api.test.Helpers.*
 import play.api.test.{FakeHeaders, FakeRequest}
 import uk.gov.hmrc.http.{BadRequestException, NotFoundException, UpstreamErrorResponse}
+import uk.gov.hmrc.tai.config.CustomErrorHandler
 import uk.gov.hmrc.tai.controllers.auth.AuthJourney
 import uk.gov.hmrc.tai.model.domain.*
 import uk.gov.hmrc.tai.model.domain.income.*
@@ -477,7 +478,7 @@ class IncomeControllerSpec extends BaseSpec {
     incomeService: IncomeService = mock[IncomeService],
     authentication: AuthJourney = loggedInAuthenticationAuthJourney
   ) =
-    new IncomeController(incomeService, authentication, cc)
+    new IncomeController(incomeService, authentication, cc, inject[CustomErrorHandler])
 
   private def fakeTaxCodeIncomeRequest: FakeRequest[JsValue] = {
     val updateTaxCodeIncomeRequest = UpdateTaxCodeIncomeRequest(1234)

@@ -22,6 +22,7 @@ import play.api.libs.json.Json
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{status, *}
 import uk.gov.hmrc.http.*
+import uk.gov.hmrc.tai.config.CustomErrorHandler
 import uk.gov.hmrc.tai.controllers.auth.AuthJourney
 import uk.gov.hmrc.tai.model.domain.TaxAccountSummary
 import uk.gov.hmrc.tai.model.tai.TaxYear
@@ -83,6 +84,6 @@ class TaxAccountSummaryControllerSpec extends BaseSpec with NpsExceptions {
     taxAccountSummaryService: TaxAccountSummaryService,
     authentication: AuthJourney = loggedInAuthenticationAuthJourney
   ) =
-    new TaxAccountSummaryController(taxAccountSummaryService, authentication, cc)
+    new TaxAccountSummaryController(taxAccountSummaryService, authentication, cc, inject[CustomErrorHandler])
 
 }
