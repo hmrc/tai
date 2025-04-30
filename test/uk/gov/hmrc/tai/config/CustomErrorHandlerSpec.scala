@@ -36,7 +36,8 @@ import uk.gov.hmrc.play.audit.model.DataEvent
 import uk.gov.hmrc.tai.util.BaseSpec
 
 import java.util.UUID
-import scala.concurrent.Future
+import scala.concurrent.duration.Duration
+import scala.concurrent.{Await, Future}
 
 class CustomErrorHandlerSpec extends BaseSpec with ScalaCheckDrivenPropertyChecks {
   def pathGen: Gen[String] = Gen.nonEmptyListOf(Gen.alphaNumStr).map(_.mkString("/"))
@@ -194,7 +195,7 @@ class CustomErrorHandlerSpec extends BaseSpec with ScalaCheckDrivenPropertyCheck
           val customErrorHandler = inject[CustomErrorHandler]
           val pf = customErrorHandler.handleControllerExceptions()
           val result = the[HttpException] thrownBy
-            pf(exception).futureValue
+            Await.result(pf(exception), Duration.Inf)
           result.getMessage mustBe expectedMessage
         }
       }
