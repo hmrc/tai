@@ -30,7 +30,6 @@ import uk.gov.hmrc.tai.model.domain.income.*
 import uk.gov.hmrc.tai.model.domain.response.*
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.service.helper.TaxCodeIncomeHelper
-import uk.gov.hmrc.tai.util.JsonHelper
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -143,14 +142,10 @@ class IncomeService @Inject() (
     }
   }
 
-  def incomes(nino: Nino, year: TaxYear)(implicit hc: HeaderCarrier): Future[Incomes] = {
-    val reads = JsonHelper.selectReads(
-      OtherNonTaxCodeIncomeSquidReads.otherNonTaxCodeIncomeReads,
-      OtherNonTaxCodeIncomeHipReads.otherNonTaxCodeIncomeReads
-    )
+  def incomes(nino: Nino, year: TaxYear)(implicit hc: HeaderCarrier): Future[Incomes] =
     taxAccountConnector.taxAccount(nino, year).flatMap { jsValue =>
       val nonTaxCodeIncome =
-        jsValue.as[Seq[OtherNonTaxCodeIncome]](reads)
+        jsValue.as[Seq[OtherNonTaxCodeIncome]](OtherNonTaxCodeIncomeHipReads.otherNonTaxCodeIncomeReads)
       val (untaxedInterestIncome, otherNonTaxCodeIncome) =
         nonTaxCodeIncome.partition(_.incomeComponentType == UntaxedInterestIncome)
 
@@ -165,7 +160,6 @@ class IncomeService @Inject() (
         Future.successful(Incomes(Seq.empty[TaxCodeIncome], NonTaxCodeIncome(None, otherNonTaxCodeIncome)))
       }
     }
-  }
 
   def employments(filteredTaxCodeIncomes: Seq[TaxCodeIncome], nino: Nino, year: TaxYear)(implicit
     headerCarrier: HeaderCarrier,

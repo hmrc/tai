@@ -24,7 +24,6 @@ import uk.gov.hmrc.tai.model.domain.IabdDetails
 import uk.gov.hmrc.tai.model.domain.income.*
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.service.IabdService
-import uk.gov.hmrc.tai.util.JsonHelper
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -36,16 +35,11 @@ class TaxCodeIncomeHelper @Inject() (
   def fetchTaxCodeIncomes(nino: Nino, year: TaxYear)(implicit hc: HeaderCarrier): Future[Seq[TaxCodeIncome]] = {
     lazy val iabdDetailsFuture = iabdService.retrieveIabdDetails(nino, year)
 
-    val reads = JsonHelper.selectReads(
-      TaxCodeIncomeSquidReads.taxCodeIncomeSourcesReads,
-      TaxCodeIncomeHipReads.taxCodeIncomeSourcesReads
-    )
-
     for {
 
       taxCodeIncomes <- taxAccountConnector
                           .taxAccount(nino, year)
-                          .map(_.as[Seq[TaxCodeIncome]](reads))
+                          .map(_.as[Seq[TaxCodeIncome]](TaxCodeIncomeHipReads.taxCodeIncomeSourcesReads))
       iabdDetails <- iabdDetailsFuture
     } yield taxCodeIncomes.map { taxCodeIncome =>
       addIabdDetailsToTaxCodeIncome(iabdDetails, taxCodeIncome)

@@ -16,7 +16,6 @@
 
 package uk.gov.hmrc.tai.util
 
-import org.mockito.ArgumentMatchers.eq as eqTo
 import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
 import play.api.libs.json.*
@@ -111,30 +110,4 @@ class JsonHelperSpec extends PlaySpec with MockitoSugar {
     }
   }
 
-  private case class Test(field1: String, field2: String)
-  private val test1 = Test("first", "first")
-  private val test2 = Test("second", "second")
-  private val testReadsA = Reads[Test](_ => JsSuccess(test1))
-  private val testReadsB = Reads[Test](_ => JsSuccess(test2))
-  private val jsonSquidPayload = Json.obj(
-    "nino" -> ""
-  )
-  private val jsonHipPayload = Json.obj(
-    "nationalInsuranceNumber" -> ""
-  )
-
-  "selectReads" must {
-    "use squid reads when squid payload" in {
-      val actualReads = JsonHelper.selectReads[Test](testReadsA, testReadsB)
-      val actualValue = actualReads.reads(jsonSquidPayload)
-      actualValue mustBe JsSuccess(test1)
-    }
-
-    "use hip reads when hip payload" in {
-      val actualReads = JsonHelper.selectReads[Test](testReadsA, testReadsB)
-      val actualValue = actualReads.reads(jsonHipPayload)
-      actualValue mustBe JsSuccess(test2)
-    }
-
-  }
 }
