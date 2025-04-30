@@ -164,7 +164,7 @@ class CustomErrorHandlerSpec extends BaseSpec with ScalaCheckDrivenPropertyCheck
       s"return $response with cause redacted" when {
         s"there is hod ${exception.toString} exception" in {
           val customErrorHandler = inject[CustomErrorHandler]
-          val pf = customErrorHandler.taxAccountErrorHandler()
+          val pf = customErrorHandler.handleControllerExceptions()
           val result = pf(exception)
           status(result) mustBe response
           contentAsString(result) mustBe "The nino provided is invalid"
@@ -175,7 +175,7 @@ class CustomErrorHandlerSpec extends BaseSpec with ScalaCheckDrivenPropertyCheck
     "return 500 with cause redacted" when {
       "there is hod error containing 502 Bad Gateway exception" in {
         val customErrorHandler = inject[CustomErrorHandler]
-        val pf = customErrorHandler.taxAccountErrorHandler()
+        val pf = customErrorHandler.handleControllerExceptions()
         val result = pf(new HttpException("error containing 502 Bad Gateway", 500))
         status(result) mustBe BAD_GATEWAY
         contentAsString(result) mustBe "bad request, cause: REDACTED"
@@ -192,7 +192,7 @@ class CustomErrorHandlerSpec extends BaseSpec with ScalaCheckDrivenPropertyCheck
       s"return exception" when {
         s"there is hod ${exception.toString} exception" in {
           val customErrorHandler = inject[CustomErrorHandler]
-          val pf = customErrorHandler.taxAccountErrorHandler()
+          val pf = customErrorHandler.handleControllerExceptions()
           val result = the[HttpException] thrownBy
             pf(exception).futureValue
           result.getMessage mustBe expectedMessage
@@ -210,7 +210,7 @@ class CustomErrorHandlerSpec extends BaseSpec with ScalaCheckDrivenPropertyCheck
     ).foreach { status =>
       s"return $status and redacted message for $status response" in {
         val customErrorHandler = inject[CustomErrorHandler]
-        val result = customErrorHandler.errorToResponse(UpstreamErrorResponse(exceptionMessage, status))
+        val result = customErrorHandler.handleControllerErrorStatuses(UpstreamErrorResponse(exceptionMessage, status))
         result.header.status mustBe status
         contentAsString(Future(result)) mustBe "The nino provided is invalid"
       }
@@ -224,7 +224,7 @@ class CustomErrorHandlerSpec extends BaseSpec with ScalaCheckDrivenPropertyCheck
     ).foreach { status =>
       s"return BAD GATEWAY status and redacted message for $status response" in {
         val customErrorHandler = inject[CustomErrorHandler]
-        val result = customErrorHandler.errorToResponse(UpstreamErrorResponse(exceptionMessage, status))
+        val result = customErrorHandler.handleControllerErrorStatuses(UpstreamErrorResponse(exceptionMessage, status))
         result.header.status mustBe BAD_GATEWAY
         contentAsString(Future(result)) mustBe "The nino provided is invalid"
       }
@@ -236,7 +236,7 @@ class CustomErrorHandlerSpec extends BaseSpec with ScalaCheckDrivenPropertyCheck
     ).foreach { status =>
       s"return internal server error status and redacted message for $status response" in {
         val customErrorHandler = inject[CustomErrorHandler]
-        val result = customErrorHandler.errorToResponse(UpstreamErrorResponse(exceptionMessage, status))
+        val result = customErrorHandler.handleControllerErrorStatuses(UpstreamErrorResponse(exceptionMessage, status))
         result.header.status mustBe INTERNAL_SERVER_ERROR
         contentAsString(Future(result)) mustBe "The nino provided is invalid"
       }

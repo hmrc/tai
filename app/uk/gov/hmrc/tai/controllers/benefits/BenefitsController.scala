@@ -44,7 +44,7 @@ class BenefitsController @Inject() (
     implicit request =>
       benefitService.benefits(nino, taxYear).map { (benefitsFromService: Benefits) =>
         Ok(Json.toJson(ApiResponse(benefitsFromService, Nil)))
-      } recoverWith customErrorHandler.taxAccountErrorHandler()
+      } recoverWith customErrorHandler.handleControllerExceptions()
   }
 
   def removeCompanyBenefits(nino: Nino, empId: Int): Action[JsValue] =

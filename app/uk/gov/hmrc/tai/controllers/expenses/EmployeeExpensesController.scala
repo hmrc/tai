@@ -70,7 +70,7 @@ class EmployeeExpensesController @Inject() (
     authentication.authForEmployeeExpenses.async { implicit request =>
       employeeExpensesService.getEmployeeExpenses(nino, year, iabd).map { iabdData =>
         Ok(Json.toJson(iabdData))
-      } recoverWith customErrorHandler.taxAccountErrorHandler()
+      } recoverWith customErrorHandler.handleControllerExceptions()
     }
 }
 

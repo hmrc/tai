@@ -27,7 +27,6 @@ import uk.gov.hmrc.http.{BadGatewayException, BadRequestException, GatewayTimeou
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 import uk.gov.hmrc.play.bootstrap.backend.http.JsonErrorHandler
 import uk.gov.hmrc.play.bootstrap.config.HttpAuditEvent
-import uk.gov.hmrc.tai.model.ErrorView
 
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
@@ -65,7 +64,7 @@ class CustomErrorHandler @Inject() (
     }
   }
 
-  def taxAccountErrorHandler(): PartialFunction[Throwable, Future[Result]] = {
+  def handleControllerExceptions(): PartialFunction[Throwable, Future[Result]] = {
     case ex: BadRequestException     => Future.successful(BadRequest(constructErrorMessage(ex.message)))
     case ex: NotFoundException       => Future.successful(NotFound(constructErrorMessage(ex.message)))
     case ex: GatewayTimeoutException => Future.successful(BadGateway(constructErrorMessage(ex.getMessage)))
@@ -75,7 +74,7 @@ class CustomErrorHandler @Inject() (
     case ex => throw ex
   }
 
-  def errorToResponse(error: UpstreamErrorResponse): Result = {
+  def handleControllerErrorStatuses(error: UpstreamErrorResponse): Result = {
     val constructedErrorMessage = constructErrorMessage(error.getMessage)
     error.statusCode match {
       case NOT_FOUND               => NotFound(constructedErrorMessage)
@@ -182,6 +181,11 @@ class CustomErrorHandler @Inject() (
 }
 
 object CustomErrorHandler {
+  private case class ErrorView(url: String, statusCode: Int)
+
+  private object ErrorView {
+    implicit val format: OFormat[ErrorView] = Json.format[ErrorView]
+  }
   private case class ApiResponse(
     code: String,
     message: String,

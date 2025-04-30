@@ -47,10 +47,10 @@ class EmploymentsController @Inject() (
       employmentService
         .employmentsAsEitherT(nino, year)
         .bimap(
-          error => customErrorHandler.errorToResponse(error),
+          error => customErrorHandler.handleControllerErrorStatuses(error),
           employments => Ok(Json.toJson(ApiResponse(EmploymentCollection(employments.employments, None), Nil)))
         )
-        .merge recoverWith customErrorHandler.taxAccountErrorHandler()
+        .merge recoverWith customErrorHandler.handleControllerExceptions()
   }
 
   def employmentOnly(nino: Nino, id: Int, year: TaxYear): Action[AnyContent] =
@@ -58,16 +58,16 @@ class EmploymentsController @Inject() (
       employmentService
         .employmentWithoutRTIAsEitherT(nino, id, year)
         .bimap(
-          error => customErrorHandler.errorToResponse(error),
+          error => customErrorHandler.handleControllerErrorStatuses(error),
           {
             case Some(employment) => Ok(Json.toJson(ApiResponse(employment, Nil)))
             case None =>
               val message = s"employment id: $id not found in list of employments"
               logger.warn(message)
-              customErrorHandler.errorToResponse(UpstreamErrorResponse(message, NOT_FOUND))
+              customErrorHandler.handleControllerErrorStatuses(UpstreamErrorResponse(message, NOT_FOUND))
           }
         )
-        .merge recoverWith customErrorHandler.taxAccountErrorHandler()
+        .merge recoverWith customErrorHandler.handleControllerExceptions()
     }
 
   def employmentsOnly(nino: Nino, year: TaxYear): Action[AnyContent] = authentication.authWithUserDetails.async {
@@ -75,10 +75,10 @@ class EmploymentsController @Inject() (
       employmentService
         .employmentsWithoutRtiAsEitherT(nino, year)
         .bimap(
-          error => customErrorHandler.errorToResponse(error),
+          error => customErrorHandler.handleControllerErrorStatuses(error),
           employments => Ok(Json.toJson(ApiResponse(employments, Nil)))
         )
-        .merge recoverWith customErrorHandler.taxAccountErrorHandler()
+        .merge recoverWith customErrorHandler.handleControllerExceptions()
   }
 
   def getEmploymentsByStatusAndType(
@@ -90,7 +90,7 @@ class EmploymentsController @Inject() (
     employmentService
       .employmentsWithoutRtiAsEitherT(nino, year)
       .bimap(
-        error => customErrorHandler.errorToResponse(error),
+        error => customErrorHandler.handleControllerErrorStatuses(error),
         employmentsCollection => {
           val filteredEmployments = employmentsCollection.employments.filter(employment =>
             employment.employmentType == incomeType && employment.employmentStatus == status
@@ -104,7 +104,7 @@ class EmploymentsController @Inject() (
           }
         }
       )
-      .merge recoverWith customErrorHandler.taxAccountErrorHandler()
+      .merge recoverWith customErrorHandler.handleControllerExceptions()
   }
 
   def employment(nino: Nino, id: Int): Action[AnyContent] = authentication.authWithUserDetails.async {
@@ -112,16 +112,16 @@ class EmploymentsController @Inject() (
       employmentService
         .employmentAsEitherT(nino, id)
         .bimap(
-          error => customErrorHandler.errorToResponse(error),
+          error => customErrorHandler.handleControllerErrorStatuses(error),
           {
             case Some(employment) => Ok(Json.toJson(ApiResponse(employment, Nil)))
             case None =>
               val message = s"employment id: $id not found in list of employments"
               logger.warn(message)
-              customErrorHandler.errorToResponse(UpstreamErrorResponse(message, NOT_FOUND))
+              customErrorHandler.handleControllerErrorStatuses(UpstreamErrorResponse(message, NOT_FOUND))
           }
         )
-        .merge recoverWith customErrorHandler.taxAccountErrorHandler()
+        .merge recoverWith customErrorHandler.handleControllerExceptions()
   }
 
   def endEmployment(nino: Nino, id: Int): Action[JsValue] = authentication.authWithUserDetails.async(parse.json) {
@@ -130,7 +130,7 @@ class EmploymentsController @Inject() (
         employmentService
           .endEmployment(nino, id, endEmployment)
           .fold(
-            error => customErrorHandler.errorToResponse(error),
+            error => customErrorHandler.handleControllerErrorStatuses(error),
             envelopeId => Ok(Json.toJson(ApiResponse(envelopeId, Nil)))
           )
       }

@@ -43,6 +43,6 @@ class TotalTaxController @Inject() (
     implicit request =>
       totalTaxService.totalTax(nino, year) map { totalTax =>
         Ok(Json.toJson(ApiResponse(totalTax, Nil)))
-      } recoverWith customErrorHandler.taxAccountErrorHandler()
+      } recoverWith customErrorHandler.handleControllerExceptions()
   }
 }

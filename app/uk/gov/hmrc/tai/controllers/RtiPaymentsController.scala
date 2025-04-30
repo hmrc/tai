@@ -43,9 +43,9 @@ class RtiPaymentsController @Inject() (
       rtiPaymentsService
         .getRtiPayments(nino, taxYear)
         .bimap(
-          error => customErrorHandler.errorToResponse(error),
+          error => customErrorHandler.handleControllerErrorStatuses(error),
           payments => Ok(Json.toJson(ApiResponse(payments, Nil)))
         )
-        .merge recoverWith customErrorHandler.taxAccountErrorHandler()
+        .merge recoverWith customErrorHandler.handleControllerExceptions()
     }
 }

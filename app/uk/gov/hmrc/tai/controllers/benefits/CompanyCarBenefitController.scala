@@ -46,7 +46,7 @@ class CompanyCarBenefitController @Inject() (
         case c =>
           implicit val apiResponseWrites: Writes[ApiResponse[JsValue]] = ApiResponse.apiFormat[JsValue]
           Ok(Json.toJson(ApiResponse(Json.obj("companyCarBenefits" -> c.map(Json.toJson(_))), Nil)))
-      } recoverWith customErrorHandler.taxAccountErrorHandler()
+      } recoverWith customErrorHandler.handleControllerExceptions()
   }
 
 }
