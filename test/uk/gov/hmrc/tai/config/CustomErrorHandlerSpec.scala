@@ -23,14 +23,14 @@ import org.scalacheck.Gen
 import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
 import play.api.Application
 import play.api.cache.AsyncCacheApi
-import play.api.http.Status.{BAD_REQUEST, INTERNAL_SERVER_ERROR, NOT_FOUND}
+import play.api.http.Status.{BAD_GATEWAY, BAD_REQUEST, GATEWAY_TIMEOUT, IM_A_TEAPOT, INTERNAL_SERVER_ERROR, NOT_FOUND, SERVICE_UNAVAILABLE, TOO_MANY_REQUESTS, UNPROCESSABLE_ENTITY}
 import play.api.inject.bind
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.json.{JsString, Json}
 import play.api.test.FakeRequest
-import play.api.test.Helpers.{GET, contentAsString, defaultAwaitTimeout}
+import play.api.test.Helpers.{GET, contentAsString, defaultAwaitTimeout, status}
 import uk.gov.hmrc.auth.core.InsufficientConfidenceLevel
-import uk.gov.hmrc.http.{HeaderNames, JsValidationException, NotFoundException}
+import uk.gov.hmrc.http.{BadGatewayException, BadRequestException, GatewayTimeoutException, HeaderNames, HttpException, InternalServerException, JsValidationException, NotFoundException, UpstreamErrorResponse}
 import uk.gov.hmrc.play.audit.http.connector.{AuditConnector, AuditResult}
 import uk.gov.hmrc.play.audit.model.DataEvent
 import uk.gov.hmrc.tai.util.BaseSpec
@@ -151,4 +151,83 @@ class CustomErrorHandlerSpec extends BaseSpec with ScalaCheckDrivenPropertyCheck
       }
     }
   }
+
+  private val exceptionMessage = "test message"
+
+  "taxAccountErrorHandler" must {
+    Set(
+      new BadRequestException(exceptionMessage)                  -> BAD_REQUEST,
+      new NotFoundException(exceptionMessage)                    -> NOT_FOUND,
+      new GatewayTimeoutException(exceptionMessage)              -> BAD_GATEWAY,
+      new BadGatewayException(exceptionMessage)                  -> BAD_GATEWAY,
+      new HttpException("error containing 502 Bad Gateway", 500) -> BAD_GATEWAY
+    ).foreach { case (exception, response) =>
+      s"return $response" when {
+        s"there is hod ${exception.toString} exception" in {
+          val customErrorHandler = inject[CustomErrorHandler]
+          val pf = customErrorHandler.taxAccountErrorHandler()
+          val result = pf(exception)
+          status(result) mustBe response
+        }
+      }
+    }
+
+    Set(
+      new HttpException(
+        "error NOT containing five zero two Bad Gateway",
+        500
+      )                                             -> "error NOT containing five zero two Bad Gateway",
+      new InternalServerException(exceptionMessage) -> exceptionMessage
+    ).foreach { case (exception, expectedMessage) =>
+      s"return exception" when {
+        s"there is hod ${exception.toString} exception" in {
+          val customErrorHandler = inject[CustomErrorHandler]
+          val pf = customErrorHandler.taxAccountErrorHandler()
+          val result = the[HttpException] thrownBy
+            pf(exception).futureValue
+          result.getMessage mustBe expectedMessage
+        }
+      }
+    }
+
+  }
+
+  "errorToResponse" must {
+    Set(
+      NOT_FOUND,
+      BAD_REQUEST,
+      TOO_MANY_REQUESTS
+    ).foreach { status =>
+      s"return $status for $status response" in {
+        val customErrorHandler = inject[CustomErrorHandler]
+        val result = customErrorHandler.errorToResponse(UpstreamErrorResponse(exceptionMessage, status))
+        result.header.status mustBe status
+      }
+    }
+
+    Set(
+      INTERNAL_SERVER_ERROR,
+      BAD_GATEWAY,
+      SERVICE_UNAVAILABLE,
+      GATEWAY_TIMEOUT
+    ).foreach { status =>
+      s"return BAD GATEWAY status for $status response" in {
+        val customErrorHandler = inject[CustomErrorHandler]
+        val result = customErrorHandler.errorToResponse(UpstreamErrorResponse(exceptionMessage, status))
+        result.header.status mustBe BAD_GATEWAY
+      }
+    }
+
+    Set(
+      IM_A_TEAPOT,
+      UNPROCESSABLE_ENTITY
+    ).foreach { status =>
+      s"return internal server error status for $status response" in {
+        val customErrorHandler = inject[CustomErrorHandler]
+        val result = customErrorHandler.errorToResponse(UpstreamErrorResponse(exceptionMessage, status))
+        result.header.status mustBe INTERNAL_SERVER_ERROR
+      }
+    }
+  }
+
 }
