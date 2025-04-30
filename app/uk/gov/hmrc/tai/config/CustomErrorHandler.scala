@@ -71,7 +71,7 @@ class CustomErrorHandler @Inject() (
     case ex: BadGatewayException     => Future.successful(BadGateway(constructErrorMessage(ex.getMessage)))
     case ex: HttpException if ex.message.contains("502 Bad Gateway") =>
       Future.successful(BadGateway(constructErrorMessage(ex.getMessage)))
-    case ex => throw ex
+    case ex => Future.failed(ex)
   }
 
   def handleControllerErrorStatuses(error: UpstreamErrorResponse): Result = {
