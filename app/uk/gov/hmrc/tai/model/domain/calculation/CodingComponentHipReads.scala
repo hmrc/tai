@@ -17,7 +17,7 @@
 package uk.gov.hmrc.tai.model.domain.calculation
 
 import play.api.libs.json._
-import uk.gov.hmrc.tai.model.domain.NpsIabdSummaryHipReads.iabdsFromTotalLiabilityReads
+import uk.gov.hmrc.tai.model.domain.NpsIabdSummary.iabdsFromTotalLiabilityReads
 import uk.gov.hmrc.tai.model.domain._
 import uk.gov.hmrc.tai.util.JsonHelper.parseTypeOrException
 

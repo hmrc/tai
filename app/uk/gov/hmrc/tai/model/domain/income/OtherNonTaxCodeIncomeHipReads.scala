@@ -24,7 +24,7 @@ object OtherNonTaxCodeIncomeHipReads {
 
   val otherNonTaxCodeIncomeReads: Reads[Seq[OtherNonTaxCodeIncome]] = (json: JsValue) => {
     val extractedIabds: Seq[NpsIabdSummary] =
-      json.as[Seq[NpsIabdSummary]](NpsIabdSummaryHipReads.iabdsFromTotalLiabilityReads)
+      json.as[Seq[NpsIabdSummary]](NpsIabdSummary.iabdsFromTotalLiabilityReads)
     JsSuccess(nonTaxCodeIncomes(extractedIabds))
   }
 

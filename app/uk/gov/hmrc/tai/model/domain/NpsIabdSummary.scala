@@ -16,4 +16,38 @@
 
 package uk.gov.hmrc.tai.model.domain
 
+import play.api.libs.json.{JsArray, JsSuccess, JsValue, Reads}
+import uk.gov.hmrc.tai.util.JsonHelper.{parseTypeOrException, readsTypeTuple}
+
 case class NpsIabdSummary(componentType: Int, employmentId: Option[Int], amount: BigDecimal, description: String)
+
+object NpsIabdSummary {
+
+  val iabdsFromTotalLiabilityReads: Reads[Seq[NpsIabdSummary]] = (json: JsValue) => {
+    val categories =
+      Seq("nonSavings", "untaxedInterest", "bankInterest", "ukDividends", "foreignInterest", "foreignDividends")
+    val totalIncomeList = totalLiabilityIabds(json, "totalIncomeDetails", categories)
+    val allowReliefDeductsList = totalLiabilityIabds(json, "allowanceReliefDeductionsDetails", categories)
+    JsSuccess(totalIncomeList ++ allowReliefDeductsList)
+  }
+
+  def totalLiabilityIabds(json: JsValue, subPath: String, categories: Seq[String]): Seq[NpsIabdSummary] = {
+
+    val parseSummary: PartialFunction[JsValue, NpsIabdSummary] = {
+      case json if (json \ "type").asOpt[(String, Int)](readsTypeTuple).isDefined =>
+        val fullType = (json \ "type").as[String]
+        val (description, componentType) = parseTypeOrException(fullType)
+        val employmentId = (json \ "employmentSequenceNumber").asOpt[Int]
+        val amount = (json \ "amount").asOpt[BigDecimal].getOrElse(BigDecimal(0))
+        NpsIabdSummary(componentType, employmentId, amount, description)
+    }
+
+    def extractItems(listName: String): Seq[NpsIabdSummary] =
+      categories
+        .flatMap(category => (json \ "totalLiabilityDetails" \ category \ subPath \ listName).asOpt[JsArray])
+        .flatMap(_.value)
+        .collect(parseSummary)
+
+    extractItems("summaryIABDDetailsList") ++ extractItems("summaryIABDEstimatedPayDetailsList")
+  }
+}
