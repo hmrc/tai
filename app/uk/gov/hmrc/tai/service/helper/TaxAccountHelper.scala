@@ -22,7 +22,7 @@ import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.tai.connectors.TaxAccountConnector
 import uk.gov.hmrc.tai.model.domain.*
-import uk.gov.hmrc.tai.model.domain.calculation.{CodingComponent, CodingComponentHipReads}
+import uk.gov.hmrc.tai.model.domain.calculation.CodingComponent
 import uk.gov.hmrc.tai.model.domain.taxAdjustments.{TaxAdjustment, *}
 import uk.gov.hmrc.tai.model.tai.TaxYear
 
@@ -42,7 +42,7 @@ class TaxAccountHelper @Inject() (taxAccountConnector: TaxAccountConnector)(impl
         val totalTax = taxAccount.as[BigDecimal](TaxOnOtherIncome.taxAccountSummaryReads)
 
         val componentsCanAffectTotal = taxAccount
-          .as[Seq[CodingComponent]](CodingComponentHipReads.codingComponentReads)
+          .as[Seq[CodingComponent]](CodingComponent.codingComponentReads)
           .filter(c => componentTypesCanAffectTotalEst.contains(c.componentType))
 
         Future(totalTax + componentsCanAffectTotal.map(_.inputAmount.getOrElse(BigDecimal(0))).sum)
@@ -134,7 +134,7 @@ class TaxAccountHelper @Inject() (taxAccountConnector: TaxAccountConnector)(impl
 
     for {
       codingComponents <-
-        taxAccountDetails.map(_.as[Seq[CodingComponent]](CodingComponentHipReads.codingComponentReads))
+        taxAccountDetails.map(_.as[Seq[CodingComponent]](CodingComponent.codingComponentReads))
       taxReliefComponents <- taxReliefsComponentsFuture
     } yield {
       val giftAidPayments =

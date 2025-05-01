@@ -20,7 +20,7 @@ import com.google.inject.{Inject, Singleton}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.tai.connectors.TaxAccountConnector
-import uk.gov.hmrc.tai.model.domain.calculation.{CodingComponent, CodingComponentHipReads}
+import uk.gov.hmrc.tai.model.domain.calculation.CodingComponent
 import uk.gov.hmrc.tai.model.tai.TaxYear
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -33,12 +33,12 @@ class CodingComponentService @Inject() (
   def codingComponents(nino: Nino, year: TaxYear)(implicit hc: HeaderCarrier): Future[Seq[CodingComponent]] =
     taxAccountConnector
       .taxAccount(nino, year)
-      .map(_.as[Seq[CodingComponent]](CodingComponentHipReads.codingComponentReads))
+      .map(_.as[Seq[CodingComponent]](CodingComponent.codingComponentReads))
 
   def codingComponentsForTaxCodeId(nino: Nino, taxCodeId: Int)(implicit
     hc: HeaderCarrier
   ): Future[Seq[CodingComponent]] =
     taxAccountConnector
       .taxAccountHistory(nino = nino, iocdSeqNo = taxCodeId)
-      .map(_.as[Seq[CodingComponent]](CodingComponentHipReads.codingComponentReads))
+      .map(_.as[Seq[CodingComponent]](CodingComponent.codingComponentReads))
 }
