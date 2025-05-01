@@ -85,11 +85,11 @@ object TaxCodeIncomeHipReads {
   private def totalTaxableIncome(json: JsValue, employmentId: Option[Int]): Option[BigDecimal] = {
     val iabdSummaries: Option[Seq[IabdSummary]] = {
       val list1 = (json \ "payAndTax" \ "totalIncomeDetails" \ "summaryIABDEstimatedPayDetailsList")
-        .asOpt[Seq[IabdSummary]](Reads.seq(IabdSummaryHipReads.iabdSummaryReads))
+        .asOpt[Seq[IabdSummary]](Reads.seq(IabdSummary.iabdSummaryReads))
 
       val list2: Option[Seq[IabdSummary]] =
         (json \ "payAndTax" \ "totalIncomeDetails" \ "summaryIABDDetailsList")
-          .asOpt[Seq[IabdSummary]](Reads.seq(IabdSummaryHipReads.iabdSummaryReads))
+          .asOpt[Seq[IabdSummary]](Reads.seq(IabdSummary.iabdSummaryReads))
 
       (list1, list2) match {
         case (Some(l1), Some(l2)) => Some(l1 ++ l2)
