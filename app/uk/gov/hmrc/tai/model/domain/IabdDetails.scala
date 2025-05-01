@@ -105,7 +105,8 @@ object IabdDetails extends IabdTypeConstants with Logging {
     "CALCULATED"            -> 49,
     "FWKS"                  -> 50,
     "Home Working Expenses" -> 51,
-    "T&TSP"                 -> 52
+    "T&TSP"                 -> 52,
+    "HICBC PAYE"            -> 53
   )
 
   private val iabdReads: Reads[IabdDetails] =

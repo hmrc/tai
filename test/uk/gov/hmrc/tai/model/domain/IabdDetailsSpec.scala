@@ -48,6 +48,31 @@ class IabdDetailsSpec extends PlaySpec {
       )
     }
 
+    "deserialize JSON correctly when hicbc source type" in {
+      val sampleJson = Json.obj(
+        "iabdDetails" -> Json.arr(
+          Json.obj(
+            "nationalInsuranceNumber"  -> "AB123456C",
+            "employmentSequenceNumber" -> 12345,
+            "source"                   -> "HICBC PAYE",
+            "type"                     -> "Non-Coded Income (019)"
+          )
+        )
+      )
+      val expectedModel: IabdDetails = IabdDetails(
+        nino = Some("AB123456C"),
+        employmentSequenceNumber = Some(12345),
+        source = Some(53),
+        `type` = Some(19),
+        receiptDate = None,
+        captureDate = None
+      )
+      sampleJson.validate[Seq[IabdDetails]](IabdDetails.reads) mustBe JsSuccess(
+        Seq(expectedModel),
+        JsPath \ "iabdDetails"
+      )
+    }
+
     "deserialize JSON correctly when source type is missing" in {
       val sampleJson = Json.obj(
         "iabdDetails" -> Json.arr(
