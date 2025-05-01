@@ -31,31 +31,31 @@ class TaxOnOtherIncomeSpec extends PlaySpec with MockitoSugar {
           )
         )
 
-        json.as[BigDecimal](TaxOnOtherIncomeHipReads.taxAccountSummaryReads) mustBe BigDecimal(1234.56)
+        json.as[BigDecimal](TaxOnOtherIncome.taxAccountSummaryReads) mustBe BigDecimal(1234.56)
       }
     }
     "return zero totalEstTax" when {
       "totalLiability section is NOT present" in {
         val json = Json.obj()
-        json.as[BigDecimal](TaxOnOtherIncomeHipReads.taxAccountSummaryReads) mustBe BigDecimal(0)
+        json.as[BigDecimal](TaxOnOtherIncome.taxAccountSummaryReads) mustBe BigDecimal(0)
       }
       "totalLiability section is null" in {
         val json = Json.obj(
           "totalLiabilityDetails" -> JsNull
         )
-        json.as[BigDecimal](TaxOnOtherIncomeHipReads.taxAccountSummaryReads) mustBe BigDecimal(0)
+        json.as[BigDecimal](TaxOnOtherIncome.taxAccountSummaryReads) mustBe BigDecimal(0)
       }
       "totalLiability section is present but the totalLiability value is not present inside" in {
         val json = Json.obj(
           "totalLiabilityDetails" -> Json.obj()
         )
-        json.as[BigDecimal](TaxOnOtherIncomeHipReads.taxAccountSummaryReads) mustBe BigDecimal(0)
+        json.as[BigDecimal](TaxOnOtherIncome.taxAccountSummaryReads) mustBe BigDecimal(0)
       }
       "totalLiability section is present but the totalLiability value is null inside" in {
         val json = Json.obj(
           "totalLiabilityDetails" -> JsNull
         )
-        json.as[BigDecimal](TaxOnOtherIncomeHipReads.taxAccountSummaryReads) mustBe BigDecimal(0)
+        json.as[BigDecimal](TaxOnOtherIncome.taxAccountSummaryReads) mustBe BigDecimal(0)
       }
     }
 
@@ -103,7 +103,7 @@ class TaxOnOtherIncomeSpec extends PlaySpec with MockitoSugar {
           )
         )
 
-        json.as[BigDecimal](TaxOnOtherIncomeHipReads.taxAccountSummaryReads) mustBe BigDecimal(1194.56)
+        json.as[BigDecimal](TaxOnOtherIncome.taxAccountSummaryReads) mustBe BigDecimal(1194.56)
       }
 
     }
@@ -153,7 +153,7 @@ class TaxOnOtherIncomeSpec extends PlaySpec with MockitoSugar {
           )
         )
 
-        json.as[Option[BigDecimal]](TaxOnOtherIncomeHipReads.taxOnOtherIncomeTaxValueReads) mustBe Some(40)
+        json.as[Option[BigDecimal]](TaxOnOtherIncome.taxOnOtherIncomeTaxValueReads) mustBe Some(40)
       }
 
       "non-coded income is present and equal to highest rate income " in {
@@ -198,7 +198,7 @@ class TaxOnOtherIncomeSpec extends PlaySpec with MockitoSugar {
           )
         )
 
-        json.as[Option[BigDecimal]](TaxOnOtherIncomeHipReads.taxOnOtherIncomeTaxValueReads) mustBe Some(400)
+        json.as[Option[BigDecimal]](TaxOnOtherIncome.taxOnOtherIncomeTaxValueReads) mustBe Some(400)
       }
 
       "non-coded income is present and scattered in multiple rate bands " in {
@@ -249,7 +249,7 @@ class TaxOnOtherIncomeSpec extends PlaySpec with MockitoSugar {
           )
         )
 
-        json.as[Option[BigDecimal]](TaxOnOtherIncomeHipReads.taxOnOtherIncomeTaxValueReads) mustBe Some(2600)
+        json.as[Option[BigDecimal]](TaxOnOtherIncome.taxOnOtherIncomeTaxValueReads) mustBe Some(2600)
       }
 
       "non-coded income is present and highest rate is 20%" in {
@@ -288,7 +288,7 @@ class TaxOnOtherIncomeSpec extends PlaySpec with MockitoSugar {
           )
         )
 
-        json.as[Option[BigDecimal]](TaxOnOtherIncomeHipReads.taxOnOtherIncomeTaxValueReads) mustBe Some(20)
+        json.as[Option[BigDecimal]](TaxOnOtherIncome.taxOnOtherIncomeTaxValueReads) mustBe Some(20)
       }
 
       "non-coded income is not present" in {
@@ -320,7 +320,7 @@ class TaxOnOtherIncomeSpec extends PlaySpec with MockitoSugar {
             )
           )
         )
-        json.as[Option[BigDecimal]](TaxOnOtherIncomeHipReads.taxOnOtherIncomeTaxValueReads) mustBe None
+        json.as[Option[BigDecimal]](TaxOnOtherIncome.taxOnOtherIncomeTaxValueReads) mustBe None
       }
 
       "non-coded income is present and tax bands are not present" in {
@@ -350,7 +350,7 @@ class TaxOnOtherIncomeSpec extends PlaySpec with MockitoSugar {
           )
         )
 
-        json.as[Option[BigDecimal]](TaxOnOtherIncomeHipReads.taxOnOtherIncomeTaxValueReads) mustBe None
+        json.as[Option[BigDecimal]](TaxOnOtherIncome.taxOnOtherIncomeTaxValueReads) mustBe None
       }
 
       "non-coded income is present but tax bands income is null" in {
@@ -388,7 +388,7 @@ class TaxOnOtherIncomeSpec extends PlaySpec with MockitoSugar {
             )
           )
         )
-        json.as[Option[BigDecimal]](TaxOnOtherIncomeHipReads.taxOnOtherIncomeTaxValueReads) mustBe None
+        json.as[Option[BigDecimal]](TaxOnOtherIncome.taxOnOtherIncomeTaxValueReads) mustBe None
       }
     }
   }
@@ -436,7 +436,7 @@ class TaxOnOtherIncomeSpec extends PlaySpec with MockitoSugar {
             )
           )
         )
-        json.as[Option[BigDecimal]](TaxOnOtherIncomeHipReads.taxOnOtherIncomeTaxValueReads) mustBe Some(40)
+        json.as[Option[BigDecimal]](TaxOnOtherIncome.taxOnOtherIncomeTaxValueReads) mustBe Some(40)
       }
     }
 
@@ -467,7 +467,7 @@ class TaxOnOtherIncomeSpec extends PlaySpec with MockitoSugar {
             )
           )
         )
-        json.as[Option[BigDecimal]](TaxOnOtherIncomeHipReads.taxOnOtherIncomeTaxValueReads) mustBe None
+        json.as[Option[BigDecimal]](TaxOnOtherIncome.taxOnOtherIncomeTaxValueReads) mustBe None
       }
     }
   }

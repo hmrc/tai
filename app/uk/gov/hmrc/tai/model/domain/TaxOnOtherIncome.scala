@@ -16,4 +16,54 @@
 
 package uk.gov.hmrc.tai.model.domain
 
+import play.api.libs.json.{JsSuccess, JsValue, Reads}
+
+import scala.annotation.tailrec
+
 case class TaxOnOtherIncome(tax: BigDecimal)
+
+object TaxOnOtherIncome {
+  private val NonCodedIncome = 19
+
+  val taxOnOtherIncomeTaxValueReads: Reads[Option[BigDecimal]] = (json: JsValue) =>
+    JsSuccess(json.as[Option[TaxOnOtherIncome]](taxOnOtherIncomeReads) map (_.tax))
+
+  val taxAccountSummaryReads: Reads[BigDecimal] = (json: JsValue) => {
+    val taxOnOtherIncome =
+      json.as[Option[TaxOnOtherIncome]](taxOnOtherIncomeReads) map (_.tax) getOrElse BigDecimal(0)
+    val totalLiabilityTax =
+      (json \ "totalLiabilityDetails" \ "totalLiability").asOpt[BigDecimal].getOrElse(BigDecimal(0))
+    JsSuccess(totalLiabilityTax - taxOnOtherIncome)
+  }
+
+  private val taxOnOtherIncomeReads: Reads[Option[TaxOnOtherIncome]] = (json: JsValue) => {
+    val iabdSummaries: Seq[NpsIabdSummary] =
+      NpsIabdSummary.totalLiabilityIabds(json, "totalIncomeDetails", Seq("nonSavings"))
+    val nonCodedIncomeAmount = iabdSummaries.find(_.componentType == NonCodedIncome).map(_.amount)
+    @tailrec
+    def calculateTaxOnOtherIncome(
+      incomeAndRateBands: Seq[RateBand],
+      nonCodedIncome: BigDecimal,
+      total: BigDecimal = 0
+    ): BigDecimal =
+      incomeAndRateBands match {
+        case Nil => total
+        case xs if nonCodedIncome > xs.head.income =>
+          val newTotal = xs.head.income * (xs.head.rate / 100)
+          calculateTaxOnOtherIncome(xs.tail, nonCodedIncome - xs.head.income, total + newTotal)
+        case xs if nonCodedIncome <= xs.head.income =>
+          val newTotal = nonCodedIncome * (xs.head.rate / 100)
+          total + newTotal
+        case _ => throw new RuntimeException("Incorrect rate band")
+      }
+
+    (nonCodedIncomeAmount, RateBand.incomeAndRateBands(json)) match {
+      case (None, _)      => JsSuccess(None)
+      case (Some(_), Nil) => JsSuccess(None)
+      case (Some(amount), incomeAndRateBands) =>
+        val remainingTaxOnOtherIncome = calculateTaxOnOtherIncome(incomeAndRateBands, amount)
+        JsSuccess(Some(TaxOnOtherIncome(remainingTaxOnOtherIncome)))
+    }
+
+  }
+}

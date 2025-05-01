@@ -39,7 +39,7 @@ class TaxAccountHelper @Inject() (taxAccountConnector: TaxAccountConnector)(impl
     taxAccountConnector
       .taxAccount(nino, year)
       .flatMap { taxAccount =>
-        val totalTax = taxAccount.as[BigDecimal](TaxOnOtherIncomeHipReads.taxAccountSummaryReads)
+        val totalTax = taxAccount.as[BigDecimal](TaxOnOtherIncome.taxAccountSummaryReads)
 
         val componentsCanAffectTotal = taxAccount
           .as[Seq[CodingComponent]](CodingComponentHipReads.codingComponentReads)
@@ -119,7 +119,7 @@ class TaxAccountHelper @Inject() (taxAccountConnector: TaxAccountConnector)(impl
   }
 
   def taxOnOtherIncome(taxAccountDetails: Future[JsValue]): Future[Option[BigDecimal]] =
-    taxAccountDetails.map(_.as[Option[BigDecimal]](TaxOnOtherIncomeHipReads.taxOnOtherIncomeTaxValueReads))
+    taxAccountDetails.map(_.as[Option[BigDecimal]](TaxOnOtherIncome.taxOnOtherIncomeTaxValueReads))
   def taxReliefComponents(taxAccountDetails: Future[JsValue]): Future[Option[TaxAdjustment]] = {
     lazy val taxReliefsComponentsFuture = taxAdjustmentComponents(taxAccountDetails).map {
       case Some(taxAdjustment) =>
