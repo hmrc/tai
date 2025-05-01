@@ -35,7 +35,7 @@ case class IabdDetails(
   grossAmount: Option[BigDecimal] = None
 )
 
-object IabdDetailsToggleOn extends IabdTypeConstants with Logging {
+object IabdDetails extends IabdTypeConstants with Logging {
   private val dateReads: Reads[LocalDate] = localDateReads("yyyy-MM-dd")
 
   private def sourceReads: Reads[Option[Int]] = {

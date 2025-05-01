@@ -19,7 +19,7 @@ package uk.gov.hmrc.tai.model.domain
 import org.scalatestplus.play.PlaySpec
 import play.api.libs.json.{JsArray, JsObject, Json}
 import uk.gov.hmrc.domain.{Generator, Nino}
-import uk.gov.hmrc.tai.model.domain.NpsIabdSummarySquidReads.iabdsFromTotalLiabilityReads
+import uk.gov.hmrc.tai.model.domain.NpsIabdSummaryHipReads.iabdsFromTotalLiabilityReads
 
 import scala.util.Random
 
@@ -31,11 +31,11 @@ class NpsIabdSummarySpec extends PlaySpec {
     for {
       _ <- 1 to noOfIabds
     } yield Json.obj(
-      "amount"             -> 1,
-      "type"               -> iabdType,
-      "npsDescription"     -> "desc",
-      "employmentId"       -> 1,
-      "estimatesPaySource" -> 1
+      "amount"                   -> 1,
+      "type"                     -> s"desc ($iabdType)",
+      "npsDescription"           -> "desc",
+      "employmentSequenceNumber" -> 1,
+      "estimatesPaySource"       -> 1
     )
 
   "iabdsFromTotalLiabilityReads" must {
@@ -45,10 +45,10 @@ class NpsIabdSummarySpec extends PlaySpec {
       val json = Json.obj(
         "taxAccountId" -> "id",
         "nino"         -> nino.nino,
-        "totalLiability" -> Json.obj(
+        "totalLiabilityDetails" -> Json.obj(
           "nonSavings" -> Json.obj(
-            "totalIncome" -> Json.obj(
-              "iabdSummaries" -> JsArray(iabdSummaries)
+            "totalIncomeDetails" -> Json.obj(
+              "summaryIABDEstimatedPayDetailsList" -> JsArray(iabdSummaries)
             )
           )
         )
@@ -61,35 +61,35 @@ class NpsIabdSummarySpec extends PlaySpec {
       val json = Json.obj(
         "taxAccountId" -> "id",
         "nino"         -> nino.nino,
-        "totalLiability" -> Json.obj(
+        "totalLiabilityDetails" -> Json.obj(
           "nonSavings" -> Json.obj(
-            "totalIncome" -> Json.obj(
-              "iabdSummaries" -> JsArray(npsIabdSummaries(3))
+            "totalIncomeDetails" -> Json.obj(
+              "summaryIABDEstimatedPayDetailsList" -> JsArray(npsIabdSummaries(3))
             )
           ),
           "untaxedInterest" -> Json.obj(
-            "totalIncome" -> Json.obj(
-              "iabdSummaries" -> JsArray(npsIabdSummaries(4))
+            "totalIncomeDetails" -> Json.obj(
+              "summaryIABDEstimatedPayDetailsList" -> JsArray(npsIabdSummaries(4))
             )
           ),
           "bankInterest" -> Json.obj(
-            "totalIncome" -> Json.obj(
-              "iabdSummaries" -> JsArray(npsIabdSummaries(5))
+            "totalIncomeDetails" -> Json.obj(
+              "summaryIABDEstimatedPayDetailsList" -> JsArray(npsIabdSummaries(5))
             )
           ),
           "ukDividends" -> Json.obj(
-            "totalIncome" -> Json.obj(
-              "iabdSummaries" -> JsArray(npsIabdSummaries(6))
+            "totalIncomeDetails" -> Json.obj(
+              "summaryIABDEstimatedPayDetailsList" -> JsArray(npsIabdSummaries(6))
             )
           ),
           "foreignInterest" -> Json.obj(
-            "totalIncome" -> Json.obj(
-              "iabdSummaries" -> JsArray(npsIabdSummaries(7))
+            "totalIncomeDetails" -> Json.obj(
+              "summaryIABDEstimatedPayDetailsList" -> JsArray(npsIabdSummaries(7))
             )
           ),
           "foreignDividends" -> Json.obj(
-            "totalIncome" -> Json.obj(
-              "iabdSummaries" -> JsArray(npsIabdSummaries(8))
+            "totalIncomeDetails" -> Json.obj(
+              "summaryIABDEstimatedPayDetailsList" -> JsArray(npsIabdSummaries(8))
             )
           )
         )
@@ -101,35 +101,35 @@ class NpsIabdSummarySpec extends PlaySpec {
       val json = Json.obj(
         "taxAccountId" -> "id",
         "nino"         -> nino.nino,
-        "totalLiability" -> Json.obj(
+        "totalLiabilityDetails" -> Json.obj(
           "nonSavings" -> Json.obj(
-            "allowReliefDeducts" -> Json.obj(
-              "iabdSummaries" -> JsArray(npsIabdSummaries(3))
+            "allowanceReliefDeductionsDetails" -> Json.obj(
+              "summaryIABDEstimatedPayDetailsList" -> JsArray(npsIabdSummaries(3))
             )
           ),
           "untaxedInterest" -> Json.obj(
-            "allowReliefDeducts" -> Json.obj(
-              "iabdSummaries" -> JsArray(npsIabdSummaries(4))
+            "allowanceReliefDeductionsDetails" -> Json.obj(
+              "summaryIABDEstimatedPayDetailsList" -> JsArray(npsIabdSummaries(4))
             )
           ),
           "bankInterest" -> Json.obj(
-            "allowReliefDeducts" -> Json.obj(
-              "iabdSummaries" -> JsArray(npsIabdSummaries(5))
+            "allowanceReliefDeductionsDetails" -> Json.obj(
+              "summaryIABDEstimatedPayDetailsList" -> JsArray(npsIabdSummaries(5))
             )
           ),
           "ukDividends" -> Json.obj(
-            "allowReliefDeducts" -> Json.obj(
-              "iabdSummaries" -> JsArray(npsIabdSummaries(6))
+            "allowanceReliefDeductionsDetails" -> Json.obj(
+              "summaryIABDEstimatedPayDetailsList" -> JsArray(npsIabdSummaries(6))
             )
           ),
           "foreignInterest" -> Json.obj(
-            "allowReliefDeducts" -> Json.obj(
-              "iabdSummaries" -> JsArray(npsIabdSummaries(7))
+            "allowanceReliefDeductionsDetails" -> Json.obj(
+              "summaryIABDEstimatedPayDetailsList" -> JsArray(npsIabdSummaries(7))
             )
           ),
           "foreignDividends" -> Json.obj(
-            "allowReliefDeducts" -> Json.obj(
-              "iabdSummaries" -> JsArray(npsIabdSummaries(8))
+            "allowanceReliefDeductionsDetails" -> Json.obj(
+              "summaryIABDEstimatedPayDetailsList" -> JsArray(npsIabdSummaries(8))
             )
           )
         )
@@ -144,10 +144,10 @@ class NpsIabdSummarySpec extends PlaySpec {
         val json = Json.obj(
           "taxAccountId" -> "id",
           "nino"         -> nino.nino,
-          "totalLiability" -> Json.obj(
+          "totalLiabilityDetails" -> Json.obj(
             "nonSavings" -> Json.obj(
-              "totalIncome" -> Json.obj(
-                "iabdSummaries" -> JsArray(
+              "totalIncomeDetails" -> Json.obj(
+                "summaryIABDEstimatedPayDetailsList" -> JsArray(
                   Seq(
                     Json.obj(
                       "amount"             -> 1,
@@ -164,33 +164,33 @@ class NpsIabdSummarySpec extends PlaySpec {
         json.as[Seq[NpsIabdSummary]](iabdsFromTotalLiabilityReads) mustBe empty
       }
 
-      "no iabd summaries are present within any of the six categories for each of 'totalIncome' or 'allowReliefDeducts'" in {
+      "no iabd summaries are present within any of the six categories for each of 'totalIncome' or 'allowanceReliefDeductionsDetails'" in {
         val json = Json.obj(
           "taxAccountId" -> "id",
           "nino"         -> nino.nino,
-          "totalLiability" -> Json.obj(
+          "totalLiabilityDetails" -> Json.obj(
             "nonSavings" -> Json.obj(
-              "totalIncome" -> Json.obj(
+              "totalIncomeDetails" -> Json.obj(
                 "type" -> 1
               )
             ),
             "untaxedInterest" -> Json.obj(
-              "totalIncome" -> Json.obj(
-                "iabdSummaries" -> JsArray()
+              "totalIncomeDetails" -> Json.obj(
+                "summaryIABDEstimatedPayDetailsList" -> JsArray()
               )
             ),
             "nonSavings" -> Json.obj(
-              "allowReliefDeducts" -> Json.obj(
+              "allowanceReliefDeductionsDetails" -> Json.obj(
                 "type" -> 1
               )
             ),
             "untaxedInterest" -> Json.obj(
-              "allowReliefDeducts" -> Json.obj(
-                "iabdSummaries" -> JsArray()
+              "allowanceReliefDeductionsDetails" -> Json.obj(
+                "summaryIABDEstimatedPayDetailsList" -> JsArray()
               )
             ),
             "basicRateExtensions" -> Json.obj(
-              "iabdSummaries" -> JsArray(npsIabdSummaries(2))
+              "summaryIABDEstimatedPayDetailsList" -> JsArray(npsIabdSummaries(2))
             )
           )
         )
@@ -200,57 +200,57 @@ class NpsIabdSummarySpec extends PlaySpec {
 
     "extract all expected iabd summaries" when {
 
-      "spread across all six categories for each of 'totalIncome' and 'allowReliefDeducts'" in {
+      "spread across all six categories for each of 'totalIncome' and 'allowanceReliefDeductionsDetails'" in {
         val json = Json.obj(
           "taxAccountId" -> "id",
           "nino"         -> nino.nino,
-          "totalLiability" -> Json.obj(
+          "totalLiabilityDetails" -> Json.obj(
             "nonSavings" -> Json.obj(
-              "totalIncome" -> Json.obj(
-                "iabdSummaries" -> JsArray(npsIabdSummaries(3))
+              "totalIncomeDetails" -> Json.obj(
+                "summaryIABDEstimatedPayDetailsList" -> JsArray(npsIabdSummaries(3))
               ),
-              "allowReliefDeducts" -> Json.obj(
-                "iabdSummaries" -> JsArray(npsIabdSummaries(3))
+              "allowanceReliefDeductionsDetails" -> Json.obj(
+                "summaryIABDEstimatedPayDetailsList" -> JsArray(npsIabdSummaries(3))
               )
             ),
             "untaxedInterest" -> Json.obj(
-              "totalIncome" -> Json.obj(
-                "iabdSummaries" -> JsArray(npsIabdSummaries(4))
+              "totalIncomeDetails" -> Json.obj(
+                "summaryIABDEstimatedPayDetailsList" -> JsArray(npsIabdSummaries(4))
               ),
-              "allowReliefDeducts" -> Json.obj(
-                "iabdSummaries" -> JsArray(npsIabdSummaries(4))
+              "allowanceReliefDeductionsDetails" -> Json.obj(
+                "summaryIABDEstimatedPayDetailsList" -> JsArray(npsIabdSummaries(4))
               )
             ),
             "bankInterest" -> Json.obj(
-              "totalIncome" -> Json.obj(
-                "iabdSummaries" -> JsArray(npsIabdSummaries(5))
+              "totalIncomeDetails" -> Json.obj(
+                "summaryIABDEstimatedPayDetailsList" -> JsArray(npsIabdSummaries(5))
               ),
-              "allowReliefDeducts" -> Json.obj(
-                "iabdSummaries" -> JsArray(npsIabdSummaries(5))
+              "allowanceReliefDeductionsDetails" -> Json.obj(
+                "summaryIABDEstimatedPayDetailsList" -> JsArray(npsIabdSummaries(5))
               )
             ),
             "ukDividends" -> Json.obj(
-              "totalIncome" -> Json.obj(
-                "iabdSummaries" -> JsArray(npsIabdSummaries(6))
+              "totalIncomeDetails" -> Json.obj(
+                "summaryIABDEstimatedPayDetailsList" -> JsArray(npsIabdSummaries(6))
               ),
-              "allowReliefDeducts" -> Json.obj(
-                "iabdSummaries" -> JsArray(npsIabdSummaries(6))
+              "allowanceReliefDeductionsDetails" -> Json.obj(
+                "summaryIABDEstimatedPayDetailsList" -> JsArray(npsIabdSummaries(6))
               )
             ),
             "foreignInterest" -> Json.obj(
-              "totalIncome" -> Json.obj(
-                "iabdSummaries" -> JsArray(npsIabdSummaries(7))
+              "totalIncomeDetails" -> Json.obj(
+                "summaryIABDEstimatedPayDetailsList" -> JsArray(npsIabdSummaries(7))
               ),
-              "allowReliefDeducts" -> Json.obj(
-                "iabdSummaries" -> JsArray(npsIabdSummaries(7))
+              "allowanceReliefDeductionsDetails" -> Json.obj(
+                "summaryIABDEstimatedPayDetailsList" -> JsArray(npsIabdSummaries(7))
               )
             ),
             "foreignDividends" -> Json.obj(
-              "totalIncome" -> Json.obj(
-                "iabdSummaries" -> JsArray(npsIabdSummaries(8))
+              "totalIncomeDetails" -> Json.obj(
+                "summaryIABDEstimatedPayDetailsList" -> JsArray(npsIabdSummaries(8))
               ),
-              "allowReliefDeducts" -> Json.obj(
-                "iabdSummaries" -> JsArray(npsIabdSummaries(8))
+              "allowanceReliefDeductionsDetails" -> Json.obj(
+                "summaryIABDEstimatedPayDetailsList" -> JsArray(npsIabdSummaries(8))
               )
             )
           )

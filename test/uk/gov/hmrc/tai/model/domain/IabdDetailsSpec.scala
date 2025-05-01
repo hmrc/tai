@@ -21,10 +21,10 @@ import play.api.libs.json.*
 
 class IabdDetailsSpec extends PlaySpec {
 
-  "IabdDetailsToggleOn" must {
+  "IabdDetails" must {
 
     "deserialize JSON correctly when unknown source type" in {
-      val sampleJsonToggleOn = Json.obj(
+      val sampleJson = Json.obj(
         "iabdDetails" -> Json.arr(
           Json.obj(
             "nationalInsuranceNumber"  -> "AB123456C",
@@ -34,7 +34,7 @@ class IabdDetailsSpec extends PlaySpec {
           )
         )
       )
-      val expectedModelToggleOn: IabdDetails = IabdDetails(
+      val expectedModel: IabdDetails = IabdDetails(
         nino = Some("AB123456C"),
         employmentSequenceNumber = Some(12345),
         source = None,
@@ -42,14 +42,14 @@ class IabdDetailsSpec extends PlaySpec {
         receiptDate = None,
         captureDate = None
       )
-      sampleJsonToggleOn.validate[Seq[IabdDetails]](IabdDetailsToggleOn.reads) mustBe JsSuccess(
-        Seq(expectedModelToggleOn),
+      sampleJson.validate[Seq[IabdDetails]](IabdDetails.reads) mustBe JsSuccess(
+        Seq(expectedModel),
         JsPath \ "iabdDetails"
       )
     }
 
     "deserialize JSON correctly when source type is missing" in {
-      val sampleJsonToggleOn = Json.obj(
+      val sampleJson = Json.obj(
         "iabdDetails" -> Json.arr(
           Json.obj(
             "nationalInsuranceNumber"  -> "AB123456C",
@@ -58,7 +58,7 @@ class IabdDetailsSpec extends PlaySpec {
           )
         )
       )
-      val expectedModelToggleOn: IabdDetails = IabdDetails(
+      val expectedModel: IabdDetails = IabdDetails(
         nino = Some("AB123456C"),
         employmentSequenceNumber = Some(12345),
         source = None,
@@ -66,8 +66,8 @@ class IabdDetailsSpec extends PlaySpec {
         receiptDate = None,
         captureDate = None
       )
-      sampleJsonToggleOn.validate[Seq[IabdDetails]](IabdDetailsToggleOn.reads) mustBe JsSuccess(
-        Seq(expectedModelToggleOn),
+      sampleJson.validate[Seq[IabdDetails]](IabdDetails.reads) mustBe JsSuccess(
+        Seq(expectedModel),
         JsPath \ "iabdDetails"
       )
     }
