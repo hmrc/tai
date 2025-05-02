@@ -16,16 +16,17 @@
 
 package uk.gov.hmrc.tai.config
 
-import play.api.http.Status.{BAD_REQUEST, INTERNAL_SERVER_ERROR, NOT_FOUND, TOO_MANY_REQUESTS}
+import play.api.http.Status.*
 import play.api.http.{ContentTypeOf, ContentTypes, Writeable}
 import play.api.libs.json.*
+import play.api.libs.json.Json.toJson
 import play.api.mvc.Results.{BadGateway, BadRequest, InternalServerError, NotFound, Status, TooManyRequests}
 import play.api.mvc.{RequestHeader, Result}
 import play.api.{Configuration, Logging}
 import uk.gov.hmrc.auth.core.AuthorisationException
 import uk.gov.hmrc.http.{BadGatewayException, BadRequestException, GatewayTimeoutException, HeaderCarrier, HttpException, JsValidationException, NotFoundException, UpstreamErrorResponse}
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
-import uk.gov.hmrc.play.bootstrap.backend.http.JsonErrorHandler
+import uk.gov.hmrc.play.bootstrap.backend.http.{ErrorResponse, JsonErrorHandler}
 import uk.gov.hmrc.play.bootstrap.config.HttpAuditEvent
 
 import javax.inject.{Inject, Singleton}
@@ -40,9 +41,7 @@ class CustomErrorHandler @Inject() (
 )(implicit ec: ExecutionContext)
     extends JsonErrorHandler(auditConnector, httpAuditEvent, configuration) with Logging {
 
-  import CustomErrorHandler.*
-
-  private def constructErrorMessage(input: String): String = {
+  final def constructErrorMessage(input: String): String = {
     val unrecognisedTokenJsonError = "^Invalid Json: Unrecognized token '(.*)':.*".r
     val invalidJson = "^(?s)Invalid Json:.*".r
     val jsonValidationError = "^Json validation error.*".r
@@ -75,10 +74,9 @@ class CustomErrorHandler @Inject() (
     }
   }
 
+  // This should be same as parent class version
   override def onClientError(request: RequestHeader, statusCode: Int, message: String): Future[Result] = {
     implicit val headerCarrier: HeaderCarrier = hc(request)
-    val requestId = headerCarrier.requestId.map(_.value).getOrElse("None")
-
     val result = statusCode match {
       case NOT_FOUND =>
         auditConnector.sendEvent(
@@ -89,11 +87,7 @@ class CustomErrorHandler @Inject() (
             detail = Map.empty
           )
         )
-        ApiResponse(
-          "NOT_FOUND",
-          s"The resource `${request.uri}` has not been found",
-          reportAs = NOT_FOUND
-        ).toResult
+        NotFound(toJson(ErrorResponse(NOT_FOUND, "URI not found", requested = Some(request.path))))
 
       case BAD_REQUEST =>
         auditConnector.sendEvent(
@@ -109,11 +103,7 @@ class CustomErrorHandler @Inject() (
           if (suppress4xxErrorMessages) "Bad request"
           else constructErrorMessage(message)
 
-        ApiResponse(
-          "BAD_REQUEST",
-          msg + s" [auditSource=${appConfig.appName}, X-Request-ID=$requestId]",
-          reportAs = BAD_REQUEST
-        ).toResult
+        BadRequest(toJson(ErrorResponse(BAD_REQUEST, msg)))
 
       case _ =>
         auditConnector.sendEvent(
@@ -125,13 +115,11 @@ class CustomErrorHandler @Inject() (
           )
         )
 
-        Status(statusCode)(
-          ApiResponse(
-            "CLIENT_ERROR",
-            s"Other error [auditSource=${appConfig.appName}, X-Request-ID=$requestId]",
-            reportAs = statusCode
-          )
-        )
+        val msg =
+          if (suppress4xxErrorMessages) "Other error"
+          else message
+
+        Status(statusCode)(toJson(ErrorResponse(statusCode, msg)))
     }
     Future.successful(result)
   }
@@ -143,88 +131,56 @@ class CustomErrorHandler @Inject() (
       case _: JsValidationException  => "ServerValidationError"
       case _                         => "ServerInternalError"
     }
+  private def logException(exception: Exception, responseCode: Int, request: RequestHeader): Unit = {
+    val msg = s"${request.method} ${request.uri} failed with ${exception.getClass.getName}: ${exception.getMessage}"
+    if (upstreamWarnStatuses.contains(responseCode))
+      logger.warn(msg, exception)
+    else
+      logger.error(msg, exception)
+  }
+  override def onServerError(request: RequestHeader, ex: Throwable): Future[Result] = {
+    implicit val headerCarrier: HeaderCarrier = hc(request)
+    val errorResponse = ex match {
+      case e: BadRequestException     => ErrorResponse(BAD_REQUEST, constructErrorMessage(e.getMessage))
+      case e: NotFoundException       => ErrorResponse(NOT_FOUND, constructErrorMessage(e.getMessage))
+      case e: GatewayTimeoutException => ErrorResponse(BAD_GATEWAY, constructErrorMessage(e.getMessage))
+      case e: BadGatewayException     => ErrorResponse(BAD_GATEWAY, constructErrorMessage(e.getMessage))
+      case e: HttpException if e.message.contains("502 Bad Gateway") =>
+        ErrorResponse(BAD_GATEWAY, constructErrorMessage(e.getMessage))
+      case e: AuthorisationException =>
+        logException(e, UNAUTHORIZED, request)
+        // message is not suppressed here since needs to be forwarded
+        ErrorResponse(UNAUTHORIZED, e.getMessage)
 
-  override def onServerError(request: RequestHeader, ex: Throwable): Future[Result] =
-    Future.successful(
-      ex match {
-        // TODO: These 4 response statuses - we need to return response in same json format as below
-        // TODO: But, see Pascal's comment about ApiResponse case class
-        case ex: BadRequestException     => BadRequest(constructErrorMessage(ex.message))
-        case ex: NotFoundException       => NotFound(constructErrorMessage(ex.message))
-        case ex: GatewayTimeoutException => BadGateway(constructErrorMessage(ex.getMessage))
-        case ex: BadGatewayException     => BadGateway(constructErrorMessage(ex.getMessage))
-        case ex: HttpException if ex.message.contains("502 Bad Gateway") =>
-          BadGateway(constructErrorMessage(ex.getMessage))
-        case _ =>
-          implicit val headerCarrier: HeaderCarrier = hc(request)
-          val requestId = headerCarrier.requestId.map(_.value).getOrElse("None")
-          val eventType = getEventType(ex)
+      case e: HttpException =>
+        logException(e, e.responseCode, request)
+        // message is not suppressed here since HttpException exists to define returned message
+        ErrorResponse(e.responseCode, constructErrorMessage(e.getMessage))
 
-          logger.error(
-            s"! Internal server error, for (${request.method}) [auditSource=${appConfig.appName}, X-Request-ID=$requestId -> ",
-            ex
-          )
+      case e: UpstreamErrorResponse =>
+        logException(e, e.statusCode, request)
+        val msg =
+          if (suppress5xxErrorMessages) s"UpstreamErrorResponse: ${e.statusCode}"
+          else e.getMessage
+        ErrorResponse(e.reportAs, constructErrorMessage(msg))
 
-          auditConnector.sendEvent(
-            httpAuditEvent.dataEvent(
-              eventType = eventType,
-              transactionName = "Unexpected error",
-              request = request,
-              detail = Map("transactionFailureReason" -> ex.getMessage)
-            )
-          )
+      case e: Throwable =>
+        logger.error(s"! Internal server error, for (${request.method}) [${request.uri}] -> ", e)
+        val msg =
+          if (suppress5xxErrorMessages) "Other error"
+          else e.getMessage
+        ErrorResponse(INTERNAL_SERVER_ERROR, constructErrorMessage(msg))
+    }
 
-          ApiResponse(
-            "INTERNAL_ERROR",
-            s"An error has occurred. This has been audited with auditSource=${appConfig.appName}, X-Request-ID=$requestId",
-            reportAs = INTERNAL_SERVER_ERROR
-          ).toResult
-
-      }
+    auditConnector.sendEvent(
+      httpAuditEvent.dataEvent(
+        eventType = getEventType(ex),
+        transactionName = "Unexpected error",
+        request = request,
+        detail = Map("transactionFailureReason" -> ex.getMessage)
+      )
     )
 
-}
-
-object CustomErrorHandler {
-  private case class ErrorView(url: String, statusCode: Int)
-
-  private object ErrorView {
-    implicit val format: OFormat[ErrorView] = Json.format[ErrorView]
+    Future.successful(new Status(errorResponse.statusCode)(Json.toJson(errorResponse)))
   }
-  private case class ApiResponse(
-    code: String,
-    message: String,
-    errorView: Option[ErrorView] = None,
-    redirect: Option[String] = None,
-    reportAs: Int
-  ) {
-    def toResult: Result = Status(reportAs)(this)
-  }
-
-  private object ApiResponse {
-    implicit def writable[T](implicit writes: Writes[T]): Writeable[T] = {
-      implicit val contentType: ContentTypeOf[T] = ContentTypeOf[T](Some(ContentTypes.JSON))
-      Writeable(Writeable.writeableOf_JsValue.transform.compose(writes.writes))
-    }
-
-    private def removeNulls(jsObject: JsObject): JsValue =
-      JsObject(jsObject.fields.collect {
-        case (s, j: JsObject) =>
-          (s, removeNulls(j))
-        case other if other._2 != JsNull =>
-          other
-      })
-
-    implicit val writes: Writes[ApiResponse] = new Writes[ApiResponse] {
-      override def writes(o: ApiResponse): JsValue = removeNulls(
-        Json.obj(
-          "code"      -> JsString(o.code),
-          "message"   -> JsString(o.message),
-          "errorView" -> o.errorView.map(errorView => Json.toJson(errorView)),
-          "redirect"  -> o.redirect.map(JsString.apply)
-        )
-      )
-    }
-  }
-
 }

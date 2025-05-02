@@ -19,14 +19,13 @@ package uk.gov.hmrc.tai.config
 import org.mockito.ArgumentCaptor
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.{reset, times, verify, when}
-import org.scalacheck.Gen
 import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
 import play.api.Application
 import play.api.cache.AsyncCacheApi
 import play.api.http.Status.*
 import play.api.inject.bind
 import play.api.inject.guice.GuiceApplicationBuilder
-import play.api.libs.json.{JsString, Json}
+import play.api.libs.json.{JsNumber, JsString, Json}
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{GET, contentAsString, defaultAwaitTimeout}
 import uk.gov.hmrc.auth.core.InsufficientConfidenceLevel
@@ -36,12 +35,9 @@ import uk.gov.hmrc.play.audit.model.DataEvent
 import uk.gov.hmrc.tai.util.BaseSpec
 
 import java.util.UUID
-import scala.concurrent.duration.Duration
-import scala.concurrent.{Await, Future}
+import scala.concurrent.Future
 
 class CustomErrorHandlerSpec extends BaseSpec with ScalaCheckDrivenPropertyChecks {
-  private def pathGen: Gen[String] = Gen.nonEmptyListOf(Gen.alphaNumStr).map(_.mkString("/"))
-
   private val mockAuditConnector: AuditConnector = mock[AuditConnector]
 
   override def beforeEach(): Unit = {
@@ -65,37 +61,16 @@ class CustomErrorHandlerSpec extends BaseSpec with ScalaCheckDrivenPropertyCheck
       .build()
 
   "onClientError" must {
-    "return an ApiResponse" in {
-      forAll(Gen.choose(BAD_REQUEST + 1, INTERNAL_SERVER_ERROR - 1), Gen.alphaStr, pathGen) { (status, message, path) =>
-        whenever(status != NOT_FOUND) {
-          val uuid = UUID.randomUUID().toString
-          val customErrorHandler = inject[CustomErrorHandler]
-          val result = customErrorHandler.onClientError(
-            FakeRequest(GET, path).withHeaders(HeaderNames.xRequestId -> uuid),
-            status,
-            message
-          )
-          val json = Json.parse(contentAsString(result))
-          (json \ "code").get mustBe JsString("CLIENT_ERROR")
-          (json \ "message").get.as[String] mustBe s"""Other error [auditSource=tai, X-Request-ID=$uuid]"""
-          (json \ "errorView").isDefined mustBe false
-          (json \ "redirect").isDefined mustBe false
-        }
-      }
-    }
-
     "return a Not found ApiResponse" in {
       val customErrorHandler = inject[CustomErrorHandler]
       val url = "/tai/notFound"
-      val message = s"The resource `$url` has not been found"
+      val message = "URI not found"
       val result = customErrorHandler.onClientError(FakeRequest(GET, url), NOT_FOUND, message)
       val json = Json.parse(contentAsString(result))
       when(mockAuditConnector.sendEvent(any())(any(), any())).thenReturn(Future.successful(AuditResult.Success))
 
-      (json \ "code").get mustBe JsString("NOT_FOUND")
+      (json \ "statusCode").get mustBe JsNumber(404)
       (json \ "message").get mustBe JsString(message)
-      (json \ "errorView").isDefined mustBe false
-      (json \ "redirect").isDefined mustBe false
       verify(mockAuditConnector, times(1)).sendEvent(any())(any(), any())
     }
 
@@ -110,88 +85,53 @@ class CustomErrorHandlerSpec extends BaseSpec with ScalaCheckDrivenPropertyCheck
       val json = Json.parse(contentAsString(result))
       when(mockAuditConnector.sendEvent(any())(any(), any())).thenReturn(Future.successful(AuditResult.Success))
 
-      (json \ "code").get mustBe JsString("BAD_REQUEST")
-      (json \ "message").get
-        .as[String] mustBe s"""bad request, cause: REDACTED [auditSource=tai, X-Request-ID=$uuid]"""
-      (json \ "errorView").isDefined mustBe false
-      (json \ "redirect").isDefined mustBe false
+      (json \ "statusCode").get mustBe JsNumber(400)
+      (json \ "message").get mustBe JsString("bad request, cause: REDACTED")
+      verify(mockAuditConnector, times(1)).sendEvent(any())(any(), any())
+    }
+
+    "return another ApiResponse" in {
+      val customErrorHandler = inject[CustomErrorHandler]
+      val url = "/tai/notFound"
+      val message = "Unauthorised"
+      val result = customErrorHandler.onClientError(FakeRequest(GET, url), UNAUTHORIZED, message)
+      val json = Json.parse(contentAsString(result))
+      when(mockAuditConnector.sendEvent(any())(any(), any())).thenReturn(Future.successful(AuditResult.Success))
+
+      (json \ "statusCode").get mustBe JsNumber(401)
+      (json \ "message").get mustBe JsString(message)
       verify(mockAuditConnector, times(1)).sendEvent(any())(any(), any())
     }
   }
 
   "onServerError" must {
-    "return an ApiResponse" when {
-      List(
-        //    new NotFoundException("error"),
-        new InsufficientConfidenceLevel,
-        new JsValidationException("method", "url", classOf[Int], "errors"),
-        new RuntimeException("error")
-      ).foreach { ex =>
-        s"Exception ${ex.getClass.getName} is thrown" in {
+    "return an api response" when {
+      Set(
+        new InsufficientConfidenceLevel -> (UNAUTHORIZED, "Insufficient ConfidenceLevel"),
+        new JsValidationException("method", "url", classOf[Int], "errors")
+          -> (INTERNAL_SERVER_ERROR, "bad request, cause: REDACTED"),
+        new RuntimeException("error")                 -> (INTERNAL_SERVER_ERROR, "bad request, cause: REDACTED"),
+        new BadRequestException(exceptionMessage)     -> (BAD_REQUEST, "The nino provided is invalid"),
+        new NotFoundException(exceptionMessage)       -> (NOT_FOUND, "The nino provided is invalid"),
+        new GatewayTimeoutException(exceptionMessage) -> (BAD_GATEWAY, "The nino provided is invalid"),
+        new BadGatewayException(exceptionMessage)     -> (BAD_GATEWAY, "The nino provided is invalid"),
+        new HttpException("error containing 502 Bad Gateway", 500) -> (BAD_GATEWAY, "bad request, cause: REDACTED"),
+        new HttpException("error NOT containing five zero two Bad Gateway", 500) ->
+          (INTERNAL_SERVER_ERROR, "bad request, cause: REDACTED"),
+        new InternalServerException(exceptionMessage) -> (INTERNAL_SERVER_ERROR, "The nino provided is invalid")
+      ).foreach { case (ex, Tuple2(newStatus, newMessage)) =>
+        s"Exception ${ex.getClass.getName} is thrown and return status code of $newStatus and correct message" in {
           val arg = ArgumentCaptor.forClass(classOf[DataEvent])
           val uuid = UUID.randomUUID().toString
           val customErrorHandler = inject[CustomErrorHandler]
           val result = customErrorHandler.onServerError(FakeRequest().withHeaders(HeaderNames.xRequestId -> uuid), ex)
           val json = Json.parse(contentAsString(result))
-          (json \ "code").get mustBe JsString("INTERNAL_ERROR")
-          (json \ "message").get.toString must include(
-            s"An error has occurred. This has been audited with auditSource=tai, X-Request-ID=$uuid"
-          )
-          (json \ "errorView").isDefined mustBe false
-          (json \ "redirect").isDefined mustBe false
+          (json \ "statusCode").get mustBe JsNumber(newStatus)
+          (json \ "message").get.toString must include(newMessage)
 
           verify(mockAuditConnector, times(1)).sendEvent(arg.capture())(any(), any())
           val dataEvent: DataEvent = arg.getValue
           dataEvent.tags.get(HeaderNames.xRequestId) mustBe defined
-
-          val refInAudit = dataEvent.tags(HeaderNames.xRequestId)
-          val uuidPattern = """[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}""".r
-          val refInResponse = uuidPattern.findFirstIn((json \ "message").get.toString).get
-          refInAudit mustBe refInResponse
-        }
-      }
-    }
-
-    Set(
-      new BadRequestException(exceptionMessage)     -> BAD_REQUEST,
-      new NotFoundException(exceptionMessage)       -> NOT_FOUND,
-      new GatewayTimeoutException(exceptionMessage) -> BAD_GATEWAY,
-      new BadGatewayException(exceptionMessage)     -> BAD_GATEWAY
-    ).foreach { case (exception, response) =>
-      s"return $response with cause redacted" when {
-        s"there is hod ${exception.toString} exception" in {
-          val customErrorHandler = inject[CustomErrorHandler]
-
-          val result = customErrorHandler.onServerError(FakeRequest(), exception)
-          Await.result(result, Duration.Inf).header.status mustBe response
-          contentAsString(result) mustBe "The nino provided is invalid"
-
-        }
-      }
-    }
-
-    "return 500 with cause redacted" when {
-      "there is hod error containing 502 Bad Gateway exception" in {
-        val customErrorHandler = inject[CustomErrorHandler]
-        val result =
-          customErrorHandler.onServerError(FakeRequest(), new HttpException("error containing 502 Bad Gateway", 500))
-        Await.result(result, Duration.Inf).header.status mustBe BAD_GATEWAY
-        contentAsString(result) mustBe "bad request, cause: REDACTED"
-      }
-    }
-
-    Set(
-      new HttpException(
-        "error NOT containing five zero two Bad Gateway",
-        500
-      )                                             -> "error NOT containing five zero two Bad Gateway",
-      new InternalServerException(exceptionMessage) -> exceptionMessage
-    ).foreach { case (exception, expectedMessage) =>
-      s"return None" when {
-        s"there is hod ${exception.toString} exception" in {
-          val customErrorHandler = inject[CustomErrorHandler]
-          val result = customErrorHandler.onServerError(FakeRequest(), exception)
-          Await.result(result, Duration.Inf).header.status mustBe INTERNAL_SERVER_ERROR
         }
       }
     }
