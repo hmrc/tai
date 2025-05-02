@@ -136,48 +136,53 @@ class CustomErrorHandler @Inject() (
     Future.successful(result)
   }
 
-  def handleControllerExceptions(): PartialFunction[Throwable, Future[Result]] = {
-    case ex: BadRequestException     => Future.successful(BadRequest(constructErrorMessage(ex.message)))
-    case ex: NotFoundException       => Future.successful(NotFound(constructErrorMessage(ex.message)))
-    case ex: GatewayTimeoutException => Future.successful(BadGateway(constructErrorMessage(ex.getMessage)))
-    case ex: BadGatewayException     => Future.successful(BadGateway(constructErrorMessage(ex.getMessage)))
-    case ex: HttpException if ex.message.contains("502 Bad Gateway") =>
-      Future.successful(BadGateway(constructErrorMessage(ex.getMessage)))
-    case ex => Future.failed(ex)
-  }
-
-  override def onServerError(request: RequestHeader, ex: Throwable): Future[Result] = {
-    implicit val headerCarrier: HeaderCarrier = hc(request)
-    val requestId = headerCarrier.requestId.map(_.value).getOrElse("None")
-    val eventType = ex match {
-      case _: NotFoundException      => "ResourceNotFound"
-      case _: AuthorisationException => "ClientError"
-      case _: JsValidationException  => "ServerValidationError"
-      case _                         => "ServerInternalError"
+  final def mapExceptionsToStatus(ex: Throwable): Option[Result] =
+    ex match {
+      case ex: BadRequestException     => Some(BadRequest(constructErrorMessage(ex.message)))
+      case ex: NotFoundException       => Some(NotFound(constructErrorMessage(ex.message)))
+      case ex: GatewayTimeoutException => Some(BadGateway(constructErrorMessage(ex.getMessage)))
+      case ex: BadGatewayException     => Some(BadGateway(constructErrorMessage(ex.getMessage)))
+      case ex: HttpException if ex.message.contains("502 Bad Gateway") =>
+        Some(BadGateway(constructErrorMessage(ex.getMessage)))
+      case _ => None
     }
 
-    logger.error(
-      s"! Internal server error, for (${request.method}) [auditSource=${appConfig.appName}, X-Request-ID=$requestId -> ",
-      ex
-    )
+  override def onServerError(request: RequestHeader, ex: Throwable): Future[Result] =
+    mapExceptionsToStatus(ex) match {
+      case Some(result) => Future.successful(result)
+      case _ =>
+        implicit val headerCarrier: HeaderCarrier = hc(request)
+        val requestId = headerCarrier.requestId.map(_.value).getOrElse("None")
+        val eventType = ex match {
+          //    case _: NotFoundException      => "ResourceNotFound"
+          case _: AuthorisationException => "ClientError"
+          case _: JsValidationException  => "ServerValidationError"
+          case _                         => "ServerInternalError"
+        }
 
-    auditConnector.sendEvent(
-      httpAuditEvent.dataEvent(
-        eventType = eventType,
-        transactionName = "Unexpected error",
-        request = request,
-        detail = Map("transactionFailureReason" -> ex.getMessage)
-      )
-    )
+        logger.error(
+          s"! Internal server error, for (${request.method}) [auditSource=${appConfig.appName}, X-Request-ID=$requestId -> ",
+          ex
+        )
 
-    Future.successful(
-      ApiResponse(
-        "INTERNAL_ERROR",
-        s"An error has occurred. This has been audited with auditSource=${appConfig.appName}, X-Request-ID=$requestId",
-        reportAs = INTERNAL_SERVER_ERROR
-      ).toResult
-    )
-  }
+        auditConnector.sendEvent(
+          httpAuditEvent.dataEvent(
+            eventType = eventType,
+            transactionName = "Unexpected error",
+            request = request,
+            detail = Map("transactionFailureReason" -> ex.getMessage)
+          )
+        )
+
+        Future.successful(
+          ApiResponse(
+            "INTERNAL_ERROR",
+            s"An error has occurred. This has been audited with auditSource=${appConfig.appName}, X-Request-ID=$requestId",
+            reportAs = INTERNAL_SERVER_ERROR
+          ).toResult
+        )
+    }
+
 }
 
 object CustomErrorHandler {

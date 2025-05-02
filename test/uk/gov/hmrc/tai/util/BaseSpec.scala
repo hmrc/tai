@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.tai.util
 
-import org.scalatest.BeforeAndAfterEach
+import org.scalatest.{Assertion, BeforeAndAfterEach}
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
@@ -24,17 +24,19 @@ import play.api.Application
 import play.api.cache.AsyncCacheApi
 import play.api.inject.bind
 import play.api.inject.guice.GuiceApplicationBuilder
-import play.api.mvc.ControllerComponents
+import play.api.mvc.{ControllerComponents, Result}
 import play.api.test.Helpers.stubControllerComponents
-import play.api.test.Injecting
+import play.api.test.{FakeRequest, Injecting}
 import uk.gov.hmrc.domain.{Generator, Nino}
-import uk.gov.hmrc.http.{HeaderCarrier, SessionId}
+import uk.gov.hmrc.http.{BadRequestException, HeaderCarrier, NotFoundException, SessionId}
+import uk.gov.hmrc.tai.config.CustomErrorHandler
 import uk.gov.hmrc.tai.connectors.cache.CacheId
 import uk.gov.hmrc.tai.controllers.FakeTaiPlayApplication
 import uk.gov.hmrc.tai.controllers.auth.AuthJourney
 
-import scala.concurrent.ExecutionContext
-import scala.util.Random
+import scala.concurrent.duration.Duration
+import scala.concurrent.{Await, ExecutionContext, Future}
+import scala.util.{Failure, Random, Try}
 
 trait BaseSpec
     extends PlaySpec with MockitoSugar with FakeTaiPlayApplication with ScalaFutures with Injecting
@@ -58,5 +60,19 @@ trait BaseSpec
     GuiceApplicationBuilder()
       .overrides(bind[AsyncCacheApi].toInstance(fakeAsyncCacheApi))
       .build()
+
+  private lazy val customErrorHandler: CustomErrorHandler = app.injector.instanceOf[CustomErrorHandler]
+
+  protected val badRequestException = new BadRequestException("message")
+  protected val notFoundException: NotFoundException = new NotFoundException("Error")
+
+  protected def checkControllerResponse(ex: Throwable, futureResult: Future[Result], expStatus: Int): Assertion = {
+    val result = Try(Await.result(futureResult, Duration.Inf))
+    result mustBe Failure(ex)
+    Await
+      .result(customErrorHandler.onServerError(FakeRequest(), ex), Duration.Inf)
+      .header
+      .status mustBe expStatus
+  }
 
 }

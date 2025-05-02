@@ -64,7 +64,7 @@ class ErrorHandlingOnControllerSpec extends BaseSpec {
             case None    => NotFound("dummy message")
           }
         )
-        .merge // recoverWith customErrorHandler.handleControllerExceptions()
+        .merge //
     }
   }
 
@@ -78,18 +78,8 @@ class ErrorHandlingOnControllerSpec extends BaseSpec {
   private def runTest: Future[Result] =
     sut.testMethod()(FakeRequest())
 
-  private def withInfo(s: String)(block: String => Unit) = block(s)
+  private def withInfo(s: String)(block: String => Unit): Unit = block(s)
 
-  private def failedResponseHandledByController(ex: Throwable, expectedResponseCode: Int): Unit =
-    s"return $expectedResponseCode response when service response is Future failed ${ex.toString}" in {
-      when(mockDummyService.call())
-        .thenReturn(
-          EitherT(
-            Future.failed(ex)
-          )
-        )
-      status(runTest) mustBe expectedResponseCode
-    }
   private def failedResponseHandledByErrorHandler(ex: Throwable, info: String): Unit =
     s"throw exception when response Future failed ${ex.getClass} where $info" in {
       when(mockDummyService.call())
@@ -144,13 +134,6 @@ class ErrorHandlingOnControllerSpec extends BaseSpec {
       }
     }
 
-//    behave like failedResponseHandledByController(BadRequestException("dummy response"), BAD_REQUEST)
-//    behave like failedResponseHandledByController(NotFoundException("dummy response"), NOT_FOUND)
-//    behave like failedResponseHandledByController(GatewayTimeoutException("dummy response"), BAD_GATEWAY)
-//    behave like failedResponseHandledByController(BadGatewayException("dummy response"), BAD_GATEWAY)
-//    behave like failedResponseHandledByController(HttpException("502 Bad Gateway", BAD_GATEWAY), BAD_GATEWAY)
-
-    // Error responses previously mapped in controller:-
     withInfo("previously handled in controller") { info =>
       behave like failedResponseHandledByErrorHandler(BadRequestException("dummy response"), info)
       behave like failedResponseHandledByErrorHandler(NotFoundException("dummy response"), info)

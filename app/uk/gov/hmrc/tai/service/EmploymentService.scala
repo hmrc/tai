@@ -22,7 +22,7 @@ import play.api.Logger
 import play.api.http.Status.NOT_FOUND
 import play.api.mvc.Request
 import uk.gov.hmrc.domain.Nino
-import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse, UpstreamErrorResponse}
+import uk.gov.hmrc.http.{BadRequestException, GatewayTimeoutException, HeaderCarrier, HttpException, HttpResponse, NotFoundException, UpstreamErrorResponse}
 import uk.gov.hmrc.tai.audit.Auditor
 import uk.gov.hmrc.tai.connectors.{EmploymentDetailsConnector, RtiConnector}
 import uk.gov.hmrc.tai.model.api.EmploymentCollection

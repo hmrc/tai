@@ -21,7 +21,6 @@ import org.mockito.Mockito.when
 import play.api.libs.json.Json
 import play.api.test.FakeRequest
 import play.api.test.Helpers.*
-import uk.gov.hmrc.tai.config.CustomErrorHandler
 import uk.gov.hmrc.tai.model.domain.benefits.{CompanyCar, CompanyCarBenefit}
 import uk.gov.hmrc.tai.service.benefits.BenefitsService
 import uk.gov.hmrc.tai.util.BaseSpec
@@ -45,8 +44,7 @@ class CompanyCarBenefitControllerSpec extends BaseSpec {
         val sut = new CompanyCarBenefitController(
           mockCompanyCarService,
           loggedInAuthenticationAuthJourney,
-          cc,
-          inject[CustomErrorHandler]
+          cc
         )
         val result = sut.companyCarBenefits(nino)(FakeRequest())
         status(result) mustBe NOT_FOUND
@@ -80,8 +78,7 @@ class CompanyCarBenefitControllerSpec extends BaseSpec {
         val sut = new CompanyCarBenefitController(
           mockCompanyCarService,
           loggedInAuthenticationAuthJourney,
-          cc,
-          inject[CustomErrorHandler]
+          cc
         )
         val result = sut.companyCarBenefits(nino)(FakeRequest())
 
@@ -137,8 +134,7 @@ class CompanyCarBenefitControllerSpec extends BaseSpec {
         val sut = new CompanyCarBenefitController(
           mockCompanyCarService,
           loggedInAuthenticationAuthJourney,
-          cc,
-          inject[CustomErrorHandler]
+          cc
         )
         val result = sut.companyCarBenefits(nino)(FakeRequest())
 

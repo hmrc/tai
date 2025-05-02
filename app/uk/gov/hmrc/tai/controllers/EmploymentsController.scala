@@ -50,7 +50,7 @@ class EmploymentsController @Inject() (
           error => customErrorHandler.handleControllerErrorStatuses(error),
           employments => Ok(Json.toJson(ApiResponse(EmploymentCollection(employments.employments, None), Nil)))
         )
-        .merge recoverWith customErrorHandler.handleControllerExceptions()
+        .merge
   }
 
   def employmentOnly(nino: Nino, id: Int, year: TaxYear): Action[AnyContent] =
@@ -67,7 +67,7 @@ class EmploymentsController @Inject() (
               customErrorHandler.handleControllerErrorStatuses(UpstreamErrorResponse(message, NOT_FOUND))
           }
         )
-        .merge recoverWith customErrorHandler.handleControllerExceptions()
+        .merge
     }
 
   def employmentsOnly(nino: Nino, year: TaxYear): Action[AnyContent] = authentication.authWithUserDetails.async {
@@ -78,7 +78,7 @@ class EmploymentsController @Inject() (
           error => customErrorHandler.handleControllerErrorStatuses(error),
           employments => Ok(Json.toJson(ApiResponse(employments, Nil)))
         )
-        .merge recoverWith customErrorHandler.handleControllerExceptions()
+        .merge
   }
 
   def getEmploymentsByStatusAndType(
@@ -104,7 +104,7 @@ class EmploymentsController @Inject() (
           }
         }
       )
-      .merge recoverWith customErrorHandler.handleControllerExceptions()
+      .merge
   }
 
   def employment(nino: Nino, id: Int): Action[AnyContent] = authentication.authWithUserDetails.async {
@@ -121,7 +121,7 @@ class EmploymentsController @Inject() (
               customErrorHandler.handleControllerErrorStatuses(UpstreamErrorResponse(message, NOT_FOUND))
           }
         )
-        .merge recoverWith customErrorHandler.handleControllerExceptions()
+        .merge
   }
 
   def endEmployment(nino: Nino, id: Int): Action[JsValue] = authentication.authWithUserDetails.async(parse.json) {

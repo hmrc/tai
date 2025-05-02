@@ -46,6 +46,6 @@ class RtiPaymentsController @Inject() (
           error => customErrorHandler.handleControllerErrorStatuses(error),
           payments => Ok(Json.toJson(ApiResponse(payments, Nil)))
         )
-        .merge recoverWith customErrorHandler.handleControllerExceptions()
+        .merge
     }
 }

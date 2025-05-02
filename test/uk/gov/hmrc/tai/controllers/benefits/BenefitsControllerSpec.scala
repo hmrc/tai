@@ -22,7 +22,6 @@ import play.api.libs.json.Json
 import play.api.test.Helpers.{status, *}
 import play.api.test.{FakeHeaders, FakeRequest}
 import uk.gov.hmrc.domain.{Generator, Nino}
-import uk.gov.hmrc.tai.config.CustomErrorHandler
 import uk.gov.hmrc.tai.model.api.ApiResponse
 import uk.gov.hmrc.tai.model.domain.benefits.*
 import uk.gov.hmrc.tai.model.domain.{Accommodation, Assets}
@@ -45,7 +44,7 @@ class BenefitsControllerSpec extends BaseSpec {
           .thenReturn(Future.successful(emptyBenefits))
 
         val sut =
-          new BenefitsController(mockBenefitService, loggedInAuthenticationAuthJourney, cc, inject[CustomErrorHandler])
+          new BenefitsController(mockBenefitService, loggedInAuthenticationAuthJourney, cc)
         val result = sut.benefits(randomNino, TaxYear())(FakeRequest())
         status(result) mustBe OK
         val expectedJson =
@@ -91,7 +90,7 @@ class BenefitsControllerSpec extends BaseSpec {
           .thenReturn(Future.successful(benefits))
 
         val sut =
-          new BenefitsController(mockBenefitService, loggedInAuthenticationAuthJourney, cc, inject[CustomErrorHandler])
+          new BenefitsController(mockBenefitService, loggedInAuthenticationAuthJourney, cc)
         val result = sut.benefits(randomNino, TaxYear())(FakeRequest())
         status(result) mustBe OK
         val expectedJson =
@@ -151,7 +150,7 @@ class BenefitsControllerSpec extends BaseSpec {
           .thenReturn(Future.successful(envelopeId))
 
         val sut =
-          new BenefitsController(mockBenefitService, loggedInAuthenticationAuthJourney, cc, inject[CustomErrorHandler])
+          new BenefitsController(mockBenefitService, loggedInAuthenticationAuthJourney, cc)
         val result = sut.removeCompanyBenefits(nino, employmentId)(
           FakeRequest("POST", "/", FakeHeaders(), Json.toJson(removeCompanyBenefit))
             .withHeaders(("content-type", "application/json"))
