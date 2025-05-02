@@ -26,7 +26,7 @@ import play.api.mvc.*
 import play.api.test.FakeRequest
 import play.api.test.Helpers.*
 import uk.gov.hmrc.auth.core.InsufficientConfidenceLevel
-import uk.gov.hmrc.http.{BadRequestException, GatewayTimeoutException, HttpException, NotFoundException, UpstreamErrorResponse}
+import uk.gov.hmrc.http.{BadGatewayException, BadRequestException, GatewayTimeoutException, HttpException, NotFoundException, UpstreamErrorResponse}
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 import uk.gov.hmrc.tai.config.CustomErrorHandler
 import uk.gov.hmrc.tai.controllers.auth.AuthJourney
@@ -61,10 +61,7 @@ class ErrorHandlingOnControllerSpec extends BaseSpec {
           error => customErrorHandler.handleControllerErrorStatuses(error),
           {
             case Some(i) => Ok(Json.toJson(ApiResponse(i, Nil)))
-            case None =>
-              val message = s"dummy message"
-              logger.warn(message)
-              customErrorHandler.handleControllerErrorStatuses(UpstreamErrorResponse(message, NOT_FOUND))
+            case None    => NotFound("dummy message")
           }
         )
         .merge recoverWith customErrorHandler.handleControllerExceptions()
@@ -148,11 +145,12 @@ class ErrorHandlingOnControllerSpec extends BaseSpec {
     behave like failedResponseHandledByController(BadRequestException("dummy response"), BAD_REQUEST)
     behave like failedResponseHandledByController(NotFoundException("dummy response"), NOT_FOUND)
     behave like failedResponseHandledByController(GatewayTimeoutException("dummy response"), BAD_GATEWAY)
-    behave like failedResponseHandledByController(HttpException("502 Bad Gateway", 502), BAD_GATEWAY)
+    behave like failedResponseHandledByController(BadGatewayException("dummy response"), BAD_GATEWAY)
+    behave like failedResponseHandledByController(HttpException("502 Bad Gateway", BAD_GATEWAY), BAD_GATEWAY)
 
+    behave like failedResponseHandledByErrorHandler(HttpException("Http exception", GATEWAY_TIMEOUT))
     behave like failedResponseHandledByErrorHandler(RuntimeException("Runtime exception"))
-    behave like failedResponseHandledByErrorHandler(UpstreamErrorResponse("Upstream exception", 504))
-    behave like failedResponseHandledByErrorHandler(HttpException("Http exception", 504))
+    behave like failedResponseHandledByErrorHandler(UpstreamErrorResponse("Upstream exception", GATEWAY_TIMEOUT))
     behave like failedResponseHandledByErrorHandler(InsufficientConfidenceLevel("Insufficient confidence exception"))
   }
 
