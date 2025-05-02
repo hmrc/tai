@@ -144,9 +144,12 @@ class CustomErrorHandler @Inject() (
       case _                         => "ServerInternalError"
     }
 
+   
   override def onServerError(request: RequestHeader, ex: Throwable): Future[Result] =
     Future.successful(
       ex match {
+        // TODO: These 4 response statuses - we need to return response in same json format as below
+        // TODO: But, see Pascal's comment about ApiResponse case class  
         case ex: BadRequestException     => BadRequest(constructErrorMessage(ex.message))
         case ex: NotFoundException       => NotFound(constructErrorMessage(ex.message))
         case ex: GatewayTimeoutException => BadGateway(constructErrorMessage(ex.getMessage))
