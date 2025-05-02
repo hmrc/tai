@@ -33,6 +33,7 @@ import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.json.{JsValue, Json}
 import play.api.test.Injecting
 import uk.gov.hmrc.domain.{Generator, Nino}
+import uk.gov.hmrc.http.{BadRequestException, NotFoundException}
 import uk.gov.hmrc.mongoFeatureToggles.model.{FeatureFlag, FeatureFlagName}
 import uk.gov.hmrc.mongoFeatureToggles.services.FeatureFlagService
 import uk.gov.hmrc.tai.model.admin.*
@@ -46,6 +47,9 @@ trait IntegrationSpec
     extends AnyWordSpec with Matchers with GuiceOneAppPerSuite with WireMockHelper with ScalaFutures with Injecting
     with IntegrationPatience {
   implicit lazy val ec: ExecutionContext = inject[ExecutionContext]
+
+  protected val badRequestException = new BadRequestException("message")
+  protected val notFoundException: NotFoundException = new NotFoundException("Error")
 
   val mockFeatureFlagService: FeatureFlagService = mock[FeatureFlagService]
 
