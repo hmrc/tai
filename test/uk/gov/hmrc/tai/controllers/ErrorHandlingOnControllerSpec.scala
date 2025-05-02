@@ -64,7 +64,7 @@ class ErrorHandlingOnControllerSpec extends BaseSpec {
             case None    => NotFound("dummy message")
           }
         )
-        .merge recoverWith customErrorHandler.handleControllerExceptions()
+        .merge // recoverWith customErrorHandler.handleControllerExceptions()
     }
   }
 
@@ -78,6 +78,8 @@ class ErrorHandlingOnControllerSpec extends BaseSpec {
   private def runTest: Future[Result] =
     sut.testMethod()(FakeRequest())
 
+  private def withInfo(s: String)(block: String => Unit) = block(s)
+
   private def failedResponseHandledByController(ex: Throwable, expectedResponseCode: Int): Unit =
     s"return $expectedResponseCode response when service response is Future failed ${ex.toString}" in {
       when(mockDummyService.call())
@@ -88,8 +90,8 @@ class ErrorHandlingOnControllerSpec extends BaseSpec {
         )
       status(runTest) mustBe expectedResponseCode
     }
-  private def failedResponseHandledByErrorHandler(ex: Throwable): Unit =
-    s"return exception to be handled by error handler when service response is Future failed ${ex.toString}" in {
+  private def failedResponseHandledByErrorHandler(ex: Throwable, info: String): Unit =
+    s"throw exception when response Future failed ${ex.getClass} where $info" in {
       when(mockDummyService.call())
         .thenReturn(
           EitherT(
@@ -142,16 +144,34 @@ class ErrorHandlingOnControllerSpec extends BaseSpec {
       }
     }
 
-    behave like failedResponseHandledByController(BadRequestException("dummy response"), BAD_REQUEST)
-    behave like failedResponseHandledByController(NotFoundException("dummy response"), NOT_FOUND)
-    behave like failedResponseHandledByController(GatewayTimeoutException("dummy response"), BAD_GATEWAY)
-    behave like failedResponseHandledByController(BadGatewayException("dummy response"), BAD_GATEWAY)
-    behave like failedResponseHandledByController(HttpException("502 Bad Gateway", BAD_GATEWAY), BAD_GATEWAY)
+//    behave like failedResponseHandledByController(BadRequestException("dummy response"), BAD_REQUEST)
+//    behave like failedResponseHandledByController(NotFoundException("dummy response"), NOT_FOUND)
+//    behave like failedResponseHandledByController(GatewayTimeoutException("dummy response"), BAD_GATEWAY)
+//    behave like failedResponseHandledByController(BadGatewayException("dummy response"), BAD_GATEWAY)
+//    behave like failedResponseHandledByController(HttpException("502 Bad Gateway", BAD_GATEWAY), BAD_GATEWAY)
 
-    behave like failedResponseHandledByErrorHandler(HttpException("Http exception", GATEWAY_TIMEOUT))
-    behave like failedResponseHandledByErrorHandler(RuntimeException("Runtime exception"))
-    behave like failedResponseHandledByErrorHandler(UpstreamErrorResponse("Upstream exception", GATEWAY_TIMEOUT))
-    behave like failedResponseHandledByErrorHandler(InsufficientConfidenceLevel("Insufficient confidence exception"))
+    // Error responses previously mapped in controller:-
+    withInfo("previously handled in controller") { info =>
+      behave like failedResponseHandledByErrorHandler(BadRequestException("dummy response"), info)
+      behave like failedResponseHandledByErrorHandler(NotFoundException("dummy response"), info)
+      behave like failedResponseHandledByErrorHandler(GatewayTimeoutException("dummy response"), info)
+      behave like failedResponseHandledByErrorHandler(BadGatewayException("dummy response"), info)
+      behave like failedResponseHandledByErrorHandler(HttpException("502 Bad Gateway", BAD_GATEWAY), info)
+    }
+
+    withInfo("previously handled in error handler") { info =>
+      behave like failedResponseHandledByErrorHandler(HttpException("Http exception", GATEWAY_TIMEOUT), info)
+      behave like failedResponseHandledByErrorHandler(RuntimeException("Runtime exception"), info)
+      behave like failedResponseHandledByErrorHandler(
+        UpstreamErrorResponse("Upstream exception", GATEWAY_TIMEOUT),
+        info
+      )
+      behave like failedResponseHandledByErrorHandler(
+        InsufficientConfidenceLevel("Insufficient confidence exception"),
+        info
+      )
+    }
+
   }
 
 }
