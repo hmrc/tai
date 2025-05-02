@@ -64,16 +64,6 @@ class CustomErrorHandler @Inject() (
     }
   }
 
-  def handleControllerExceptions(): PartialFunction[Throwable, Future[Result]] = {
-    case ex: BadRequestException     => Future.successful(BadRequest(constructErrorMessage(ex.message)))
-    case ex: NotFoundException       => Future.successful(NotFound(constructErrorMessage(ex.message)))
-    case ex: GatewayTimeoutException => Future.successful(BadGateway(constructErrorMessage(ex.getMessage)))
-    case ex: BadGatewayException     => Future.successful(BadGateway(constructErrorMessage(ex.getMessage)))
-    case ex: HttpException if ex.message.contains("502 Bad Gateway") =>
-      Future.successful(BadGateway(constructErrorMessage(ex.getMessage)))
-    case ex => Future.failed(ex)
-  }
-
   def handleControllerErrorStatuses(error: UpstreamErrorResponse): Result = {
     val constructedErrorMessage = constructErrorMessage(error.getMessage)
     error.statusCode match {
@@ -144,6 +134,16 @@ class CustomErrorHandler @Inject() (
         )
     }
     Future.successful(result)
+  }
+
+  def handleControllerExceptions(): PartialFunction[Throwable, Future[Result]] = {
+    case ex: BadRequestException     => Future.successful(BadRequest(constructErrorMessage(ex.message)))
+    case ex: NotFoundException       => Future.successful(NotFound(constructErrorMessage(ex.message)))
+    case ex: GatewayTimeoutException => Future.successful(BadGateway(constructErrorMessage(ex.getMessage)))
+    case ex: BadGatewayException     => Future.successful(BadGateway(constructErrorMessage(ex.getMessage)))
+    case ex: HttpException if ex.message.contains("502 Bad Gateway") =>
+      Future.successful(BadGateway(constructErrorMessage(ex.getMessage)))
+    case ex => Future.failed(ex)
   }
 
   override def onServerError(request: RequestHeader, ex: Throwable): Future[Result] = {
