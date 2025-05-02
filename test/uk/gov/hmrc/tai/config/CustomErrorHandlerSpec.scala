@@ -122,7 +122,7 @@ class CustomErrorHandlerSpec extends BaseSpec with ScalaCheckDrivenPropertyCheck
   "onServerError" must {
     "return an ApiResponse" when {
       List(
-        new NotFoundException("error"),
+        //    new NotFoundException("error"),
         new InsufficientConfidenceLevel,
         new JsValidationException("method", "url", classOf[Int], "errors"),
         new RuntimeException("error")

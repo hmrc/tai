@@ -30,9 +30,9 @@ import uk.gov.hmrc.mongoFeatureToggles.model.{FeatureFlag, FeatureFlagName}
 import uk.gov.hmrc.tai.integration.utils.IntegrationSpec
 import uk.gov.hmrc.tai.model.admin.RtiCallToggle
 
+import scala.concurrent.Await
 import scala.concurrent.duration.Duration
-import scala.concurrent.{Await, Future}
-import scala.util.{Failure, Try}
+import scala.util.Try
 
 class TaxAccountSummarySpec extends IntegrationSpec {
 
@@ -81,8 +81,7 @@ class TaxAccountSummarySpec extends IntegrationSpec {
 
         val result = Try(Await.result(route(fakeApplication(), request).get, Duration.Inf))
         result.isFailure mustBe true
-        result.failed.get.getMessage mustBe ""
-
+        result.failed.get.toString.contains("uk.gov.hmrc.http.BadRequestException") mustBe true
       }
 
       s"return a NOT_FOUND when the hip iabds API returns a NOT_FOUND" in {
@@ -97,7 +96,7 @@ class TaxAccountSummarySpec extends IntegrationSpec {
 
         val result = Try(Await.result(route(fakeApplication(), request).get, Duration.Inf))
         result.isFailure mustBe true
-        result.failed.get.getMessage mustBe "No iadbs found for year TaxYear(2025)"
+        result.failed.get.toString.contains("uk.gov.hmrc.http.NotFoundException") mustBe true
       }
 
       s"throws an InternalServerException when the hip iabds API returns an INTERNAL_SERVER_ERROR" in {
@@ -146,19 +145,21 @@ class TaxAccountSummarySpec extends IntegrationSpec {
     }
 
     "for nps tax account failures" must {
-      "return a BAD_REQUEST when the NPS tax account API returns a BAD_REQUEST" in {
+      "throws a BAD_REQUEST exception when the NPS tax account API returns a BAD_REQUEST" in {
         server.stubFor(get(urlEqualTo(hipTaxAccountUrl)).willReturn(aResponse().withStatus(BAD_REQUEST)))
 
-        val result = route(fakeApplication(), request)
-        result.map(getStatus) mustBe Some(BAD_REQUEST)
-        
+        val result = Try(Await.result(route(fakeApplication(), request).get, Duration.Inf))
+        result.isFailure mustBe true
+        result.failed.get.toString.contains("uk.gov.hmrc.http.BadRequestException") mustBe true
+
       }
 
       "return a NOT_FOUND when the NPS tax account API returns a NOT_FOUND" in {
         server.stubFor(get(urlEqualTo(hipTaxAccountUrl)).willReturn(aResponse().withStatus(NOT_FOUND)))
 
-        val result = route(fakeApplication(), request)
-        result.map(getStatus) mustBe Some(NOT_FOUND)
+        val result = Try(Await.result(route(fakeApplication(), request).get, Duration.Inf))
+        result.isFailure mustBe true
+        result.failed.get.toString.contains("uk.gov.hmrc.http.NotFoundException") mustBe true
       }
 
       "throws an InternalServerException when the NPS tax account API returns an INTERNAL_SERVER_ERROR" in {
