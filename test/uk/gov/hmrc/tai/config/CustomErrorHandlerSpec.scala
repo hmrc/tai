@@ -36,24 +36,25 @@ import uk.gov.hmrc.play.audit.model.DataEvent
 import uk.gov.hmrc.tai.util.BaseSpec
 
 import java.util.UUID
-import scala.concurrent.Future
+import scala.concurrent.duration.Duration
+import scala.concurrent.{Await, Future}
 
 class CustomErrorHandlerSpec extends BaseSpec with ScalaCheckDrivenPropertyChecks {
-  def pathGen: Gen[String] = Gen.nonEmptyListOf(Gen.alphaNumStr).map(_.mkString("/"))
+  private def pathGen: Gen[String] = Gen.nonEmptyListOf(Gen.alphaNumStr).map(_.mkString("/"))
 
-  val mockAuditConnector: AuditConnector = mock[AuditConnector]
+  private val mockAuditConnector: AuditConnector = mock[AuditConnector]
 
   override def beforeEach(): Unit = {
     super.beforeEach()
     reset(mockAuditConnector)
   }
 
-  val configValues: Map[String, AnyVal] =
+  private val configValues: Map[String, AnyVal] =
     Map(
       "metrics.enabled"  -> false,
       "auditing.enabled" -> false
     )
-
+  private val exceptionMessage = s"""The nino provided `$nino` is invalid"""
   override implicit lazy val app: Application =
     GuiceApplicationBuilder()
       .configure(configValues)
@@ -150,11 +151,7 @@ class CustomErrorHandlerSpec extends BaseSpec with ScalaCheckDrivenPropertyCheck
         }
       }
     }
-  }
 
-  private val exceptionMessage = s"""The nino provided `$nino` is invalid"""
-
-  "handleControllerExceptionsNew" must {
     Set(
       new BadRequestException(exceptionMessage)     -> BAD_REQUEST,
       new NotFoundException(exceptionMessage)       -> NOT_FOUND,
@@ -164,9 +161,11 @@ class CustomErrorHandlerSpec extends BaseSpec with ScalaCheckDrivenPropertyCheck
       s"return $response with cause redacted" when {
         s"there is hod ${exception.toString} exception" in {
           val customErrorHandler = inject[CustomErrorHandler]
-          val result = customErrorHandler.mapExceptionsToStatus(exception)
-          result.map(_.header.status) mustBe Some(response)
-          result.map(r => contentAsString(Future(r))) mustBe Some("The nino provided is invalid")
+
+          val result = customErrorHandler.onServerError(FakeRequest(), exception)
+          Await.result(result, Duration.Inf).header.status mustBe response
+          contentAsString(result) mustBe "The nino provided is invalid"
+
         }
       }
     }
@@ -175,9 +174,9 @@ class CustomErrorHandlerSpec extends BaseSpec with ScalaCheckDrivenPropertyCheck
       "there is hod error containing 502 Bad Gateway exception" in {
         val customErrorHandler = inject[CustomErrorHandler]
         val result =
-          customErrorHandler.mapExceptionsToStatus(new HttpException("error containing 502 Bad Gateway", 500))
-        result.map(_.header.status) mustBe Some(BAD_GATEWAY)
-        result.map(r => contentAsString(Future(r))) mustBe Some("bad request, cause: REDACTED")
+          customErrorHandler.onServerError(FakeRequest(), new HttpException("error containing 502 Bad Gateway", 500))
+        Await.result(result, Duration.Inf).header.status mustBe BAD_GATEWAY
+        contentAsString(result) mustBe "bad request, cause: REDACTED"
       }
     }
 
@@ -191,12 +190,11 @@ class CustomErrorHandlerSpec extends BaseSpec with ScalaCheckDrivenPropertyCheck
       s"return None" when {
         s"there is hod ${exception.toString} exception" in {
           val customErrorHandler = inject[CustomErrorHandler]
-          val result = customErrorHandler.mapExceptionsToStatus(exception)
-          result mustBe None
+          val result = customErrorHandler.onServerError(FakeRequest(), exception)
+          Await.result(result, Duration.Inf).header.status mustBe INTERNAL_SERVER_ERROR
         }
       }
     }
-
   }
 
   "handleControllerErrorStatuses" must {

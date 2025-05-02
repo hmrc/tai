@@ -136,52 +136,50 @@ class CustomErrorHandler @Inject() (
     Future.successful(result)
   }
 
-  final def mapExceptionsToStatus(ex: Throwable): Option[Result] =
+  private def getEventType(ex: Throwable): String =
     ex match {
-      case ex: BadRequestException     => Some(BadRequest(constructErrorMessage(ex.message)))
-      case ex: NotFoundException       => Some(NotFound(constructErrorMessage(ex.message)))
-      case ex: GatewayTimeoutException => Some(BadGateway(constructErrorMessage(ex.getMessage)))
-      case ex: BadGatewayException     => Some(BadGateway(constructErrorMessage(ex.getMessage)))
-      case ex: HttpException if ex.message.contains("502 Bad Gateway") =>
-        Some(BadGateway(constructErrorMessage(ex.getMessage)))
-      case _ => None
+      //    case _: NotFoundException      => "ResourceNotFound"
+      case _: AuthorisationException => "ClientError"
+      case _: JsValidationException  => "ServerValidationError"
+      case _                         => "ServerInternalError"
     }
 
   override def onServerError(request: RequestHeader, ex: Throwable): Future[Result] =
-    mapExceptionsToStatus(ex) match {
-      case Some(result) => Future.successful(result)
-      case _ =>
-        implicit val headerCarrier: HeaderCarrier = hc(request)
-        val requestId = headerCarrier.requestId.map(_.value).getOrElse("None")
-        val eventType = ex match {
-          //    case _: NotFoundException      => "ResourceNotFound"
-          case _: AuthorisationException => "ClientError"
-          case _: JsValidationException  => "ServerValidationError"
-          case _                         => "ServerInternalError"
-        }
+    Future.successful(
+      ex match {
+        case ex: BadRequestException     => BadRequest(constructErrorMessage(ex.message))
+        case ex: NotFoundException       => NotFound(constructErrorMessage(ex.message))
+        case ex: GatewayTimeoutException => BadGateway(constructErrorMessage(ex.getMessage))
+        case ex: BadGatewayException     => BadGateway(constructErrorMessage(ex.getMessage))
+        case ex: HttpException if ex.message.contains("502 Bad Gateway") =>
+          BadGateway(constructErrorMessage(ex.getMessage))
+        case _ =>
+          implicit val headerCarrier: HeaderCarrier = hc(request)
+          val requestId = headerCarrier.requestId.map(_.value).getOrElse("None")
+          val eventType = getEventType(ex)
 
-        logger.error(
-          s"! Internal server error, for (${request.method}) [auditSource=${appConfig.appName}, X-Request-ID=$requestId -> ",
-          ex
-        )
-
-        auditConnector.sendEvent(
-          httpAuditEvent.dataEvent(
-            eventType = eventType,
-            transactionName = "Unexpected error",
-            request = request,
-            detail = Map("transactionFailureReason" -> ex.getMessage)
+          logger.error(
+            s"! Internal server error, for (${request.method}) [auditSource=${appConfig.appName}, X-Request-ID=$requestId -> ",
+            ex
           )
-        )
 
-        Future.successful(
+          auditConnector.sendEvent(
+            httpAuditEvent.dataEvent(
+              eventType = eventType,
+              transactionName = "Unexpected error",
+              request = request,
+              detail = Map("transactionFailureReason" -> ex.getMessage)
+            )
+          )
+
           ApiResponse(
             "INTERNAL_ERROR",
             s"An error has occurred. This has been audited with auditSource=${appConfig.appName}, X-Request-ID=$requestId",
             reportAs = INTERNAL_SERVER_ERROR
           ).toResult
-        )
-    }
+
+      }
+    )
 
 }
 
