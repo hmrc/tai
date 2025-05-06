@@ -16,8 +16,8 @@
 
 package uk.gov.hmrc.tai.util
 
-import org.scalatest.{Assertion, BeforeAndAfterEach}
 import org.scalatest.concurrent.ScalaFutures
+import org.scalatest.{Assertion, BeforeAndAfterEach}
 import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
 import play.api.Application
@@ -68,11 +68,15 @@ trait BaseSpec
 
   protected def checkControllerResponse(ex: Throwable, futureResult: Future[Result], expStatus: Int): Assertion = {
     val result = Try(Await.result(futureResult, Duration.Inf))
-    result mustBe Failure(ex)
-    Await
+    assert(result == Failure(ex), s" - controller result must be an exception of type ${ex.toString}")
+    val errorHandlerResult = Await
       .result(customErrorHandler.onServerError(FakeRequest(), ex), Duration.Inf)
       .header
-      .status mustBe expStatus
+      .status
+    assert(
+      errorHandlerResult == expStatus,
+      s" - exception thrown by controller must be processed by error handler as status $expStatus"
+    )
   }
 
 }

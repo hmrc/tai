@@ -33,9 +33,7 @@ import uk.gov.hmrc.tai.controllers.auth.AuthJourney
 import uk.gov.hmrc.tai.model.api.ApiResponse
 import uk.gov.hmrc.tai.util.BaseSpec
 
-import scala.concurrent.duration.Duration
-import scala.concurrent.{Await, Future}
-import scala.util.{Failure, Try}
+import scala.concurrent.Future
 
 class ErrorHandlingOnControllerSpec extends BaseSpec {
 
@@ -80,7 +78,7 @@ class ErrorHandlingOnControllerSpec extends BaseSpec {
 
   private def withInfo(s: String)(block: String => Unit): Unit = block(s)
 
-  private def failedResponseHandledByErrorHandler(ex: Throwable, info: String): Unit =
+  private def failedResponseHandledByErrorHandler(ex: Throwable, info: String, expStatus: Int): Unit =
     s"throw exception when response Future failed ${ex.getClass} where $info" in {
       when(mockDummyService.call())
         .thenReturn(
@@ -88,7 +86,7 @@ class ErrorHandlingOnControllerSpec extends BaseSpec {
             Future.failed(ex)
           )
         )
-      Try(Await.result(runTest, Duration.Inf)) mustBe Failure(ex)
+      checkControllerResponse(ex, runTest, expStatus)
     }
 
   override protected def beforeEach(): Unit = super.beforeEach()
@@ -135,23 +133,33 @@ class ErrorHandlingOnControllerSpec extends BaseSpec {
     }
 
     withInfo("previously handled in controller") { info =>
-      behave like failedResponseHandledByErrorHandler(BadRequestException("dummy response"), info)
-      behave like failedResponseHandledByErrorHandler(NotFoundException("dummy response"), info)
-      behave like failedResponseHandledByErrorHandler(GatewayTimeoutException("dummy response"), info)
-      behave like failedResponseHandledByErrorHandler(BadGatewayException("dummy response"), info)
-      behave like failedResponseHandledByErrorHandler(HttpException("502 Bad Gateway", BAD_GATEWAY), info)
+      behave like failedResponseHandledByErrorHandler(BadRequestException("dummy response"), info, BAD_REQUEST)
+      behave like failedResponseHandledByErrorHandler(NotFoundException("dummy response"), info, NOT_FOUND)
+      behave like failedResponseHandledByErrorHandler(GatewayTimeoutException("dummy response"), info, BAD_GATEWAY)
+      behave like failedResponseHandledByErrorHandler(BadGatewayException("dummy response"), info, BAD_GATEWAY)
+      behave like failedResponseHandledByErrorHandler(HttpException("502 Bad Gateway", BAD_GATEWAY), info, BAD_GATEWAY)
     }
 
     withInfo("previously handled in error handler") { info =>
-      behave like failedResponseHandledByErrorHandler(HttpException("Http exception", GATEWAY_TIMEOUT), info)
-      behave like failedResponseHandledByErrorHandler(RuntimeException("Runtime exception"), info)
       behave like failedResponseHandledByErrorHandler(
-        UpstreamErrorResponse("Upstream exception", GATEWAY_TIMEOUT),
-        info
+        HttpException("Http exception", 402),
+        info,
+        402
+      )
+      behave like failedResponseHandledByErrorHandler(
+        RuntimeException("Runtime exception"),
+        info,
+        INTERNAL_SERVER_ERROR
+      )
+      behave like failedResponseHandledByErrorHandler(
+        UpstreamErrorResponse("Upstream exception", INSUFFICIENT_STORAGE),
+        info,
+        INSUFFICIENT_STORAGE
       )
       behave like failedResponseHandledByErrorHandler(
         InsufficientConfidenceLevel("Insufficient confidence exception"),
-        info
+        info,
+        UNAUTHORIZED
       )
     }
 
