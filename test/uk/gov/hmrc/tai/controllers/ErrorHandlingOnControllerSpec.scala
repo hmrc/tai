@@ -105,7 +105,7 @@ class ErrorHandlingOnControllerSpec extends BaseSpec {
     }
 
     Set(INTERNAL_SERVER_ERROR, INSUFFICIENT_STORAGE).foreach { responseCode =>
-      s"return BAD_GATEWAY response when service response is Left UpstreamErrorResponse ($responseCode)" in {
+      s"return BAD_GATEWAY response when service response is Left UpstreamErrorResponse ($responseCode) - i.e. > 499" in {
         when(mockDummyService.call())
           .thenReturn(
             EitherT(
@@ -124,11 +124,24 @@ class ErrorHandlingOnControllerSpec extends BaseSpec {
           .thenReturn(
             EitherT(
               Future.successful[Either[UpstreamErrorResponse, Option[Int]]](
-                Left(UpstreamErrorResponse("500 response", 429))
+                Left(UpstreamErrorResponse("500 response", responseCode))
               )
             )
           )
-        status(runTest) mustBe 429
+        status(runTest) mustBe responseCode
+      }
+    }
+    Set(METHOD_NOT_ALLOWED, PAYMENT_REQUIRED).foreach { responseCode =>
+      s"return $responseCode response when service response is Left UpstreamErrorResponse ($responseCode) - Internal server error" in {
+        when(mockDummyService.call())
+          .thenReturn(
+            EitherT(
+              Future.successful[Either[UpstreamErrorResponse, Option[Int]]](
+                Left(UpstreamErrorResponse("500 response", responseCode))
+              )
+            )
+          )
+        status(runTest) mustBe INTERNAL_SERVER_ERROR
       }
     }
 
