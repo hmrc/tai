@@ -18,7 +18,7 @@ package uk.gov.hmrc.tai.config
 
 import org.mockito.ArgumentCaptor
 import org.mockito.ArgumentMatchers.any
-import org.mockito.Mockito.{reset, times, verify, when}
+import org.mockito.Mockito.{never, reset, times, verify, when}
 import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
 import play.api.Application
 import play.api.cache.AsyncCacheApi
@@ -43,6 +43,8 @@ class CustomErrorHandlerSpec extends BaseSpec with ScalaCheckDrivenPropertyCheck
   override def beforeEach(): Unit = {
     super.beforeEach()
     reset(mockAuditConnector)
+    when(mockAuditConnector.sendEvent(any())(any(), any())).thenReturn(Future.successful(AuditResult.Success))
+    ()
   }
 
   private val configValues: Map[String, AnyVal] =
@@ -67,7 +69,6 @@ class CustomErrorHandlerSpec extends BaseSpec with ScalaCheckDrivenPropertyCheck
       val message = "URI not found"
       val result = customErrorHandler.onClientError(FakeRequest(GET, url), NOT_FOUND, message)
       val json = Json.parse(contentAsString(result))
-      when(mockAuditConnector.sendEvent(any())(any(), any())).thenReturn(Future.successful(AuditResult.Success))
 
       (json \ "statusCode").get mustBe JsNumber(404)
       (json \ "message").get mustBe JsString(message)
@@ -83,7 +84,6 @@ class CustomErrorHandlerSpec extends BaseSpec with ScalaCheckDrivenPropertyCheck
         "An error message"
       )
       val json = Json.parse(contentAsString(result))
-      when(mockAuditConnector.sendEvent(any())(any(), any())).thenReturn(Future.successful(AuditResult.Success))
 
       (json \ "statusCode").get mustBe JsNumber(400)
       (json \ "message").get mustBe JsString("bad request, cause: REDACTED")
@@ -96,7 +96,6 @@ class CustomErrorHandlerSpec extends BaseSpec with ScalaCheckDrivenPropertyCheck
       val message = "Unauthorised"
       val result = customErrorHandler.onClientError(FakeRequest(GET, url), UNAUTHORIZED, message)
       val json = Json.parse(contentAsString(result))
-      when(mockAuditConnector.sendEvent(any())(any(), any())).thenReturn(Future.successful(AuditResult.Success))
 
       (json \ "statusCode").get mustBe JsNumber(401)
       (json \ "message").get mustBe JsString(message)
@@ -105,17 +104,12 @@ class CustomErrorHandlerSpec extends BaseSpec with ScalaCheckDrivenPropertyCheck
   }
 
   "onServerError" must {
-    "return an api response" when {
+    "return an api response and a call to audit connector" when {
       Set(
         new InsufficientConfidenceLevel -> (UNAUTHORIZED, "Insufficient ConfidenceLevel"),
         new JsValidationException("method", "url", classOf[Int], "errors")
           -> (INTERNAL_SERVER_ERROR, "bad request, cause: REDACTED"),
-        new RuntimeException("error")                 -> (INTERNAL_SERVER_ERROR, "bad request, cause: REDACTED"),
-        new BadRequestException(exceptionMessage)     -> (BAD_REQUEST, "The nino provided is invalid"),
-        new NotFoundException(exceptionMessage)       -> (NOT_FOUND, "The nino provided is invalid"),
-        new GatewayTimeoutException(exceptionMessage) -> (BAD_GATEWAY, "The nino provided is invalid"),
-        new BadGatewayException(exceptionMessage)     -> (BAD_GATEWAY, "The nino provided is invalid"),
-        new HttpException("error containing 502 Bad Gateway", 500) -> (BAD_GATEWAY, "bad request, cause: REDACTED"),
+        new RuntimeException("error") -> (INTERNAL_SERVER_ERROR, "bad request, cause: REDACTED"),
         new HttpException("error NOT containing five zero two Bad Gateway", 500) ->
           (INTERNAL_SERVER_ERROR, "bad request, cause: REDACTED"),
         new InternalServerException(exceptionMessage) -> (INTERNAL_SERVER_ERROR, "The nino provided is invalid")
@@ -132,6 +126,28 @@ class CustomErrorHandlerSpec extends BaseSpec with ScalaCheckDrivenPropertyCheck
           verify(mockAuditConnector, times(1)).sendEvent(arg.capture())(any(), any())
           val dataEvent: DataEvent = arg.getValue
           dataEvent.tags.get(HeaderNames.xRequestId) mustBe defined
+        }
+      }
+    }
+
+    "return an api response and NO call to audit connector" when {
+      Set(
+        new BadRequestException(exceptionMessage)                  -> (BAD_REQUEST, "The nino provided is invalid"),
+        new NotFoundException(exceptionMessage)                    -> (NOT_FOUND, "The nino provided is invalid"),
+        new GatewayTimeoutException(exceptionMessage)              -> (BAD_GATEWAY, "The nino provided is invalid"),
+        new BadGatewayException(exceptionMessage)                  -> (BAD_GATEWAY, "The nino provided is invalid"),
+        new HttpException("error containing 502 Bad Gateway", 500) -> (BAD_GATEWAY, "bad request, cause: REDACTED")
+      ).foreach { case (ex, Tuple2(newStatus, newMessage)) =>
+        s"Exception ${ex.getClass.getName} is thrown and return status code of $newStatus and correct message" in {
+          val arg = ArgumentCaptor.forClass(classOf[DataEvent])
+          val uuid = UUID.randomUUID().toString
+          val customErrorHandler = inject[CustomErrorHandler]
+          val result = customErrorHandler.onServerError(FakeRequest().withHeaders(HeaderNames.xRequestId -> uuid), ex)
+          val json = Json.parse(contentAsString(result))
+          (json \ "statusCode").get mustBe JsNumber(newStatus)
+          (json \ "message").get.toString must include(newMessage)
+
+          verify(mockAuditConnector, never()).sendEvent(arg.capture())(any(), any())
         }
       }
     }
