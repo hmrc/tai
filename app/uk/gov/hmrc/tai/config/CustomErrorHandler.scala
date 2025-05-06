@@ -72,7 +72,6 @@ class CustomErrorHandler @Inject() (
     }
   }
 
-  // This is the same as parent version except that above constructErrorMessage is called.
   override def onClientError(request: RequestHeader, statusCode: Int, message: String): Future[Result] = {
     implicit val headerCarrier: HeaderCarrier = hc(request)
     val result = statusCode match {
@@ -122,13 +121,6 @@ class CustomErrorHandler @Inject() (
     Future.successful(result)
   }
 
-  private def getEventTypeForAudit(ex: Throwable): String =
-    ex match {
-      case _: NotFoundException      => "ResourceNotFound"
-      case _: AuthorisationException => "ClientError"
-      case _: JsValidationException  => "ServerValidationError"
-      case _                         => "ServerInternalError"
-    }
   private def logException(exception: Throwable, responseCode: Int, request: RequestHeader): Unit = {
     val msg = s"${request.method} ${request.uri} failed with ${exception.getClass.getName}: ${exception.getMessage}"
     if (upstreamWarnStatuses.contains(responseCode)) {
@@ -154,31 +146,42 @@ class CustomErrorHandler @Inject() (
     def toErrorResponse: ErrorResponse = ErrorResponse(newStatus, newMessage)
   }
 
-  private def analyseError(e: Throwable, request: RequestHeader): Analysis =
-    e match {
-      case e: BadRequestException                    => Analysis(BAD_REQUEST, errMessage(e), None, false)
-      case e: NotFoundException                      => Analysis(NOT_FOUND, errMessage(e), None, false)
-      case e: GatewayTimeoutException                => Analysis(BAD_GATEWAY, errMessage(e), None, false)
-      case e: BadGatewayException                    => Analysis(BAD_GATEWAY, errMessage(e), None, false)
-      case e: HttpException if isHttpExBadGateway(e) => Analysis(BAD_GATEWAY, errMessage(e), None, false)
-      case e: HttpException          => Analysis(e.responseCode, errMessage(e), Some(e.responseCode), true)
-      case e: AuthorisationException => Analysis(UNAUTHORIZED, e.getMessage, Some(UNAUTHORIZED), true)
-      case e: UpstreamErrorResponse  => Analysis(e.statusCode, upstreamMessage(e), Some(e.reportAs), true)
-      case e: Throwable =>
-        logger.error(s"! Internal server error, for (${request.method}) [${request.uri}] -> ", e)
-        Analysis(INTERNAL_SERVER_ERROR, throwableMessage(e), None, true)
-    }
+  private val exceptionsWithoutLoggingOrAudit: PartialFunction[Throwable, Analysis] = {
+    case e: BadRequestException                    => Analysis(BAD_REQUEST, errMessage(e), None, false)
+    case e: NotFoundException                      => Analysis(NOT_FOUND, errMessage(e), None, false)
+    case e: GatewayTimeoutException                => Analysis(BAD_GATEWAY, errMessage(e), None, false)
+    case e: BadGatewayException                    => Analysis(BAD_GATEWAY, errMessage(e), None, false)
+    case e: HttpException if isHttpExBadGateway(e) => Analysis(BAD_GATEWAY, errMessage(e), None, false)
+  }
+
+  private def exceptionsWithLoggingOrAudit(request: RequestHeader): PartialFunction[Throwable, Analysis] = {
+    case e: HttpException          => Analysis(e.responseCode, errMessage(e), Some(e.responseCode), true)
+    case e: AuthorisationException => Analysis(UNAUTHORIZED, e.getMessage, Some(UNAUTHORIZED), true)
+    case e: UpstreamErrorResponse  => Analysis(e.statusCode, upstreamMessage(e), Some(e.reportAs), true)
+    case e: Throwable =>
+      logger.error(s"! Internal server error, for (${request.method}) [${request.uri}] -> ", e)
+      Analysis(INTERNAL_SERVER_ERROR, throwableMessage(e), None, true)
+  }
+
+  private def serverExceptionMapper(request: RequestHeader): PartialFunction[Throwable, Analysis] =
+    exceptionsWithoutLoggingOrAudit orElse exceptionsWithLoggingOrAudit(request)
 
   override def onServerError(request: RequestHeader, ex: Throwable): Future[Result] = {
     implicit val headerCarrier: HeaderCarrier = hc(request)
-    val analysis: Analysis = analyseError(ex, request)
+    val analysis: Analysis = serverExceptionMapper(request)(ex)
 
     analysis.logStatus.foreach(logException(ex, _, request))
     val auditResult = if (analysis.doAudit) {
+      val eventTypeForAudit: String = ex match {
+        case _: NotFoundException      => "ResourceNotFound"
+        case _: AuthorisationException => "ClientError"
+        case _: JsValidationException  => "ServerValidationError"
+        case _                         => "ServerInternalError"
+      }
       auditConnector
         .sendEvent(
           httpAuditEvent.dataEvent(
-            eventType = getEventTypeForAudit(ex),
+            eventType = eventTypeForAudit,
             transactionName = "Unexpected error",
             request = request,
             detail = Map("transactionFailureReason" -> ex.getMessage)
