@@ -39,7 +39,7 @@ class CustomErrorHandler @Inject() (
 )(implicit ec: ExecutionContext)
     extends JsonErrorHandler(auditConnector, httpAuditEvent, configuration) with Logging {
 
-  final def constructErrorMessage(input: String): String = {
+  private def constructErrorMessage(input: String): String = {
     val unrecognisedTokenJsonError = "^Invalid Json: Unrecognized token '(.*)':.*".r
     val invalidJson = "^(?s)Invalid Json:.*".r
     val jsonValidationError = "^Json validation error.*".r
