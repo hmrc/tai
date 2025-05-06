@@ -121,15 +121,6 @@ class CustomErrorHandler @Inject() (
     Future.successful(result)
   }
 
-  private def logException(exception: Throwable, responseCode: Int, request: RequestHeader): Unit = {
-    val msg = s"${request.method} ${request.uri} failed with ${exception.getClass.getName}: ${exception.getMessage}"
-    if (upstreamWarnStatuses.contains(responseCode)) {
-      logger.warn(msg, exception)
-    } else {
-      logger.error(msg, exception)
-    }
-  }
-
   private def errMessage(e: Throwable): String = constructErrorMessage(e.getMessage)
 
   private def upstreamMessage(e: UpstreamErrorResponse): String =
@@ -142,35 +133,37 @@ class CustomErrorHandler @Inject() (
 
   private val isHttpExBadGateway: HttpException => Boolean = _.message.contains("502 Bad Gateway")
 
-  private case class Analysis(newStatus: Int, newMessage: String, logStatus: Option[Int], doAudit: Boolean) {
+  private case class Analysis(newStatus: Int, newMessage: String, doAudit: Boolean) {
     def toErrorResponse: ErrorResponse = ErrorResponse(newStatus, newMessage)
   }
 
-  private val exceptionsWithoutLoggingOrAudit: PartialFunction[Throwable, Analysis] = {
-    case e: BadRequestException                    => Analysis(BAD_REQUEST, errMessage(e), None, false)
-    case e: NotFoundException                      => Analysis(NOT_FOUND, errMessage(e), None, false)
-    case e: GatewayTimeoutException                => Analysis(BAD_GATEWAY, errMessage(e), None, false)
-    case e: BadGatewayException                    => Analysis(BAD_GATEWAY, errMessage(e), None, false)
-    case e: HttpException if isHttpExBadGateway(e) => Analysis(BAD_GATEWAY, errMessage(e), None, false)
+  // Error responses previously caught by taxAccountErrorHandler on controllers
+  private val exceptionsWithoutAudit: PartialFunction[Throwable, Analysis] = {
+    case e: BadRequestException                    => Analysis(BAD_REQUEST, errMessage(e), false)
+    case e: NotFoundException                      => Analysis(NOT_FOUND, errMessage(e), false)
+    case e: GatewayTimeoutException                => Analysis(BAD_GATEWAY, errMessage(e), false)
+    case e: BadGatewayException                    => Analysis(BAD_GATEWAY, errMessage(e), false)
+    case e: HttpException if isHttpExBadGateway(e) => Analysis(BAD_GATEWAY, errMessage(e), false)
   }
 
-  private def exceptionsWithLoggingOrAudit(request: RequestHeader): PartialFunction[Throwable, Analysis] = {
-    case e: HttpException          => Analysis(e.responseCode, errMessage(e), Some(e.responseCode), true)
-    case e: AuthorisationException => Analysis(UNAUTHORIZED, e.getMessage, Some(UNAUTHORIZED), true)
-    case e: UpstreamErrorResponse  => Analysis(e.statusCode, upstreamMessage(e), Some(e.reportAs), true)
+  private def exceptionsWithAudit(request: RequestHeader): PartialFunction[Throwable, Analysis] = {
+    case e: HttpException          => Analysis(e.responseCode, errMessage(e), true)
+    case e: AuthorisationException => Analysis(UNAUTHORIZED, e.getMessage, true)
+    case e: UpstreamErrorResponse  => Analysis(e.reportAs, upstreamMessage(e), true)
     case e: Throwable =>
       logger.error(s"! Internal server error, for (${request.method}) [${request.uri}] -> ", e)
-      Analysis(INTERNAL_SERVER_ERROR, throwableMessage(e), None, true)
+      Analysis(INTERNAL_SERVER_ERROR, throwableMessage(e), true)
   }
 
   private def serverExceptionMapper(request: RequestHeader): PartialFunction[Throwable, Analysis] =
-    exceptionsWithoutLoggingOrAudit orElse exceptionsWithLoggingOrAudit(request)
+    exceptionsWithoutAudit orElse exceptionsWithAudit(request)
 
   override def onServerError(request: RequestHeader, ex: Throwable): Future[Result] = {
     implicit val headerCarrier: HeaderCarrier = hc(request)
     val analysis: Analysis = serverExceptionMapper(request)(ex)
 
-    analysis.logStatus.foreach(logException(ex, _, request))
+    logger.warn(s"${request.method} ${request.uri} failed with ${ex.getClass.getName}: ${ex.getMessage}", ex)
+
     val auditResult = if (analysis.doAudit) {
       val eventTypeForAudit: String = ex match {
         case _: NotFoundException      => "ResourceNotFound"
