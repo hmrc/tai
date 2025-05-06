@@ -20,7 +20,6 @@ import com.google.inject.Inject
 import play.api.libs.json.Json
 import play.api.mvc.{Action, AnyContent, ControllerComponents}
 import uk.gov.hmrc.domain.Nino
-import uk.gov.hmrc.http.{HttpException, NotFoundException}
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 import uk.gov.hmrc.tai.controllers.auth.AuthJourney
 import uk.gov.hmrc.tai.model.api.ApiResponse
@@ -46,26 +45,12 @@ class TaxCodeChangeController @Inject() (
   def taxCodeChange(nino: Nino): Action[AnyContent] = authentication.authWithUserDetails.async { implicit request =>
     taxCodeChangeService.taxCodeChange(nino) map { taxCodeChange =>
       Ok(Json.toJson(ApiResponse(taxCodeChange, Seq.empty)))
-    } recover {
-      case ex: NotFoundException =>
-        NotFound(Json.toJson(Map("reason" -> ex.getMessage)))
-      case ex: HttpException if ex.responseCode >= 500 =>
-        BadGateway(Json.toJson(Map("reason" -> ex.getMessage)))
-      case ex: HttpException =>
-        InternalServerError(Json.toJson(Map("reason" -> ex.getMessage)))
     }
   }
 
   def taxCodeMismatch(nino: Nino): Action[AnyContent] = authentication.authWithUserDetails.async { implicit request =>
     taxCodeChangeService.taxCodeMismatch(nino).map { taxCodeMismatch =>
       Ok(Json.toJson(ApiResponse(taxCodeMismatch, Seq.empty)))
-    } recover {
-      case ex: NotFoundException =>
-        NotFound(Json.toJson(Map("reason" -> ex.getMessage)))
-      case ex: HttpException if ex.responseCode >= 500 =>
-        BadGateway(Json.toJson(Map("reason" -> ex.getMessage)))
-      case ex: HttpException =>
-        InternalServerError(Json.toJson(Map("reason" -> ex.getMessage)))
     }
   }
 
@@ -75,13 +60,6 @@ class TaxCodeChangeController @Inject() (
 
       latestTaxCodeRecords.map { records =>
         Ok(Json.toJson(ApiResponse(records, Seq.empty)))
-      } recover {
-        case ex: NotFoundException =>
-          NotFound(Json.toJson(Map("reason" -> ex.getMessage)))
-        case ex: HttpException if ex.responseCode >= 500 =>
-          BadGateway(Json.toJson(Map("reason" -> ex.getMessage)))
-        case ex: HttpException =>
-          InternalServerError(Json.toJson(Map("reason" -> ex.getMessage)))
       }
     }
 }

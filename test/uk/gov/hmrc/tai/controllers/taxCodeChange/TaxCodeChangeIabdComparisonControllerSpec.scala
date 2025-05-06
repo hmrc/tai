@@ -23,7 +23,6 @@ import play.api.mvc.Result
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{status, *}
 import uk.gov.hmrc.domain.Generator
-import uk.gov.hmrc.http.*
 import uk.gov.hmrc.tai.factory.TaxFreeAmountComparisonFactory
 import uk.gov.hmrc.tai.service.TaxFreeAmountComparisonService
 import uk.gov.hmrc.tai.util.BaseSpec
@@ -59,16 +58,18 @@ class TaxCodeChangeIabdComparisonControllerSpec extends BaseSpec {
       }
     }
 
-    "respond with a INTERNAL_SERVER_ERROR" when {
+    "respond with a BAD_REQUEST" when {
       "fetching tax free amount comparison returns BadRequestException :(" in {
         val nino = ninoGenerator
 
         when(taxFreeAmountComparisonService.taxFreeAmountComparison(meq(nino))(any()))
-          .thenReturn(Future.failed(new BadRequestException("Bad request")))
+          .thenReturn(Future.failed(badRequestException))
 
-        val result: Future[Result] = testController.taxCodeChangeIabdComparison(nino)(FakeRequest())
-
-        status(result) mustEqual INTERNAL_SERVER_ERROR
+        checkControllerResponse(
+          badRequestException,
+          testController.taxCodeChangeIabdComparison(nino)(FakeRequest()),
+          BAD_REQUEST
+        )
       }
     }
 
@@ -77,11 +78,13 @@ class TaxCodeChangeIabdComparisonControllerSpec extends BaseSpec {
         val nino = ninoGenerator
 
         when(taxFreeAmountComparisonService.taxFreeAmountComparison(meq(nino))(any()))
-          .thenReturn(Future.failed(new NotFoundException("Resource not found")))
+          .thenReturn(Future.failed(notFoundException))
 
-        val result: Future[Result] = testController.taxCodeChangeIabdComparison(nino)(FakeRequest())
-
-        status(result) mustEqual NOT_FOUND
+        checkControllerResponse(
+          notFoundException,
+          testController.taxCodeChangeIabdComparison(nino)(FakeRequest()),
+          NOT_FOUND
+        )
       }
     }
 
@@ -90,11 +93,13 @@ class TaxCodeChangeIabdComparisonControllerSpec extends BaseSpec {
         val nino = ninoGenerator
 
         when(taxFreeAmountComparisonService.taxFreeAmountComparison(meq(nino))(any()))
-          .thenReturn(Future.failed(new InternalServerException("Server error")))
+          .thenReturn(Future.failed(badGatewayException))
 
-        val result: Future[Result] = testController.taxCodeChangeIabdComparison(nino)(FakeRequest())
-
-        status(result) mustEqual BAD_GATEWAY
+        checkControllerResponse(
+          badGatewayException,
+          testController.taxCodeChangeIabdComparison(nino)(FakeRequest()),
+          BAD_GATEWAY
+        )
       }
     }
   }

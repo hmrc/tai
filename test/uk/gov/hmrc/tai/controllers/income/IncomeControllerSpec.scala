@@ -477,10 +477,14 @@ class IncomeControllerSpec extends BaseSpec {
       }
 
       "any exception has been thrown" in {
-        val SUT = setup(Future.failed(new RuntimeException("Error")))
-        val result = SUT.updateTaxCodeIncome(nino, TaxYear(), employmentId)(fakeTaxCodeIncomeRequest)
+        val runTimeException = new RuntimeException("Error")
+        val SUT = setup(Future.failed(runTimeException))
 
-        status(result) mustBe INTERNAL_SERVER_ERROR
+        checkControllerResponse(
+          runTimeException,
+          SUT.updateTaxCodeIncome(nino, TaxYear(), employmentId)(fakeTaxCodeIncomeRequest),
+          INTERNAL_SERVER_ERROR
+        )
       }
     }
   }

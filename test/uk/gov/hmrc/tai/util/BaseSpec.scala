@@ -28,7 +28,7 @@ import play.api.mvc.{ControllerComponents, Result}
 import play.api.test.Helpers.stubControllerComponents
 import play.api.test.{FakeRequest, Injecting}
 import uk.gov.hmrc.domain.{Generator, Nino}
-import uk.gov.hmrc.http.{BadRequestException, HeaderCarrier, NotFoundException, SessionId}
+import uk.gov.hmrc.http.{BadGatewayException, BadRequestException, HeaderCarrier, InternalServerException, NotFoundException, SessionId}
 import uk.gov.hmrc.tai.config.CustomErrorHandler
 import uk.gov.hmrc.tai.connectors.cache.CacheId
 import uk.gov.hmrc.tai.controllers.FakeTaiPlayApplication
@@ -65,6 +65,8 @@ trait BaseSpec
 
   protected val badRequestException = new BadRequestException("message")
   protected val notFoundException: NotFoundException = new NotFoundException("Error")
+  protected val badGatewayException: BadGatewayException = new BadGatewayException("Error")
+  protected val internalServerException: InternalServerException = new InternalServerException("Bad gateway")
 
   protected def checkControllerResponse(ex: Throwable, futureResult: Future[Result], expStatus: Int): Assertion = {
     val result = Try(Await.result(futureResult, Duration.Inf))

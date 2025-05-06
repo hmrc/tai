@@ -22,7 +22,6 @@ import play.api.mvc.{Action, AnyContent, ControllerComponents}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 import uk.gov.hmrc.tai.config.CustomErrorHandler
-
 import uk.gov.hmrc.tai.controllers.auth.AuthJourney
 import uk.gov.hmrc.tai.model.api.{ApiLink, ApiResponse}
 import uk.gov.hmrc.tai.model.domain.TaxCodeIncomeComponentType
@@ -97,13 +96,10 @@ class IncomeController @Inject() (
     authentication.authWithUserDetails.async(parse.json) { implicit request =>
       withJsonBody[UpdateTaxCodeIncomeRequest] { updateTaxCodeIncomeRequest =>
         incomeService.updateTaxCodeIncome(nino, snapshotId, employmentId, updateTaxCodeIncomeRequest.amount) map {
-          case IncomeUpdateSuccess    => Ok
-          case InvalidAmount(message) => BadRequest(message)
-          case IncomeUpdateFailed(message) =>
-            InternalServerError(message)
+          case IncomeUpdateSuccess         => Ok
+          case InvalidAmount(message)      => BadRequest(message)
+          case IncomeUpdateFailed(message) => InternalServerError(message)
         }
-      }.recover { case _ =>
-        InternalServerError
       }
     }
 }
