@@ -23,7 +23,7 @@ import org.mockito.Mockito.when
 import play.api.libs.json.*
 import play.api.test.Helpers.*
 import play.api.test.{FakeHeaders, FakeRequest}
-import uk.gov.hmrc.http.{BadRequestException, NotFoundException, UpstreamErrorResponse}
+import uk.gov.hmrc.http.UpstreamErrorResponse
 import uk.gov.hmrc.tai.config.CustomErrorHandler
 import uk.gov.hmrc.tai.controllers.auth.AuthJourney
 import uk.gov.hmrc.tai.model.domain.*

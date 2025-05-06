@@ -106,7 +106,7 @@ class ErrorHandlingOnControllerSpec extends BaseSpec {
       status(runTest) mustBe NOT_FOUND
     }
 
-    Set(INTERNAL_SERVER_ERROR, 508).foreach { responseCode =>
+    Set(INTERNAL_SERVER_ERROR, INSUFFICIENT_STORAGE).foreach { responseCode =>
       s"return BAD_GATEWAY response when service response is Left UpstreamErrorResponse ($responseCode)" in {
         when(mockDummyService.call())
           .thenReturn(
@@ -120,7 +120,7 @@ class ErrorHandlingOnControllerSpec extends BaseSpec {
       }
     }
 
-    Set(429, BAD_REQUEST, NOT_FOUND).foreach { responseCode =>
+    Set(TOO_MANY_REQUESTS, BAD_REQUEST, NOT_FOUND).foreach { responseCode =>
       s"return $responseCode response when service response is Left UpstreamErrorResponse ($responseCode)" in {
         when(mockDummyService.call())
           .thenReturn(
