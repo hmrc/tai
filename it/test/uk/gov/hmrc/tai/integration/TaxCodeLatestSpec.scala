@@ -21,7 +21,7 @@ import play.api.libs.json.Json
 import play.api.mvc.AnyContentAsEmpty
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{status as getStatus, *}
-import uk.gov.hmrc.http.HeaderNames
+import uk.gov.hmrc.http.{HeaderNames, HttpException}
 import uk.gov.hmrc.tai.integration.utils.{IntegrationSpec, TaxCodeRecordFactory}
 import uk.gov.hmrc.tai.model.api.{ApiResponse, TaxCodeSummary}
 import uk.gov.hmrc.tai.model.tai.TaxYear
@@ -51,26 +51,18 @@ class TaxCodeLatestSpec extends IntegrationSpec {
 
     }
 
-    List(500, 501, 502, 503, 504).foreach { status =>
-      s"return $status when we receive $status downstream - desTaxCodeHistoryUrl" in {
-        server.stubFor(get(urlEqualTo(desTaxCodeHistoryUrl)).willReturn(aResponse().withStatus(status)))
-        val result = route(fakeApplication(), request)
-        result.map(getStatus) mustBe Some(BAD_GATEWAY)
-      }
-    }
+    behave like callWithErrorHandling(request, desTaxCodeHistoryUrl, 500, internalServerException, BAD_GATEWAY)
+    behave like callWithErrorHandling(request, desTaxCodeHistoryUrl, 501, new HttpException("", 501), BAD_GATEWAY)
+    behave like callWithErrorHandling(request, desTaxCodeHistoryUrl, 502, new HttpException("", 502), BAD_GATEWAY)
+    behave like callWithErrorHandling(request, desTaxCodeHistoryUrl, 503, new HttpException("", 503), BAD_GATEWAY)
+    behave like callWithErrorHandling(request, desTaxCodeHistoryUrl, 504, new HttpException("", 503), BAD_GATEWAY)
 
-    List(400, 401, 403, 409, 412).foreach { status =>
-      s"return $status when we receive $status downstream - desTaxCodeHistoryUrl" in {
-        server.stubFor(get(urlEqualTo(desTaxCodeHistoryUrl)).willReturn(aResponse().withStatus(status)))
-        val result = route(fakeApplication(), request)
-        result.map(getStatus) mustBe Some(INTERNAL_SERVER_ERROR)
-      }
-    }
+    behave like callWithErrorHandling(request, desTaxCodeHistoryUrl, 400, badRequestException, BAD_REQUEST)
+    behave like callWithErrorHandling(request, desTaxCodeHistoryUrl, 401, new HttpException("", 401), BAD_GATEWAY)
+    behave like callWithErrorHandling(request, desTaxCodeHistoryUrl, 403, new HttpException("", 403), BAD_GATEWAY)
+    behave like callWithErrorHandling(request, desTaxCodeHistoryUrl, 409, new HttpException("", 409), BAD_GATEWAY)
+    behave like callWithErrorHandling(request, desTaxCodeHistoryUrl, 412, new HttpException("", 412), BAD_GATEWAY)
+    behave like callWithErrorHandling(request, desTaxCodeHistoryUrl, 404, notFoundException, NOT_FOUND)
 
-    "return 404 when we receive 404 from downstream - desTaxCodeHistoryUrl" in {
-      server.stubFor(get(urlEqualTo(desTaxCodeHistoryUrl)).willReturn(aResponse().withStatus(NOT_FOUND)))
-      val result = route(fakeApplication(), request)
-      result.map(getStatus) mustBe Some(NOT_FOUND)
-    }
   }
 }

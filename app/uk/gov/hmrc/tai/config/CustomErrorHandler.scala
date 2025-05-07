@@ -131,23 +131,20 @@ class CustomErrorHandler @Inject() (
     if (suppress5xxErrorMessages) { "Other error" }
     else { errMessage(e) }
 
-  private val isHttpExBadGateway: HttpException => Boolean = _.message.contains("502 Bad Gateway")
-
   private case class Analysis(newStatus: Int, newMessage: String, doAudit: Boolean) {
     def toErrorResponse: ErrorResponse = ErrorResponse(newStatus, newMessage)
   }
 
   // Error responses previously caught by taxAccountErrorHandler on controllers
   private val exceptionsWithoutAudit: PartialFunction[Throwable, Analysis] = {
-    case e: BadRequestException                    => Analysis(BAD_REQUEST, errMessage(e), false)
-    case e: NotFoundException                      => Analysis(NOT_FOUND, errMessage(e), false)
-    case e: GatewayTimeoutException                => Analysis(BAD_GATEWAY, errMessage(e), false)
-    case e: BadGatewayException                    => Analysis(BAD_GATEWAY, errMessage(e), false)
-    case e: HttpException if isHttpExBadGateway(e) => Analysis(BAD_GATEWAY, errMessage(e), false)
+    case e: BadRequestException     => Analysis(BAD_REQUEST, errMessage(e), false)
+    case e: NotFoundException       => Analysis(NOT_FOUND, errMessage(e), false)
+    case e: GatewayTimeoutException => Analysis(BAD_GATEWAY, errMessage(e), false)
+    case e: BadGatewayException     => Analysis(BAD_GATEWAY, errMessage(e), false)
+    case e: HttpException           => Analysis(BAD_GATEWAY, errMessage(e), false)
   }
 
   private def exceptionsWithAudit(request: RequestHeader): PartialFunction[Throwable, Analysis] = {
-    case e: HttpException          => Analysis(e.responseCode, errMessage(e), true)
     case e: AuthorisationException => Analysis(UNAUTHORIZED, e.getMessage, true)
     case e: UpstreamErrorResponse  => Analysis(e.reportAs, upstreamMessage(e), true)
     case e: Throwable =>

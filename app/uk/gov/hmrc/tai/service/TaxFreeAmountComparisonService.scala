@@ -77,7 +77,6 @@ class TaxFreeAmountComparisonService @Inject() (
         logger.error("Could not fetch previous coding components for TaxFreeAmountComparison - " + e.getMessage)
       case _ => throw new RuntimeException("Could not fetch previous coding components for TaxFreeAmountComparison")
     }
-
     previousCodingComponentsFuture
   }
 

@@ -184,7 +184,7 @@ class TaxCodeChangeControllerSpec extends BaseSpec with TaxCodeHistoryConstants 
       }
     }
 
-    "respond with INTERNAL_SERVER_ERROR" when {
+    "respond with BAD_GATEWAY" when {
       "a InternalServerException has occurred" in {
         when(taxCodeService.taxCodeChange(any())(any()))
           .thenReturn(Future.failed(internalServerException))
@@ -192,7 +192,7 @@ class TaxCodeChangeControllerSpec extends BaseSpec with TaxCodeHistoryConstants 
         checkControllerResponse(
           internalServerException,
           controller.taxCodeChange(testNino)(FakeRequest()),
-          INTERNAL_SERVER_ERROR
+          BAD_GATEWAY
         )
       }
     }
@@ -271,7 +271,7 @@ class TaxCodeChangeControllerSpec extends BaseSpec with TaxCodeHistoryConstants 
       }
     }
 
-    "respond with INTERNAL_SERVER_ERROR" when {
+    "respond with BAD_GATEWAY" when {
       "a InternalServerException has occurred" in {
         when(taxCodeService.taxCodeMismatch(any())(any(), any()))
           .thenReturn(Future.failed(internalServerException))
@@ -279,7 +279,7 @@ class TaxCodeChangeControllerSpec extends BaseSpec with TaxCodeHistoryConstants 
         checkControllerResponse(
           internalServerException,
           controller.taxCodeMismatch(testNino)(FakeRequest()),
-          INTERNAL_SERVER_ERROR
+          BAD_GATEWAY
         )
       }
     }
@@ -362,7 +362,7 @@ class TaxCodeChangeControllerSpec extends BaseSpec with TaxCodeHistoryConstants 
       }
     }
 
-    "respond with INTERNAL_SERVER_ERROR" when {
+    "respond with BAD_GATEWAY" when {
       "a InternalServerException has occurred" in {
         val internalServerException = new InternalServerException("Bad gateway")
         when(taxCodeService.latestTaxCodes(any(), any())(any()))
@@ -371,7 +371,7 @@ class TaxCodeChangeControllerSpec extends BaseSpec with TaxCodeHistoryConstants 
         checkControllerResponse(
           internalServerException,
           controller.mostRecentTaxCodeRecords(nino, TaxYear())(FakeRequest()),
-          INTERNAL_SERVER_ERROR
+          BAD_GATEWAY
         )
 
       }

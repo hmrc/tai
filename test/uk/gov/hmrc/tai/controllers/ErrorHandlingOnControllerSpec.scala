@@ -157,7 +157,7 @@ class ErrorHandlingOnControllerSpec extends BaseSpec {
       behave like failedResponseHandledByErrorHandler(
         HttpException("Http exception", 402),
         info,
-        402
+        BAD_GATEWAY
       )
       behave like failedResponseHandledByErrorHandler(
         RuntimeException("Runtime exception"),

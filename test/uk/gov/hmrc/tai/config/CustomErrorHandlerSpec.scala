@@ -109,10 +109,7 @@ class CustomErrorHandlerSpec extends BaseSpec with ScalaCheckDrivenPropertyCheck
         new InsufficientConfidenceLevel -> (UNAUTHORIZED, "Insufficient ConfidenceLevel"),
         new JsValidationException("method", "url", classOf[Int], "errors")
           -> (INTERNAL_SERVER_ERROR, "bad request, cause: REDACTED"),
-        new RuntimeException("error") -> (INTERNAL_SERVER_ERROR, "bad request, cause: REDACTED"),
-        new HttpException("error NOT containing five zero two Bad Gateway", 500) ->
-          (INTERNAL_SERVER_ERROR, "bad request, cause: REDACTED"),
-        new InternalServerException(exceptionMessage) -> (INTERNAL_SERVER_ERROR, "The nino provided is invalid")
+        new RuntimeException("error") -> (INTERNAL_SERVER_ERROR, "bad request, cause: REDACTED")
       ).foreach { case (ex, Tuple2(newStatus, newMessage)) =>
         s"Exception ${ex.getClass.getName} is thrown and return status code of $newStatus and correct message" in {
           val arg = ArgumentCaptor.forClass(classOf[DataEvent])
@@ -132,11 +129,15 @@ class CustomErrorHandlerSpec extends BaseSpec with ScalaCheckDrivenPropertyCheck
 
     "return an api response and NO call to audit connector" when {
       Set(
-        new BadRequestException(exceptionMessage)                  -> (BAD_REQUEST, "The nino provided is invalid"),
-        new NotFoundException(exceptionMessage)                    -> (NOT_FOUND, "The nino provided is invalid"),
-        new GatewayTimeoutException(exceptionMessage)              -> (BAD_GATEWAY, "The nino provided is invalid"),
-        new BadGatewayException(exceptionMessage)                  -> (BAD_GATEWAY, "The nino provided is invalid"),
-        new HttpException("error containing 502 Bad Gateway", 500) -> (BAD_GATEWAY, "bad request, cause: REDACTED")
+        new BadRequestException(exceptionMessage)     -> (BAD_REQUEST, "The nino provided is invalid"),
+        new NotFoundException(exceptionMessage)       -> (NOT_FOUND, "The nino provided is invalid"),
+        new GatewayTimeoutException(exceptionMessage) -> (BAD_GATEWAY, "The nino provided is invalid"),
+        new BadGatewayException(exceptionMessage)     -> (BAD_GATEWAY, "The nino provided is invalid"),
+        new HttpException(
+          "error NOT containing five zero two Bad Gateway",
+          500
+        )                                             -> (BAD_GATEWAY, "bad request, cause: REDACTED"),
+        new InternalServerException(exceptionMessage) -> (BAD_GATEWAY, "The nino provided is invalid")
       ).foreach { case (ex, Tuple2(newStatus, newMessage)) =>
         s"Exception ${ex.getClass.getName} is thrown and return status code of $newStatus and correct message" in {
           val arg = ArgumentCaptor.forClass(classOf[DataEvent])
