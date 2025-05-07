@@ -35,9 +35,9 @@ object TaxOnOtherIncomeHipReads {
   }
 
   private val taxOnOtherIncomeReads: Reads[Option[TaxOnOtherIncome]] = (json: JsValue) => {
-    val iabdSummaries = NpsIabdSummaryHipReads.totalLiabilityIabds(json, "totalIncomeDetails", Seq("nonSavings"))
+    val iabdSummaries: Seq[NpsIabdSummary] =
+      NpsIabdSummaryHipReads.totalLiabilityIabds(json, "totalIncomeDetails", Seq("nonSavings"))
     val nonCodedIncomeAmount = iabdSummaries.find(_.componentType == NonCodedIncome).map(_.amount)
-
     @tailrec
     def calculateTaxOnOtherIncome(
       incomeAndRateBands: Seq[RateBand],

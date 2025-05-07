@@ -21,11 +21,10 @@ import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.{HeaderCarrier, NotFoundException}
 import uk.gov.hmrc.tai.connectors.IabdConnector
 import uk.gov.hmrc.tai.controllers.auth.AuthenticatedRequest
-import uk.gov.hmrc.tai.model.domain.response._
-import uk.gov.hmrc.tai.model.domain.{IabdDetails, IabdDetailsToggleOff, IabdDetailsToggleOn}
+import uk.gov.hmrc.tai.model.domain.response.*
+import uk.gov.hmrc.tai.model.domain.IabdDetails
 import uk.gov.hmrc.tai.model.nps2.IabdType.NewEstimatedPay
 import uk.gov.hmrc.tai.model.tai.TaxYear
-import uk.gov.hmrc.tai.util.JsonHelper.selectIabdsReads
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -34,9 +33,7 @@ class IabdService @Inject() (
   iabdConnector: IabdConnector
 )(implicit ec: ExecutionContext) {
 
-  def retrieveIabdDetails(nino: Nino, year: TaxYear)(implicit hc: HeaderCarrier): Future[Seq[IabdDetails]] = {
-    val iabdReads = selectIabdsReads(IabdDetailsToggleOff.reads, IabdDetailsToggleOn.reads)
-
+  def retrieveIabdDetails(nino: Nino, year: TaxYear)(implicit hc: HeaderCarrier): Future[Seq[IabdDetails]] =
     iabdConnector
       .iabds(nino, year)
       .map { responseJson =>
@@ -44,9 +41,8 @@ class IabdService @Inject() (
         if (responseNotFound) {
           throw new NotFoundException(s"No iadbs found for year $year")
         }
-        responseJson.as[Seq[IabdDetails]](iabdReads).filter(_.`type`.contains(NewEstimatedPay.code))
+        responseJson.as[Seq[IabdDetails]](IabdDetails.reads).filter(_.`type`.contains(NewEstimatedPay.code))
       }
-  }
 
   def updateTaxCodeAmount(nino: Nino, taxYear: TaxYear, employmentId: Int, version: Int, amount: Int)(implicit
     hc: HeaderCarrier,

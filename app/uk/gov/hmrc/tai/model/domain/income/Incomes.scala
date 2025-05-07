@@ -53,12 +53,8 @@ object NonTaxCodeIncome {
 case class Incomes(taxCodeIncomes: Seq[TaxCodeIncome], nonTaxCodeIncomes: NonTaxCodeIncome)
 
 object Incomes {
-  /*
-    The Hip toggle only affects the Reads. We only require the Writes
-    here therefore we can safely import TaxCodeIncomeSquidReads.
-   */
   implicit val format: Format[Incomes] = {
-    import TaxCodeIncomeSquidReads.reads
+    import TaxCodeIncomeHipReads.reads
     Json.format[Incomes]
   }
 }

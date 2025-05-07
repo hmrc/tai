@@ -42,49 +42,6 @@ class IabdServiceSpec extends BaseSpec {
 
   "retrieveIabdDetails" must {
     "return a sequence of IabdDetails" when {
-      "provided with valid nino and tax year from nps" in {
-        val iabdJson = Json.arr(
-          Json.obj(
-            "nino"            -> "BR5600244",
-            "taxYear"         -> 2017,
-            "type"            -> 10,
-            "source"          -> 15,
-            "grossAmount"     -> JsNull,
-            "receiptDate"     -> JsNull,
-            "captureDate"     -> "10/04/2017",
-            "typeDescription" -> "Total gift aid Payments",
-            "netAmount"       -> 100
-          ),
-          Json.obj(
-            "nino"                     -> "KX8600231",
-            "employmentSequenceNumber" -> 2,
-            "taxYear"                  -> 2017,
-            "type"                     -> 27,
-            "source"                   -> 15,
-            "grossAmount"              -> JsNull,
-            "receiptDate"              -> "10/04/2017",
-            "captureDate"              -> "10/04/2017",
-            "typeDescription"          -> "Total gift aid Payments",
-            "netAmount"                -> 100
-          )
-        )
-
-        when(mockIabdConnector.iabds(any(), any())(any())).thenReturn(Future.successful(iabdJson))
-
-        val sut = createSut(mockIabdConnector)
-        val result = sut.retrieveIabdDetails(nino, TaxYear()).futureValue
-
-        result mustBe Seq(
-          IabdDetails(
-            Some("KX8600231"),
-            Some(2),
-            Some(15),
-            Some(27),
-            Some(LocalDate.parse("2017-04-10")),
-            Some(LocalDate.parse("2017-04-10"))
-          )
-        )
-      }
       "provided with valid nino and tax year from HIP" in {
         val iabdJson = Json.arr(
           Json.obj(
