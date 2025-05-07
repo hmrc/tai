@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.tai.integration
 
-import com.github.tomakehurst.wiremock.client.WireMock.{aResponse, get, ok, urlEqualTo}
+import com.github.tomakehurst.wiremock.client.WireMock.{get, ok, urlEqualTo}
 import play.api.libs.json.Json
 import play.api.mvc.AnyContentAsEmpty
 import play.api.test.FakeRequest
