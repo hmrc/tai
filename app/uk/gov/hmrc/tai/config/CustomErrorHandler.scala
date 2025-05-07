@@ -135,25 +135,17 @@ class CustomErrorHandler @Inject() (
     def toErrorResponse: ErrorResponse = ErrorResponse(newStatus, newMessage)
   }
 
-  // Error responses previously caught by taxAccountErrorHandler on controllers
-  private val exceptionsWithoutAudit: PartialFunction[Throwable, Analysis] = {
-    case e: BadRequestException     => Analysis(BAD_REQUEST, errMessage(e), false)
-    case e: NotFoundException       => Analysis(NOT_FOUND, errMessage(e), false)
-    case e: GatewayTimeoutException => Analysis(BAD_GATEWAY, errMessage(e), false)
-    case e: BadGatewayException     => Analysis(BAD_GATEWAY, errMessage(e), false)
-    case e: HttpException           => Analysis(BAD_GATEWAY, errMessage(e), false)
-  }
-
-  private def exceptionsWithAudit(request: RequestHeader): PartialFunction[Throwable, Analysis] = {
-    case e: AuthorisationException => Analysis(UNAUTHORIZED, e.getMessage, true)
-    case e: UpstreamErrorResponse  => Analysis(e.reportAs, upstreamMessage(e), true)
+  private def serverExceptionMapper(request: RequestHeader): PartialFunction[Throwable, Analysis] =
+    case e: BadRequestException     => Analysis(BAD_REQUEST, errMessage(e), doAudit = false)
+    case e: NotFoundException       => Analysis(NOT_FOUND, errMessage(e), doAudit = false)
+    case e: GatewayTimeoutException => Analysis(BAD_GATEWAY, errMessage(e), doAudit = false)
+    case e: BadGatewayException     => Analysis(BAD_GATEWAY, errMessage(e), doAudit = false)
+    case e: HttpException           => Analysis(BAD_GATEWAY, errMessage(e), doAudit = false)
+    case e: AuthorisationException  => Analysis(UNAUTHORIZED, e.getMessage, doAudit = true)
+    case e: UpstreamErrorResponse   => Analysis(e.reportAs, upstreamMessage(e), doAudit = true)
     case e: Throwable =>
       logger.error(s"! Internal server error, for (${request.method}) [${request.uri}] -> ", e)
-      Analysis(INTERNAL_SERVER_ERROR, throwableMessage(e), true)
-  }
-
-  private def serverExceptionMapper(request: RequestHeader): PartialFunction[Throwable, Analysis] =
-    exceptionsWithoutAudit orElse exceptionsWithAudit(request)
+      Analysis(INTERNAL_SERVER_ERROR, throwableMessage(e), doAudit = true)
 
   override def onServerError(request: RequestHeader, ex: Throwable): Future[Result] = {
     implicit val headerCarrier: HeaderCarrier = hc(request)
