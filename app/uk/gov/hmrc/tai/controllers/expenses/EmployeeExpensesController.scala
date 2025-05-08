@@ -21,7 +21,6 @@ import play.api.libs.json.{JsValue, Json}
 import play.api.mvc.{Action, AnyContent, ControllerComponents}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
-import uk.gov.hmrc.tai.controllers.ControllerErrorHandler
 import uk.gov.hmrc.tai.controllers.auth.AuthJourney
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.model.{IabdUpdateExpensesRequest, UpdateIabdEmployeeExpense}
@@ -36,7 +35,7 @@ class EmployeeExpensesController @Inject() (
   cc: ControllerComponents
 )(implicit
   ec: ExecutionContext
-) extends BackendController(cc) with ControllerErrorHandler {
+) extends BackendController(cc) {
 
   def updateWorkingFromHomeExpenses(nino: Nino, year: TaxYear, iabd: Int): Action[JsValue] =
     callUpdateEmployeeExpensesData(nino, year, iabd, EmployeeExpensesController.workingFromHome)
@@ -68,7 +67,7 @@ class EmployeeExpensesController @Inject() (
     authentication.authForEmployeeExpenses.async { implicit request =>
       employeeExpensesService.getEmployeeExpenses(nino, year, iabd).map { iabdData =>
         Ok(Json.toJson(iabdData))
-      } recoverWith taxAccountErrorHandler()
+      }
     }
 }
 

@@ -25,6 +25,7 @@ import play.api.test.FakeRequest
 import play.api.test.Helpers.*
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.UpstreamErrorResponse
+import uk.gov.hmrc.tai.config.CustomErrorHandler
 import uk.gov.hmrc.tai.model.api.ApiResponse
 import uk.gov.hmrc.tai.model.domain.{AnnualAccount, Available}
 import uk.gov.hmrc.tai.model.tai.TaxYear
@@ -36,7 +37,8 @@ import scala.concurrent.Future
 class RtiPaymentsControllerSpec extends BaseSpec {
 
   private val mockRtiPaymentsService = mock[RtiPaymentsService]
-  private val sut = new RtiPaymentsController(mockRtiPaymentsService, loggedInAuthenticationAuthJourney, cc)
+  private val sut =
+    new RtiPaymentsController(mockRtiPaymentsService, loggedInAuthenticationAuthJourney, cc, inject[CustomErrorHandler])
 
   override protected def beforeEach(): Unit = {
     reset(mockRtiPaymentsService)
@@ -74,7 +76,7 @@ class RtiPaymentsControllerSpec extends BaseSpec {
       val result = sut.rtiPayments(Nino(nino.nino), TaxYear("2023"))(FakeRequest())
 
       status(result) mustBe BAD_REQUEST
-      contentAsString(result) mustBe "Bad request"
+      contentAsString(result) mustBe "bad request, cause: REDACTED"
     }
 
     "return INTERNAL_SERVER_ERROR when service returns an unexpected error" in {

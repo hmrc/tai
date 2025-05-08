@@ -20,7 +20,6 @@ import com.google.inject.Inject
 import play.api.libs.json.Json
 import play.api.mvc.{Action, AnyContent, ControllerComponents}
 import uk.gov.hmrc.domain.Nino
-import uk.gov.hmrc.http.*
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 import uk.gov.hmrc.tai.controllers.auth.AuthJourney
 import uk.gov.hmrc.tai.model.TaxFreeAmountComparison
@@ -41,13 +40,6 @@ class TaxCodeChangeIabdComparisonController @Inject() (
     implicit request =>
       taxFreeAmountComparisonService.taxFreeAmountComparison(nino).map { (comparison: TaxFreeAmountComparison) =>
         Ok(Json.toJson(ApiResponse(Json.toJson(comparison), Seq.empty)))
-      } recover {
-        case ex: NotFoundException =>
-          NotFound(Json.toJson(Map("reason" -> ex.getMessage)))
-        case ex: HttpException if ex.responseCode >= 500 =>
-          BadGateway(Json.toJson(Map("reason" -> ex.getMessage)))
-        case ex: HttpException =>
-          InternalServerError(Json.toJson(Map("reason" -> ex.getMessage)))
       }
   }
 

@@ -17,11 +17,9 @@
 package uk.gov.hmrc.tai.controllers
 
 import com.google.inject.{Inject, Singleton}
-import play.api.Logger
 import play.api.libs.json.{Json, Writes}
 import play.api.mvc.{Action, AnyContent, ControllerComponents}
 import uk.gov.hmrc.domain.Nino
-import uk.gov.hmrc.http.{BadRequestException, NotFoundException}
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 import uk.gov.hmrc.tai.controllers.auth.AuthJourney
 import uk.gov.hmrc.tai.model.api.ApiResponse
@@ -40,21 +38,10 @@ class CodingComponentController @Inject() (
   ec: ExecutionContext
 ) extends BackendController(cc) {
 
-  private val logger: Logger = Logger(getClass.getName)
-
   def codingComponentsForYear(nino: Nino, year: TaxYear): Action[AnyContent] =
     authentication.authWithUserDetails.async { implicit request =>
       codingComponentService.codingComponents(nino, year) map { codingComponentList =>
         Ok(Json.toJson(ApiResponse(Json.toJson(codingComponentList)(Writes.seq(codingComponentWrites)), Nil)))
-      } recover {
-        case e: BadRequestException =>
-          logger.warn(s"BadRequestException on codingComponentsForYear: ${e.getMessage}")
-          BadRequest(Json.toJson(Map("reason" -> e.getMessage)))
-        case e: NotFoundException =>
-          logger.warn(s"NotFoundException on codingComponentsForYear: ${e.getMessage}")
-          NotFound(Json.toJson(Map("reason" -> e.getMessage)))
-        case e: Throwable =>
-          throw e
       }
     }
 }

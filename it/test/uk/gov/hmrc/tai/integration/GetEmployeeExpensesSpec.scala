@@ -23,6 +23,10 @@ import play.api.test.Helpers.{route, status as getStatus, *}
 import uk.gov.hmrc.http.{HeaderNames, HttpException, InternalServerException}
 import uk.gov.hmrc.tai.integration.utils.{FileHelper, IntegrationSpec}
 
+import scala.concurrent.Await
+import scala.concurrent.duration.Duration
+import scala.util.Try
+
 class GetEmployeeExpensesSpec extends IntegrationSpec {
 
   val apiUrl = s"/tai/$nino/tax-account/$year/expenses/employee-expenses/59"
@@ -46,15 +50,17 @@ class GetEmployeeExpensesSpec extends IntegrationSpec {
     "return a BAD_REQUEST when iabds from DES returns a BAD_REQUEST" in {
       server.stubFor(get(urlEqualTo(desIabdsUrl)).willReturn(aResponse().withStatus(BAD_REQUEST)))
 
-      val result = route(fakeApplication(), request)
-      result.map(getStatus) mustBe Some(BAD_REQUEST)
+      val result = Try(Await.result(route(fakeApplication(), request).get, Duration.Inf))
+      result.isFailure mustBe true
+      result.failed.get.toString.contains("uk.gov.hmrc.http.BadRequestException") mustBe true
     }
 
     "return a NOT_FOUND when iabds from DES returns a NOT_FOUND" in {
       server.stubFor(get(urlEqualTo(desIabdsUrl)).willReturn(aResponse().withStatus(NOT_FOUND)))
 
-      val result = route(fakeApplication(), request)
-      result.map(getStatus) mustBe Some(NOT_FOUND)
+      val result = Try(Await.result(route(fakeApplication(), request).get, Duration.Inf))
+      result.isFailure mustBe true
+      result.failed.get.toString.contains("uk.gov.hmrc.http.NotFoundException") mustBe true
     }
 
     "throws an InternalServerException when iabds from DES returns a INTERNAL_SERVER_ERROR" in {
