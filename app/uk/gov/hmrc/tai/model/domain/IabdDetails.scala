@@ -20,7 +20,6 @@ import play.api.Logging
 import play.api.libs.functional.syntax.toFunctionalBuilderOps
 import play.api.libs.json.*
 import play.api.libs.json.Reads.localDateReads
-import uk.gov.hmrc.tai.util.DateTimeHelper.formatLocalDateDDMMYYYY
 import uk.gov.hmrc.tai.util.IabdTypeConstants
 import uk.gov.hmrc.tai.util.JsonHelper.readsTypeTuple
 
@@ -36,28 +35,7 @@ case class IabdDetails(
   grossAmount: Option[BigDecimal] = None
 )
 
-object IabdDetailsToggleOff extends IabdTypeConstants with Logging {
-  private val dateReads: Reads[LocalDate] = localDateReads("dd/MM/yyyy")
-
-  private val iabdReads: Reads[IabdDetails] =
-    ((JsPath \ "nino").readNullable[String] and
-      (JsPath \ "employmentSequenceNumber").readNullable[Int] and
-      (JsPath \ "source").readNullable[Int] and
-      (JsPath \ "type").readNullable[Int] and
-      (JsPath \ "receiptDate").readNullable[LocalDate](dateReads) and
-      (JsPath \ "captureDate").readNullable[LocalDate](dateReads) and
-      (JsPath \ "grossAmount").readNullable[BigDecimal])(IabdDetails.apply _)
-
-  implicit val reads: Reads[Seq[IabdDetails]] =
-    __.read(Reads.seq(iabdReads))
-
-  implicit val format: Format[IabdDetails] = {
-    implicit val dateFormatter: Format[LocalDate] = formatLocalDateDDMMYYYY
-    Json.format[IabdDetails]
-  }
-}
-
-object IabdDetailsToggleOn extends IabdTypeConstants with Logging {
+object IabdDetails extends IabdTypeConstants with Logging {
   private val dateReads: Reads[LocalDate] = localDateReads("yyyy-MM-dd")
 
   private def sourceReads: Reads[Option[Int]] = {
@@ -127,7 +105,8 @@ object IabdDetailsToggleOn extends IabdTypeConstants with Logging {
     "CALCULATED"            -> 49,
     "FWKS"                  -> 50,
     "Home Working Expenses" -> 51,
-    "T&TSP"                 -> 52
+    "T&TSP"                 -> 52,
+    "HICBC PAYE"            -> 53
   )
 
   private val iabdReads: Reads[IabdDetails] =

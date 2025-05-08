@@ -138,14 +138,11 @@ object EmploymentCollection {
   }
 
   lazy val employmentCollectionHodReadsHIP: Reads[EmploymentCollection] = { (json: JsValue) =>
-    val readsSeqEmployment = json match {
-      case _: JsArray => Reads[Seq[Employment]](_ => JsError("Unexpected array - Squid payload?"))
-      case _ =>
-        (__ \ "individualsEmploymentDetails").readNullable[Seq[Employment]](Reads.seq(employmentHodReads)).map {
-          case None    => Nil
-          case Some(e) => e
-        }
-    }
+    val readsSeqEmployment =
+      (__ \ "individualsEmploymentDetails").readNullable[Seq[Employment]](Reads.seq(employmentHodReads)).map {
+        case None    => Nil
+        case Some(e) => e
+      }
 
     readsSeqEmployment.reads(json).map { seqEmployment =>
       EmploymentCollection(seqEmployment, None)

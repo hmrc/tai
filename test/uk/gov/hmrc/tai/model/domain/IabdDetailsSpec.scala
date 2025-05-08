@@ -19,67 +19,12 @@ package uk.gov.hmrc.tai.model.domain
 import org.scalatestplus.play.PlaySpec
 import play.api.libs.json.*
 
-import java.time.LocalDate
-
 class IabdDetailsSpec extends PlaySpec {
 
-  val sampleJsonToggleOff: JsValue = Json.parse(
-    """
-      |[
-      |  {
-      |    "nino": "AB123456C",
-      |    "employmentSequenceNumber": 12345,
-      |    "source": 1,
-      |    "type": 100,
-      |    "receiptDate": "01/02/2024",
-      |    "captureDate": "10/02/2024",
-      |    "grossAmount": 5000.75
-      |  }
-      |]
-      |""".stripMargin
-  )
-
-  val expectedModelToggleOff: IabdDetails = IabdDetails(
-    Some("AB123456C"),
-    Some(12345),
-    Some(1),
-    Some(100),
-    Some(LocalDate.of(2024, 2, 1)),
-    Some(LocalDate.of(2024, 2, 10)),
-    Some(BigDecimal(5000.75))
-  )
-
-  "IabdDetailsToggleOff" must {
-
-    "deserialize JSON correctly" in {
-      sampleJsonToggleOff.validate[Seq[IabdDetails]](IabdDetailsToggleOff.reads) mustBe JsSuccess(
-        Seq(expectedModelToggleOff)
-      )
-    }
-
-    "serialize model to JSON correctly" in {
-      val expectedJson = Json.parse(
-        """
-          |{
-          |  "nino": "AB123456C",
-          |  "employmentSequenceNumber": 12345,
-          |  "source": 1,
-          |  "type": 100,
-          |  "receiptDate": "01/02/2024",
-          |  "captureDate": "10/02/2024",
-          |  "grossAmount": 5000.75
-          |}
-          |""".stripMargin
-      )
-
-      Json.toJson(expectedModelToggleOff)(IabdDetailsToggleOff.format) mustBe expectedJson
-    }
-  }
-
-  "IabdDetailsToggleOn" must {
+  "IabdDetails" must {
 
     "deserialize JSON correctly when unknown source type" in {
-      val sampleJsonToggleOn = Json.obj(
+      val sampleJson = Json.obj(
         "iabdDetails" -> Json.arr(
           Json.obj(
             "nationalInsuranceNumber"  -> "AB123456C",
@@ -89,7 +34,7 @@ class IabdDetailsSpec extends PlaySpec {
           )
         )
       )
-      val expectedModelToggleOn: IabdDetails = IabdDetails(
+      val expectedModel: IabdDetails = IabdDetails(
         nino = Some("AB123456C"),
         employmentSequenceNumber = Some(12345),
         source = None,
@@ -97,14 +42,39 @@ class IabdDetailsSpec extends PlaySpec {
         receiptDate = None,
         captureDate = None
       )
-      sampleJsonToggleOn.validate[Seq[IabdDetails]](IabdDetailsToggleOn.reads) mustBe JsSuccess(
-        Seq(expectedModelToggleOn),
+      sampleJson.validate[Seq[IabdDetails]](IabdDetails.reads) mustBe JsSuccess(
+        Seq(expectedModel),
+        JsPath \ "iabdDetails"
+      )
+    }
+
+    "deserialize JSON correctly when hicbc source type" in {
+      val sampleJson = Json.obj(
+        "iabdDetails" -> Json.arr(
+          Json.obj(
+            "nationalInsuranceNumber"  -> "AB123456C",
+            "employmentSequenceNumber" -> 12345,
+            "source"                   -> "HICBC PAYE",
+            "type"                     -> "Non-Coded Income (019)"
+          )
+        )
+      )
+      val expectedModel: IabdDetails = IabdDetails(
+        nino = Some("AB123456C"),
+        employmentSequenceNumber = Some(12345),
+        source = Some(53),
+        `type` = Some(19),
+        receiptDate = None,
+        captureDate = None
+      )
+      sampleJson.validate[Seq[IabdDetails]](IabdDetails.reads) mustBe JsSuccess(
+        Seq(expectedModel),
         JsPath \ "iabdDetails"
       )
     }
 
     "deserialize JSON correctly when source type is missing" in {
-      val sampleJsonToggleOn = Json.obj(
+      val sampleJson = Json.obj(
         "iabdDetails" -> Json.arr(
           Json.obj(
             "nationalInsuranceNumber"  -> "AB123456C",
@@ -113,7 +83,7 @@ class IabdDetailsSpec extends PlaySpec {
           )
         )
       )
-      val expectedModelToggleOn: IabdDetails = IabdDetails(
+      val expectedModel: IabdDetails = IabdDetails(
         nino = Some("AB123456C"),
         employmentSequenceNumber = Some(12345),
         source = None,
@@ -121,8 +91,8 @@ class IabdDetailsSpec extends PlaySpec {
         receiptDate = None,
         captureDate = None
       )
-      sampleJsonToggleOn.validate[Seq[IabdDetails]](IabdDetailsToggleOn.reads) mustBe JsSuccess(
-        Seq(expectedModelToggleOn),
+      sampleJson.validate[Seq[IabdDetails]](IabdDetails.reads) mustBe JsSuccess(
+        Seq(expectedModel),
         JsPath \ "iabdDetails"
       )
     }
