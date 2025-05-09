@@ -20,56 +20,75 @@ import com.google.inject.Inject
 import play.api.libs.json.*
 import uk.gov.hmrc.http.{HeaderCarrier, UpstreamErrorResponse}
 import uk.gov.hmrc.mongo.cache.DataKey
+import uk.gov.hmrc.tai.config.CacheConfig
 import uk.gov.hmrc.tai.repositories.cache.TaiSessionCacheRepository
-import uk.gov.hmrc.tai.service.CacheService.formatNew
+import uk.gov.hmrc.tai.service.CacheService.{UpstreamErrorResponseWrapper, formatNew}
 
-import java.time.LocalDateTime
+import java.time.{Duration, LocalDateTime}
 import scala.concurrent.{ExecutionContext, Future}
 
-class CacheService @Inject() (sessionCacheRepository: TaiSessionCacheRepository)(implicit ec: ExecutionContext) {
+class CacheService @Inject() (sessionCacheRepository: TaiSessionCacheRepository, appConfig: CacheConfig)(implicit
+  ec: ExecutionContext
+) {
+  private def isCachedErrorOutOfDate(dt: LocalDateTime): Boolean =
+    Duration.between(dt, LocalDateTime.now).getSeconds > appConfig.cacheErrorInSecondsTTL
+
   def cacheEither[A](key: String)(
     block: => Future[Either[UpstreamErrorResponse, A]]
   )(implicit hc: HeaderCarrier, fmt: Format[A]): Future[Either[UpstreamErrorResponse, A]] = {
-    implicit val eitherFormat: Format[Either[UpstreamErrorResponse, A]] = formatNew[A]
+    implicit val eitherFormat: Format[Either[UpstreamErrorResponseWrapper, A]] = formatNew[A]
+    def resultAndCache: Future[Either[UpstreamErrorResponse, A]] =
+      block.flatMap { result =>
+        val wrappedBlockResponse = result match {
+          case Left(e)  => Left[UpstreamErrorResponseWrapper, A](UpstreamErrorResponseWrapper(LocalDateTime.now, e))
+          case Right(r) => Right[UpstreamErrorResponseWrapper, A](r)
+        }
+        sessionCacheRepository
+          .putSession(DataKey[Either[UpstreamErrorResponseWrapper, A]](key), wrappedBlockResponse)
+          .map(_ => result)
+      }
+
     sessionCacheRepository
-      .getFromSession(DataKey[Either[UpstreamErrorResponse, A]](key))
-      .flatMap { // TODO: If is left and out of date then act as if none
-        case None =>
-          block.flatMap { result =>
-            sessionCacheRepository.putSession(DataKey[Either[UpstreamErrorResponse, A]](key), result).map(_ => result)
-          }
-        case Some(retrievedItem) => Future.successful(retrievedItem)
+      .getFromSession(DataKey[Either[UpstreamErrorResponseWrapper, A]](key))
+      .flatMap {
+        case None                                                                                      => resultAndCache
+        case Some(Left(UpstreamErrorResponseWrapper(dt, retrievedItem))) if isCachedErrorOutOfDate(dt) => resultAndCache
+        case Some(Left(UpstreamErrorResponseWrapper(_, retrievedItem))) => Future.successful(Left(retrievedItem))
+        case Some(Right(r))                                             => Future.successful(Right(r))
       }
   }
 }
 
 object CacheService {
-  private def formatNew[A](implicit fmt: Format[A]): Format[Either[UpstreamErrorResponse, A]] = {
-    val reads: Reads[Either[UpstreamErrorResponse, A]] = Reads { json =>
+  private case class UpstreamErrorResponseWrapper(dateTime: LocalDateTime, upstreamErrorResponse: UpstreamErrorResponse)
+
+  private def formatNew[A](implicit fmt: Format[A]): Format[Either[UpstreamErrorResponseWrapper, A]] = {
+    val reads: Reads[Either[UpstreamErrorResponseWrapper, A]] = Reads { json =>
       JsSuccess(
         ((json \ "left").asOpt[JsObject], (json \ "right").asOpt[JsArray]) match {
           case (_, Some(right)) =>
-            val x = right.as[A]
-            Right[UpstreamErrorResponse, A](x)
+            Right[UpstreamErrorResponseWrapper, A](right.as[A])
           case (Some(left), _) =>
             val statusCode = (left \ "statusCode").as[Int]
             val reportAs = (left \ "reportAs").as[Int]
-            val message = (left \ "reportAs").as[String]
-            // val dateTime = (left \ "dateTime").as[LocalDateTime]
-            Left[UpstreamErrorResponse, A](UpstreamErrorResponse(message, statusCode, reportAs))
-          case _ => throw new RuntimeException("bla")
+            val message = (left \ "message").as[String]
+            val dateTime = (left \ "dateTime").as[LocalDateTime]
+            Left[UpstreamErrorResponseWrapper, A](
+              UpstreamErrorResponseWrapper(dateTime, UpstreamErrorResponse(message, statusCode, reportAs))
+            )
+          case _ => throw new RuntimeException("Unrecognised cache value")
         }
       )
 
     }
-    val writes: Writes[Either[UpstreamErrorResponse, A]] = Writes {
-      case Left(e) =>
+    val writes: Writes[Either[UpstreamErrorResponseWrapper, A]] = Writes {
+      case Left(UpstreamErrorResponseWrapper(dt, e)) =>
         Json.obj(
-          "left" -> Json.toJson(
+          "left" -> Json.obj(
             "statusCode" -> e.statusCode,
             "reportAs"   -> e.reportAs,
             "message"    -> e.message,
-            "dateTime"   -> Json.toJson(LocalDateTime.now)
+            "dateTime"   -> Json.toJson(dt)
           )
         )
       case Right(s) =>
@@ -77,6 +96,7 @@ object CacheService {
           "right" -> Json.toJson(s)
         )
     }
-    Format.apply(reads, writes)
+    Format(reads, writes)
   }
+
 }
