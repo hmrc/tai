@@ -24,7 +24,7 @@ import uk.gov.hmrc.tai.util.BaseSpec
 
 import scala.concurrent.Future
 
-class CacheServiceSpec extends BaseSpec {
+class TestCacheServiceSpec extends BaseSpec {
 
   "invalidateTaiData" must {
     "remove the session data" when {
@@ -39,7 +39,7 @@ class CacheServiceSpec extends BaseSpec {
         when(mockMongoConfig.mongoEncryptionEnabled)
           .thenReturn(false)
 
-        val sut = new CacheService(mockMongoConfig, mockCacheConnector)
+        val sut = new TestCacheService(mockMongoConfig, mockCacheConnector)
 
         sut.invalidateTaiCacheData(nino)(hc, ec).futureValue
 
@@ -60,7 +60,7 @@ class CacheServiceSpec extends BaseSpec {
         when(mockMongoConfig.mongoEncryptionEnabled)
           .thenReturn(false)
 
-        val sut = new CacheService(mockMongoConfig, mockCacheConnector)
+        val sut = new TestCacheService(mockMongoConfig, mockCacheConnector)
 
         sut.invalidateTaiCacheData(nino)(hc, ec).futureValue
 
