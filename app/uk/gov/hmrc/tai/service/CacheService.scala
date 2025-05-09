@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2025 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,20 +17,66 @@
 package uk.gov.hmrc.tai.service
 
 import com.google.inject.Inject
-import uk.gov.hmrc.domain.Nino
-import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.tai.config.MongoConfig
-import uk.gov.hmrc.tai.connectors.cache.CacheId
-import uk.gov.hmrc.tai.repositories.deprecated.TaiCacheRepository
+import play.api.libs.json.*
+import uk.gov.hmrc.http.{HeaderCarrier, UpstreamErrorResponse}
+import uk.gov.hmrc.mongo.cache.DataKey
+import uk.gov.hmrc.tai.repositories.cache.TaiSessionCacheRepository
+import uk.gov.hmrc.tai.service.CacheService.formatNew
 
+import java.time.LocalDateTime
 import scala.concurrent.{ExecutionContext, Future}
 
-//TODO: Only used in tests. To be moved in test
-class CacheService @Inject() (mongoConfig: MongoConfig, taiCacheRepository: TaiCacheRepository) {
-  def invalidateTaiCacheData(nino: Nino)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Unit] =
-    if (mongoConfig.mongoEnabled) {
-      taiCacheRepository.removeById(CacheId(nino)).map(_ => ())
-    } else {
-      Future.successful(())
+class CacheService @Inject() (sessionCacheRepository: TaiSessionCacheRepository)(implicit ec: ExecutionContext) {
+  def cacheEither[A](key: String)(
+    block: => Future[Either[UpstreamErrorResponse, A]]
+  )(implicit hc: HeaderCarrier, fmt: Format[A]): Future[Either[UpstreamErrorResponse, A]] = {
+    implicit val eitherFormat: Format[Either[UpstreamErrorResponse, A]] = formatNew[A]
+    sessionCacheRepository
+      .getFromSession(DataKey[Either[UpstreamErrorResponse, A]](key))
+      .flatMap { // TODO: If is left and out of date then act as if none
+        case None =>
+          block.flatMap { result =>
+            sessionCacheRepository.putSession(DataKey[Either[UpstreamErrorResponse, A]](key), result).map(_ => result)
+          }
+        case Some(retrievedItem) => Future.successful(retrievedItem)
+      }
+  }
+}
+
+object CacheService {
+  private def formatNew[A](implicit fmt: Format[A]): Format[Either[UpstreamErrorResponse, A]] = {
+    val reads: Reads[Either[UpstreamErrorResponse, A]] = Reads { json =>
+      JsSuccess(
+        ((json \ "left").asOpt[JsObject], (json \ "right").asOpt[JsArray]) match {
+          case (_, Some(right)) =>
+            val x = right.as[A]
+            Right[UpstreamErrorResponse, A](x)
+          case (Some(left), _) =>
+            val statusCode = (left \ "statusCode").as[Int]
+            val reportAs = (left \ "reportAs").as[Int]
+            val message = (left \ "reportAs").as[String]
+            // val dateTime = (left \ "dateTime").as[LocalDateTime]
+            Left[UpstreamErrorResponse, A](UpstreamErrorResponse(message, statusCode, reportAs))
+          case _ => throw new RuntimeException("bla")
+        }
+      )
+
     }
+    val writes: Writes[Either[UpstreamErrorResponse, A]] = Writes {
+      case Left(e) =>
+        Json.obj(
+          "left" -> Json.toJson(
+            "statusCode" -> e.statusCode,
+            "reportAs"   -> e.reportAs,
+            "message"    -> e.message,
+            "dateTime"   -> Json.toJson(LocalDateTime.now)
+          )
+        )
+      case Right(s) =>
+        Json.obj(
+          "right" -> Json.toJson(s)
+        )
+    }
+    Format.apply(reads, writes)
+  }
 }

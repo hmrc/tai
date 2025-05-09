@@ -23,6 +23,8 @@ import uk.gov.hmrc.tai.model.domain.Payment.paymentHodReads
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.model.tai.TaxYear.taxYearHodReads
 
+import java.time.LocalDateTime
+
 case class AnnualAccount(
   sequenceNumber: Int,
   taxYear: TaxYear,
@@ -37,18 +39,42 @@ case class AnnualAccount(
 
 object AnnualAccount {
   implicit val format: Format[AnnualAccount] = Json.format[AnnualAccount]
-  implicit val formatNew: Format[Either[UpstreamErrorResponse, Seq[AnnualAccount]]] = {
-      val reads: Reads[Either[UpstreamErrorResponse, Seq[AnnualAccount]]] = Reads { json =>
-      
-      
-      }
-      val writes: Writes[Either[UpstreamErrorResponse, Seq[AnnualAccount]]] = Writes { item =>
-      
-      
-      }
-      Format.apply(reads, writes)
-  }
-    //Json.format[Either[UpstreamErrorResponse, Seq[AnnualAccount]]]
+//  implicit val formatNew: Format[Either[UpstreamErrorResponse, Seq[AnnualAccount]]] = {
+//    val reads: Reads[Either[UpstreamErrorResponse, Seq[AnnualAccount]]] = Reads { json =>
+//      JsSuccess(
+//        ((json \ "left").asOpt[JsObject], (json \ "right").asOpt[JsArray]) match {
+//          case (_, Some(right)) =>
+//            val x = right.as[Seq[AnnualAccount]]
+//            Right[UpstreamErrorResponse, Seq[AnnualAccount]](x)
+//          case (Some(left), _) =>
+//            val statusCode = (left \ "statusCode").as[Int]
+//            val reportAs = (left \ "reportAs").as[Int]
+//            val message = (left \ "reportAs").as[String]
+//            // val dateTime = (left \ "dateTime").as[LocalDateTime]
+//            Left[UpstreamErrorResponse, Seq[AnnualAccount]](UpstreamErrorResponse(message, statusCode, reportAs))
+//          case _ => throw new RuntimeException("bla")
+//        }
+//      )
+//
+//    }
+//    val writes: Writes[Either[UpstreamErrorResponse, Seq[AnnualAccount]]] = Writes {
+//      case Left(e) =>
+//        Json.obj(
+//          "left" -> Json.toJson(
+//            "statusCode" -> e.statusCode,
+//            "reportAs"   -> e.reportAs,
+//            "message"    -> e.message,
+//            "dateTime"   -> Json.toJson(LocalDateTime.now)
+//          )
+//        )
+//      case Right(s) =>
+//        Json.obj(
+//          "right" -> Json.toJson(s)
+//        )
+//    }
+//    Format.apply(reads, writes)
+//  }
+  // Json.format[Either[UpstreamErrorResponse, Seq[AnnualAccount]]]
   implicit val annualAccountOrdering: Ordering[AnnualAccount] = Ordering.by(_.taxYear.year)
 
   def apply(sequenceNumber: Int, taxYear: TaxYear, rtiStatus: RealTimeStatus): AnnualAccount =

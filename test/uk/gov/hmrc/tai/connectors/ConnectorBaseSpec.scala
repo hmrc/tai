@@ -17,6 +17,7 @@
 package uk.gov.hmrc.tai.connectors
 
 import cats.data.EitherT
+import cats.effect.IO
 import cats.instances.future.*
 import org.mockito.ArgumentMatchers.eq as eqTo
 import org.mockito.Mockito.{reset, when}
@@ -115,6 +116,9 @@ trait ConnectorBaseSpec
   }
 
   class FakeLockService extends LockService {
+
+    override def withLock[A](key: String)(block: => IO[A])(implicit hc: HeaderCarrier): IO[A] = block
+
     override def sessionId(implicit hc: HeaderCarrier): String =
       "some session id"
 
