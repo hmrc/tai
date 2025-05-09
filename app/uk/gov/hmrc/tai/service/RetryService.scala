@@ -34,7 +34,7 @@ class RetryService @Inject() (appConfig: RtiConfig) {
 }
 
 object RetryService {
-  implicit class Retryable[A](io: IO[A]) {
+  private implicit class Retryable[A](io: IO[A]) {
     def simpleRetry(noOfRetries: Int, sleep: FiniteDuration): IO[A] = {
       def retryLoop(times: Int): IO[A] =
         io.map(identity).handleErrorWith { // Do we need map(identity)?

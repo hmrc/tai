@@ -17,7 +17,6 @@
 package uk.gov.hmrc.tai.connectors
 
 import cats.data.EitherT
-import cats.effect.IO
 import cats.implicits.*
 import com.google.inject.{Inject, Singleton}
 import play.api.http.Status.*
@@ -78,13 +77,9 @@ class CachingRtiConnector @Inject() (
     EitherT(
       retryService.retry {
         lockService.withLock(key) {
-          IO.fromFuture(
-            IO(
-              cacheService.cacheEither(key)(underlying.getPaymentsForYear(nino: Nino, taxYear: TaxYear).value)(
-                implicitly,
-                sensitiveFormatService.sensitiveFormatFromReadsWritesJsArray[Seq[AnnualAccount]]
-              )
-            )
+          cacheService.cacheEither(key)(underlying.getPaymentsForYear(nino: Nino, taxYear: TaxYear).value)(
+            implicitly,
+            sensitiveFormatService.sensitiveFormatFromReadsWritesJsArray[Seq[AnnualAccount]]
           )
         }
       }
