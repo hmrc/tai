@@ -17,12 +17,14 @@
 package uk.gov.hmrc.tai.service
 
 import cats.data.EitherT
-import cats.implicits._
+import cats.effect.IO
+import cats.implicits.*
 import com.google.inject.Inject
 import play.api.Logging
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.mongo.lock.MongoLockRepository
 import uk.gov.hmrc.tai.config.MongoConfig
+import uk.gov.hmrc.tai.util.LockedException
 
 import javax.inject.Singleton
 import scala.concurrent.duration.{Duration, MILLISECONDS}
@@ -32,6 +34,7 @@ import scala.util.control.NonFatal
 case object OopsCannotAcquireLock extends Exception
 
 trait LockService {
+  def withLock[A](key: String)(block: => IO[A])(implicit hc: HeaderCarrier): IO[A]
   def sessionId(implicit hc: HeaderCarrier): String
 
   def takeLock[L](owner: String)(implicit hc: HeaderCarrier): EitherT[Future, L, Boolean]
@@ -42,6 +45,35 @@ trait LockService {
 @Singleton
 class LockServiceImpl @Inject() (lockRepo: MongoLockRepository, appConfig: MongoConfig)(implicit ec: ExecutionContext)
     extends LockService with Logging {
+
+  def withLock[A](key: String)(block: => IO[A])(implicit hc: HeaderCarrier): IO[A] =
+    IO
+      .fromFuture(IO(newTakeLock(key)))
+      .map { isLockAcquired =>
+        if (isLockAcquired) {
+          block.bracket(IO(_))(_ => IO.fromFuture(IO(releaseLock(key))))
+        } else {
+          IO.fromFuture(IO(Future.failed[A](new LockedException(s"Lock for $key could not be acquired"))))
+        }
+      }
+      .recover { case NonFatal(error) => IO.fromFuture(IO(Future.failed[A](error))) }
+      .flatten
+
+  def newTakeLock[L](owner: String)(implicit hc: HeaderCarrier): Future[Boolean] =
+    lockRepo
+      .takeLock(
+        lockId = sessionId,
+        owner = owner,
+        ttl = Duration(appConfig.mongoLockTTL, MILLISECONDS) // this need to be longer than the timeout from http_verbs
+      )
+      .map(_.fold(false)(_ => true))
+      .recover { case NonFatal(ex) =>
+        logger.error(ex.getMessage, ex)
+        // This lock is used to lock the cache while it is populated by the HOD response
+        // if it is failing we still allow the caller to go through so the user gets a better experience
+        // Duplicates calls to HOD will be present in such a case
+        true
+      }
 
   def sessionId(implicit hc: HeaderCarrier): String = hc.sessionId.fold {
     val ex = new RuntimeException("Session id is missing from HeaderCarrier")

@@ -37,7 +37,7 @@ import uk.gov.hmrc.tai.model.domain.*
 import uk.gov.hmrc.tai.model.domain.AnnualAccount.{annualAccountHodReads, format}
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.repositories.cache.TaiSessionCacheRepository
-import uk.gov.hmrc.tai.service.{LockService, SensitiveFormatService}
+import uk.gov.hmrc.tai.service.{LockService, RetryService, SensitiveFormatService}
 import uk.gov.hmrc.tai.util.IORetryExtension.Retryable
 import uk.gov.hmrc.tai.util.LockedException
 
@@ -75,9 +75,47 @@ class CachingRtiConnector @Inject() (
   sessionCacheRepository: TaiSessionCacheRepository,
   lockService: LockService,
   appConfig: RtiConfig,
-  sensitiveFormatService: SensitiveFormatService
+  sensitiveFormatService: SensitiveFormatService,
+  retryService: RetryService
 )(implicit ec: ExecutionContext)
     extends RtiConnector with Logging {
+
+  def cacheEither[L, A](
+    key: String
+  )(block: => Future[Either[L, A]])(implicit hc: HeaderCarrier, fmt: Format[Either[L, A]]): Future[Either[L, A]] =
+    sessionCacheRepository
+      .getFromSession(DataKey[Either[L, A]](key))
+      .flatMap { // TODO: If is left and out of date then act as if none
+        case None =>
+          block.flatMap { result =>
+            sessionCacheRepository.putSession(DataKey[Either[L, A]](key), result).map(_ => result)
+          }
+        case Some(retrievedItem) => Future.successful(retrievedItem)
+      }
+
+  // TODO: Write Format[Either[UpstreamErrorResponse, Seq[AnnualAccount]]]
+
+  def getNewPaymentsForYear(nino: Nino, taxYear: TaxYear)(implicit
+    hc: HeaderCarrier,
+    request: Request[_]
+  ): EitherT[Future, UpstreamErrorResponse, Seq[AnnualAccount]] = {
+    val key = s"getPaymentsForYear-$nino-${taxYear.year}"
+    EitherT(retryService.retry {
+      lockService.withLock(key) {
+        IO.fromFuture(
+          IO(
+            cacheEither(key)(
+              underlying.getPaymentsForYear(nino: Nino, taxYear: TaxYear).value
+            )(
+              implicitly,
+              sensitiveFormatService
+                .sensitiveFormatFromReadsWritesJsArray[Either[UpstreamErrorResponse, Seq[AnnualAccount]]]
+            )
+          )
+        )
+      }
+    })
+  }
 
   private def cache[L, A: Format](
     key: String

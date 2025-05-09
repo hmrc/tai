@@ -16,7 +16,8 @@
 
 package uk.gov.hmrc.tai.model.domain
 
-import play.api.libs.json._
+import play.api.libs.json.*
+import uk.gov.hmrc.http.UpstreamErrorResponse
 import uk.gov.hmrc.tai.model.domain.EndOfTaxYearUpdate.endOfTaxYearUpdateHodReads
 import uk.gov.hmrc.tai.model.domain.Payment.paymentHodReads
 import uk.gov.hmrc.tai.model.tai.TaxYear
@@ -36,6 +37,18 @@ case class AnnualAccount(
 
 object AnnualAccount {
   implicit val format: Format[AnnualAccount] = Json.format[AnnualAccount]
+  implicit val formatNew: Format[Either[UpstreamErrorResponse, Seq[AnnualAccount]]] = {
+      val reads: Reads[Either[UpstreamErrorResponse, Seq[AnnualAccount]]] = Reads { json =>
+      
+      
+      }
+      val writes: Writes[Either[UpstreamErrorResponse, Seq[AnnualAccount]]] = Writes { item =>
+      
+      
+      }
+      Format.apply(reads, writes)
+  }
+    //Json.format[Either[UpstreamErrorResponse, Seq[AnnualAccount]]]
   implicit val annualAccountOrdering: Ordering[AnnualAccount] = Ordering.by(_.taxYear.year)
 
   def apply(sequenceNumber: Int, taxYear: TaxYear, rtiStatus: RealTimeStatus): AnnualAccount =
