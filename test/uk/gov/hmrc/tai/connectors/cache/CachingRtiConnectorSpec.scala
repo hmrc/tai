@@ -54,6 +54,7 @@ import uk.gov.hmrc.tai.model.domain.{AnnualAccount, Available, FourWeekly, Payme
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.repositories.cache.TaiSessionCacheRepository
 import uk.gov.hmrc.tai.service.SensitiveFormatService
+import uk.gov.hmrc.tai.util.LockedException
 
 import java.time.{Instant, LocalDate, LocalDateTime}
 import scala.concurrent.Future
@@ -148,6 +149,34 @@ class CachingRtiConnectorSpec extends ConnectorBaseSpec {
         verify(mockMongoLockRepository, times(1)).takeLock(any(), any(), any())
         verify(mockMongoLockRepository, times(1)).releaseLock(any(), any())
       }
+
+//      "fails on first attempt with a lock exception then succeeds where no value is cached" in {
+//        val expected = Seq(annualAccount)
+//
+//        when(mockSessionCacheRepository.getFromSession[CacheType](any())(any(), any()))
+//          .thenReturn(Future.successful(None))
+//
+//        when(mockSessionCacheRepository.putSession[CacheType](any(), any())(any(), any(), any()))
+//          .thenReturn(Future.successful(("", "")))
+//
+//        when(mockRtiConnector.getPaymentsForYear(any(), any())(any(), any()))
+//          .thenReturn(EitherT.rightT[Future, UpstreamErrorResponse](expected))
+//
+//        when(mockMongoLockRepository.takeLock(any(), any(), any()))
+//          .thenReturn(Future.failed(new LockedException("locked")))
+//        //   .thenReturn(Future.successful(Some(Lock("some session id", "lockId", timestamp, timestamp.plusSeconds(2)))))
+//
+//        val result = connector.getPaymentsForYear(nino, TaxYear()).value.futureValue
+//
+//        result mustBe Right(expected)
+//
+//        verify(mockSessionCacheRepository, times(1)).getFromSession[CacheType](any())(any(), any())
+//        verify(mockSessionCacheRepository, times(1)).putSession[CacheType](any(), any())(any(), any(), any())
+//        verify(mockRtiConnector, times(1)).getPaymentsForYear(any(), any())(any(), any())
+//        verify(mockMongoLockRepository, times(2)).takeLock(any(), any(), any())
+//        // verify(mockMongoLockRepository, times(1)).releaseLock(any(), any())
+//      }
+
     }
 
     "return a Left RtiPaymentsForYearError object, create & release lock & cache left" when {
