@@ -42,7 +42,9 @@ class LockService @Inject() (lockRepo: MongoLockRepository, appConfig: MongoConf
       .map { isLockAcquired =>
         if (isLockAcquired) {
           block
-            .flatMap(result => IO.fromFuture(IO(releaseLock(key))).map(_ => result))
+            .flatMap { result =>
+              IO.fromFuture(IO(releaseLock(key))).map(_ => result)
+            }
             .recoverWith { case exception: Exception =>
               IO.fromFuture(IO(releaseLock(key))).flatMap { _ =>
                 IO.raiseError[A](exception)
