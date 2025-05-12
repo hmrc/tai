@@ -28,8 +28,6 @@ class RetryService @Inject() (appConfig: RtiConfig) {
 
   private val retryAllExceptions: PartialFunction[Throwable, Boolean] = { case _ => true }
 
-  // TODO: 10123 - Overload retry - add one for IO[Either[UpstreamErrorREsponse, A]] and retry if left returned
-
   def withRetry[A](
     exceptionsToRetry: PartialFunction[Throwable, Boolean] = retryAllExceptions
   )(block: => IO[A]): Future[A] =

@@ -28,7 +28,6 @@ object UpstreamErrorResponseWrapper {
   private val leftNode: String = "failure"
   private val rightNode: String = "success"
 
-  // TODO: 10123 Refactor to simplify, use given/ using
   def formatEitherWithWrapper[A](implicit fmt: Format[A]): Format[Either[UpstreamErrorResponseWrapper, A]] = {
     val reads: Reads[Either[UpstreamErrorResponseWrapper, A]] = Reads { json =>
       ((json \ leftNode).asOpt[JsObject], (json \ rightNode).asOpt[JsArray]) match {

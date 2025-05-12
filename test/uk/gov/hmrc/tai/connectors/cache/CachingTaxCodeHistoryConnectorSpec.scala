@@ -17,7 +17,7 @@
 package uk.gov.hmrc.tai.connectors.cache
 
 import org.mockito.ArgumentMatchers.any
-import org.mockito.Mockito.{reset, spy, times, verify, when}
+import org.mockito.Mockito.{reset, times, verify, when}
 import play.api.Application
 import play.api.inject.bind
 import play.api.inject.guice.GuiceApplicationBuilder
@@ -31,7 +31,7 @@ import uk.gov.hmrc.tai.factory.TaxCodeHistoryFactory
 import uk.gov.hmrc.tai.model.TaxCodeHistory
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.repositories.cache.TaiSessionCacheRepository
-import uk.gov.hmrc.tai.service.{LockService, SensitiveFormatService}
+import uk.gov.hmrc.tai.service.SensitiveFormatService
 
 import scala.concurrent.Future
 
@@ -54,7 +54,6 @@ class CachingTaxCodeHistoryConnectorSpec extends ConnectorBaseSpec {
       bind[EmploymentDetailsConnector].to[DefaultEmploymentDetailsConnector],
       bind[TaxAccountConnector].to[DefaultTaxAccountConnector],
       bind[AuthorisedFunctions].to[MicroserviceAuthorisedFunctions],
-      //    bind[LockService].toInstance(spy(new FakeLockService)),
       bind[SensitiveFormatService].toInstance(mockEncryptionService)
     )
     .build()

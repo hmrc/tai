@@ -17,7 +17,6 @@
 package uk.gov.hmrc.tai.connectors
 
 import cats.data.EitherT
-import cats.effect.IO
 import cats.instances.future.*
 import org.mockito.ArgumentMatchers.eq as eqTo
 import org.mockito.Mockito.{reset, when}
@@ -36,7 +35,6 @@ import uk.gov.hmrc.http.{HeaderCarrier, HttpException, RequestId, SessionId}
 import uk.gov.hmrc.mongoFeatureToggles.model.{FeatureFlag, FeatureFlagName}
 import uk.gov.hmrc.mongoFeatureToggles.services.FeatureFlagService
 import uk.gov.hmrc.tai.model.admin.{HipToggleIabdsUpdateExpenses, RtiCallToggle}
-import uk.gov.hmrc.tai.service.LockService
 import uk.gov.hmrc.tai.util.{FakeAsyncCacheApi, WireMockHelper}
 
 import scala.concurrent.duration.DurationInt
@@ -114,23 +112,4 @@ trait ConnectorBaseSpec
     ex.responseCode mustBe code
     ex.message mustBe message
   }
-
-//  class FakeLockService extends LockService {
-//    private var withLockCalled: Boolean = false
-//    def reset(): Unit = withLockCalled = false
-//    def isWithLockCalled: Boolean = withLockCalled
-//    override def withLock[A](key: String)(block: => IO[A])(implicit hc: HeaderCarrier): IO[A] = {
-//      withLockCalled = true
-//      block
-//    }
-//
-//    override def sessionId(implicit hc: HeaderCarrier): String =
-//      "some session id"
-//
-//    override def takeLock[L](owner: String)(implicit hc: HeaderCarrier): EitherT[Future, L, Boolean] =
-//      EitherT.rightT(true)
-//
-//    override def releaseLock[L](owner: String)(implicit hc: HeaderCarrier): Future[Unit] =
-//      Future.successful(())
-//  }
 }
