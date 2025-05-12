@@ -19,7 +19,7 @@ package uk.gov.hmrc.tai.service
 import cats.effect.IO
 import cats.effect.unsafe.implicits.global
 import org.mockito.ArgumentMatchers.any
-import org.mockito.Mockito.{times, verify, when}
+import org.mockito.Mockito.{reset, times, verify, when}
 import org.mongodb.scala.model.Filters
 import play.api.Application
 import play.api.inject.bind
@@ -33,6 +33,7 @@ import java.time.temporal.ChronoUnit
 import scala.concurrent.duration.Duration
 import scala.concurrent.{Await, Future}
 import scala.language.postfixOps
+import scala.util.{Failure, Try}
 
 class LockServiceSpec extends BaseSpec with DefaultPlayMongoRepositorySupport[Lock] {
 
@@ -52,21 +53,6 @@ class LockServiceSpec extends BaseSpec with DefaultPlayMongoRepositorySupport[Lo
 
   "withLock" must {
     "take lock when no lock is present and release it when action completed" in {
-      val ioResult = sut.withLock[Seq[Lock]]("lockId") {
-        IO.fromFuture(IO(findForSessionId))
-      }
-      val result = Await.result(ioResult.unsafeToFuture(), Duration.Inf)
-
-      result.size mustBe 1
-      val expiry = result.head.expiryTime
-      val start = result.head.timeCreated
-      ChronoUnit.SECONDS.between(start, expiry) mustBe 2
-
-      Await.result(findForSessionId, Duration.Inf).size mustBe 0
-    }
-
-    "take lock when no lock is present but release throws an exception" in {
-
       val ioResult = sut.withLock[Seq[Lock]]("lockId") {
         IO.fromFuture(IO(findForSessionId))
       }
@@ -116,7 +102,8 @@ class LockServiceReleaseExceptionSpec extends BaseSpec {
   private val timestamp = Instant.now()
 
   "withLock" must {
-    "take lock when no lock is present but release fails and throws an exception - should not try to release a second time" in {
+    "take lock when no lock is present but release fails and throws an exception, which is ignored" in {
+      reset(mockMongoLockRepository)
       val lock = Lock("some session id", "lockId", timestamp, timestamp.plusSeconds(2))
       when(mockMongoLockRepository.takeLock(any(), any(), any())).thenReturn(Future.successful(Some(lock)))
       when(mockMongoLockRepository.releaseLock(any(), any()))
@@ -124,7 +111,40 @@ class LockServiceReleaseExceptionSpec extends BaseSpec {
       val ioResult = sut.withLock[Seq[Lock]]("lockId") {
         IO(Seq(lock))
       }
-      an[Exception] mustBe thrownBy(Await.result(ioResult.unsafeToFuture(), Duration.Inf))
+      Await.result(ioResult.unsafeToFuture(), Duration.Inf) mustBe Seq(lock)
+      verify(mockMongoLockRepository, times(1)).releaseLock(any(), any())
+    }
+
+    "take lock when no lock is present but block fails and throws an exception and calls release lock which succeeds" in {
+      val exception = new Exception("block error")
+      reset(mockMongoLockRepository)
+      val lock = Lock("some session id", "lockId", timestamp, timestamp.plusSeconds(2))
+      when(mockMongoLockRepository.takeLock(any(), any(), any())).thenReturn(Future.successful(Some(lock)))
+      when(mockMongoLockRepository.releaseLock(any(), any()))
+        .thenReturn(Future.successful((): Unit))
+      val ioResult = sut.withLock[Seq[Lock]]("lockId") {
+        IO.raiseError(exception)
+      }
+
+      val result = Try(Await.result(ioResult.unsafeToFuture(), Duration.Inf))
+      result mustBe Failure(exception)
+
+      verify(mockMongoLockRepository, times(1)).releaseLock(any(), any())
+    }
+    "take lock when no lock is present but block fails and throws an exception - it calls release lock which also fails then throws original exception" in {
+      val exception = new Exception("block error")
+      reset(mockMongoLockRepository)
+      val lock = Lock("some session id", "lockId", timestamp, timestamp.plusSeconds(2))
+      when(mockMongoLockRepository.takeLock(any(), any(), any())).thenReturn(Future.successful(Some(lock)))
+      when(mockMongoLockRepository.releaseLock(any(), any()))
+        .thenReturn(Future.failed(new Exception("unable to release lock")))
+      val ioResult = sut.withLock[Seq[Lock]]("lockId") {
+        IO.raiseError(exception)
+      }
+
+      val result = Try(Await.result(ioResult.unsafeToFuture(), Duration.Inf))
+      result mustBe Failure(exception)
+
       verify(mockMongoLockRepository, times(1)).releaseLock(any(), any())
     }
 
