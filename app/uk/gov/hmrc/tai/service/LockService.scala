@@ -51,14 +51,19 @@ class LockServiceImpl @Inject() (lockRepo: MongoLockRepository, appConfig: Mongo
       .fromFuture(IO(newTakeLock(key)))
       .map { isLockAcquired =>
         if (isLockAcquired) {
-          block.bracket(IO(_))(_ => IO.fromFuture(IO(releaseLock(key))))
+          block
+            .flatMap(result => IO.fromFuture(IO(releaseLock(key))).map(_ => result))
+            .recoverWith { case exception: Exception =>
+              IO.fromFuture(IO(releaseLock(key))).flatMap { _ =>
+                IO.raiseError[A](exception)
+              }
+            }
         } else {
           IO.fromFuture(IO(Future.failed[A](new LockedException(s"Lock for $key could not be acquired"))))
         }
       }
       .recover { case NonFatal(error) => IO.fromFuture(IO(Future.failed[A](error))) }
       .flatten
-
   private def newTakeLock[L](owner: String)(implicit hc: HeaderCarrier): Future[Boolean] =
     lockRepo
       .takeLock(
