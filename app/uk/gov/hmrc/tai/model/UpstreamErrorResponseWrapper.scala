@@ -25,25 +25,30 @@ case class UpstreamErrorResponseWrapper(dateTime: LocalDateTime, upstreamErrorRe
 
 object UpstreamErrorResponseWrapper {
 
-  private val leftNode: String = "failure"
-  private val rightNode: String = "success"
+  val leftNode: String = "failure"
+  val rightNode: String = "success"
+
+  private def parseLeft[A](left: JsObject): JsResult[Either[UpstreamErrorResponseWrapper, A]] = {
+    val statusCode = (left \ "statusCode").as[Int]
+    val reportAs = (left \ "reportAs").as[Int]
+    val message = (left \ "message").as[String]
+    val dateTime = (left \ "dateTime").as[LocalDateTime]
+    JsSuccess(
+      Left[UpstreamErrorResponseWrapper, A](
+        UpstreamErrorResponseWrapper(dateTime, UpstreamErrorResponse(message, statusCode, reportAs))
+      )
+    )
+  }
 
   def formatEitherWithWrapper[A](implicit fmt: Format[A]): Format[Either[UpstreamErrorResponseWrapper, A]] = {
     val reads: Reads[Either[UpstreamErrorResponseWrapper, A]] = Reads { json =>
-      ((json \ leftNode).asOpt[JsObject], (json \ rightNode).asOpt[JsArray]) match {
-        case (_, Some(right)) => JsSuccess(Right[UpstreamErrorResponseWrapper, A](right.as[A]))
-        case (Some(left), _) =>
-          val statusCode = (left \ "statusCode").as[Int]
-          val reportAs = (left \ "reportAs").as[Int]
-          val message = (left \ "message").as[String]
-          val dateTime = (left \ "dateTime").as[LocalDateTime]
-          JsSuccess(
-            Left[UpstreamErrorResponseWrapper, A](
-              UpstreamErrorResponseWrapper(dateTime, UpstreamErrorResponse(message, statusCode, reportAs))
-            )
-          )
-        case _ => JsError(s"Neither $leftNode nor $rightNode found in cache")
-      }
+      def asLeftNode: Option[JsObject] = (json \ leftNode).asOpt[JsObject]
+      def asRightNode: Option[A] = (json \ rightNode).asOpt[A]
+      asRightNode
+        .map(rn => JsSuccess(Right[UpstreamErrorResponseWrapper, A](rn)))
+        .orElse(asLeftNode.map(ln => parseLeft(ln)))
+        .orElse(json.asOpt[A].map(rn => JsSuccess(Right(rn))))
+        .getOrElse(JsError(s"Neither $leftNode nor $rightNode found in cache"))
     }
     val writes: Writes[Either[UpstreamErrorResponseWrapper, A]] = Writes {
       case Left(UpstreamErrorResponseWrapper(dt, e)) =>

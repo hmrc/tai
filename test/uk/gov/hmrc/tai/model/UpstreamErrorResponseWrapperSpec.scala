@@ -17,7 +17,7 @@
 package uk.gov.hmrc.tai.model
 
 import org.scalatestplus.play.PlaySpec
-import play.api.libs.json.{Format, Json}
+import play.api.libs.json.{Format, JsObject, Json}
 import uk.gov.hmrc.http.UpstreamErrorResponse
 import uk.gov.hmrc.tai.model.UpstreamErrorResponseWrapper.formatEitherWithWrapper
 
@@ -36,35 +36,59 @@ class UpstreamErrorResponseWrapperSpec extends PlaySpec {
 
   private val dummy = Dummy("one", "two")
 
-  private val leftUpstreamErrorResponseWrapper: Left[UpstreamErrorResponseWrapper, Dummy] = Left(
+  private val leftUpstreamErrorResponseWrapper: Either[UpstreamErrorResponseWrapper, Dummy] = Left(
     upstreamErrorResponseWrapper
   )
-  private val rightUpstreamErrorResponseWrapper: Right[UpstreamErrorResponseWrapper, Dummy] = Right(dummy)
+  private val rightUpstreamErrorResponseWrapper: Either[UpstreamErrorResponseWrapper, Dummy] = Right(dummy)
+
+  private val jsonRight = Json.obj(
+    UpstreamErrorResponseWrapper.rightNode -> Json.obj(
+      "first"  -> "one",
+      "second" -> "two"
+    )
+  )
+
+  private val jsonLeft = Json.obj(
+    UpstreamErrorResponseWrapper.leftNode -> Json.obj(
+      "statusCode" -> 500,
+      "reportAs"   -> 500,
+      "message"    -> "error",
+      "dateTime"   -> localDateTime
+    )
+  )
 
   "formatEitherWithWrapper" must {
     "serialise a right" in {
       val fmt: Format[Either[UpstreamErrorResponseWrapper, Dummy]] = formatEitherWithWrapper[Dummy](implicitly)
       val result = Json.toJson(rightUpstreamErrorResponseWrapper)(fmt)
-      result mustBe Json.obj(
-        "success" -> Json.obj(
-          "first"  -> "one",
-          "second" -> "two"
-        )
-      )
-
+      result mustBe jsonRight
     }
+
     "serialise a left" in {
       val fmt: Format[Either[UpstreamErrorResponseWrapper, Dummy]] = formatEitherWithWrapper[Dummy](implicitly)
       val result = Json.toJson(leftUpstreamErrorResponseWrapper)(fmt)
-      result mustBe Json.obj(
-        "failure" -> Json.obj(
-          "statusCode" -> 500,
-          "reportAs"   -> 500,
-          "message"    -> "error",
-          "dateTime"   -> localDateTime
-        )
-      )
+      result mustBe jsonLeft
+    }
 
+    "de-serialise a right" in {
+      val fmt: Format[Either[UpstreamErrorResponseWrapper, Dummy]] = formatEitherWithWrapper[Dummy](implicitly)
+      val result: Either[UpstreamErrorResponseWrapper, Dummy] =
+        jsonRight.as[Either[UpstreamErrorResponseWrapper, Dummy]](fmt)
+      result mustBe rightUpstreamErrorResponseWrapper
+    }
+    "de-serialise json assuming it is a right" in {
+      val fmt: Format[Either[UpstreamErrorResponseWrapper, Dummy]] = formatEitherWithWrapper[Dummy](implicitly)
+      val jsonInsideSuccessNode = (jsonRight \ UpstreamErrorResponseWrapper.rightNode).as[JsObject]
+      val result: Either[UpstreamErrorResponseWrapper, Dummy] =
+        jsonInsideSuccessNode.as[Either[UpstreamErrorResponseWrapper, Dummy]](fmt)
+      result mustBe rightUpstreamErrorResponseWrapper
+    }
+
+    "de-serialise a left" in {
+      val fmt: Format[Either[UpstreamErrorResponseWrapper, Dummy]] = formatEitherWithWrapper[Dummy](implicitly)
+      val result: Either[UpstreamErrorResponseWrapper, Dummy] =
+        jsonLeft.as[Either[UpstreamErrorResponseWrapper, Dummy]](fmt)
+      result mustBe leftUpstreamErrorResponseWrapper
     }
   }
 }
