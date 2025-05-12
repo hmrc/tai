@@ -65,7 +65,9 @@ object UpstreamErrorResponseWrapper {
     Format(reads, writes)
   }
 
-  def toWrapper[A](result: Either[UpstreamErrorResponse, A]): Either[UpstreamErrorResponseWrapper, A] =
+  def fromEitherUpstreamErrorResponse[A](
+    result: Either[UpstreamErrorResponse, A]
+  ): Either[UpstreamErrorResponseWrapper, A] =
     result match {
       case Left(e)  => Left[UpstreamErrorResponseWrapper, A](UpstreamErrorResponseWrapper(LocalDateTime.now, e))
       case Right(r) => Right[UpstreamErrorResponseWrapper, A](r)

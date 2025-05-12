@@ -24,7 +24,7 @@ import uk.gov.hmrc.http.{HeaderCarrier, UpstreamErrorResponse}
 import uk.gov.hmrc.mongo.cache.DataKey
 import uk.gov.hmrc.tai.config.CacheConfig
 import uk.gov.hmrc.tai.model.UpstreamErrorResponseWrapper
-import uk.gov.hmrc.tai.model.UpstreamErrorResponseWrapper.{formatEitherWithWrapper, toWrapper}
+import uk.gov.hmrc.tai.model.UpstreamErrorResponseWrapper.{formatEitherWithWrapper, fromEitherUpstreamErrorResponse}
 import uk.gov.hmrc.tai.repositories.cache.TaiSessionCacheRepository
 
 import java.time.{Duration, LocalDateTime}
@@ -44,7 +44,7 @@ class CacheService @Inject() (sessionCacheRepository: TaiSessionCacheRepository,
       Duration.between(dateTime, LocalDateTime.now).getSeconds > cacheErrorInSecondsTTL
     def resultAndCache: IO[Either[UpstreamErrorResponse, A]] =
       blockResult.flatMap { result =>
-        val wrappedBlockResponse = toWrapper(result)
+        val wrappedBlockResponse = fromEitherUpstreamErrorResponse(result)
         if (result.isRight || cacheErrorInSecondsTTL > 0) {
           IO.fromFuture(
             IO(
