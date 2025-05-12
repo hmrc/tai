@@ -24,7 +24,7 @@ import uk.gov.hmrc.http.{HeaderCarrier, UpstreamErrorResponse}
 import uk.gov.hmrc.mongo.cache.DataKey
 import uk.gov.hmrc.tai.config.CacheConfig
 import uk.gov.hmrc.tai.model.UpstreamErrorResponseWrapper
-import uk.gov.hmrc.tai.model.UpstreamErrorResponseWrapper.formatEitherWithWrapper
+import uk.gov.hmrc.tai.model.UpstreamErrorResponseWrapper.{formatEitherWithWrapper, toWrapper}
 import uk.gov.hmrc.tai.repositories.cache.TaiSessionCacheRepository
 
 import java.time.{Duration, LocalDateTime}
@@ -33,27 +33,29 @@ import scala.concurrent.{ExecutionContext, Future}
 class CacheService @Inject() (sessionCacheRepository: TaiSessionCacheRepository, appConfig: CacheConfig)(implicit
   ec: ExecutionContext
 ) extends Logging {
-  private def isStale(dateTime: LocalDateTime): Boolean =
-    Duration.between(dateTime, LocalDateTime.now).getSeconds > appConfig.cacheErrorInSecondsTTL
 
   def cacheEither[A](key: String)(
     block: => Future[Either[UpstreamErrorResponse, A]]
   )(implicit hc: HeaderCarrier, fmt: Format[A]): IO[Either[UpstreamErrorResponse, A]] = {
     implicit val eitherFormat: Format[Either[UpstreamErrorResponseWrapper, A]] = formatEitherWithWrapper[A]
     val blockResult = IO.fromFuture(IO(block))
+    lazy val cacheErrorInSecondsTTL = appConfig.cacheErrorInSecondsTTL
+    def isStale(dateTime: LocalDateTime): Boolean =
+      Duration.between(dateTime, LocalDateTime.now).getSeconds > cacheErrorInSecondsTTL
     def resultAndCache: IO[Either[UpstreamErrorResponse, A]] =
       blockResult.flatMap { result =>
-        val wrappedBlockResponse: Either[UpstreamErrorResponseWrapper, A] = result match {
-          case Left(e)  => Left[UpstreamErrorResponseWrapper, A](UpstreamErrorResponseWrapper(LocalDateTime.now, e))
-          case Right(r) => Right[UpstreamErrorResponseWrapper, A](r)
-        }
-        IO.fromFuture(
-          IO(
-            sessionCacheRepository
-              .putSession(DataKey[Either[UpstreamErrorResponseWrapper, A]](key), wrappedBlockResponse)
-              .map(_ => result)
+        val wrappedBlockResponse = toWrapper(result)
+        if (result.isRight || cacheErrorInSecondsTTL > 0) {
+          IO.fromFuture(
+            IO(
+              sessionCacheRepository
+                .putSession(DataKey[Either[UpstreamErrorResponseWrapper, A]](key), wrappedBlockResponse)
+                .map(_ => result)
+            )
           )
-        )
+        } else {
+          IO(result)
+        }
       }
 
     val retrievalResult: IO[Option[Either[UpstreamErrorResponseWrapper, A]]] =

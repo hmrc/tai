@@ -55,6 +55,7 @@ class CacheServiceSpec extends BaseSpec {
     reset(mockTaiSessionCacheRepository)
     reset(mockCacheConfig)
     when(mockCacheConfig.cacheErrorInSecondsTTL).thenReturn(60)
+
     ()
   }
 
@@ -86,6 +87,22 @@ class CacheServiceSpec extends BaseSpec {
       }
     }
 
+    "return left (error) from block when not in session repository and save to session repository if appConfig.cacheErrorInSecondsTTL > 0" in {
+      when(mockTaiSessionCacheRepository.getFromSession(any())(any(), any())).thenReturn(Future.successful(None))
+      when(mockTaiSessionCacheRepository.putSession(any(), any())(any(), any(), any()))
+        .thenReturn(Future.successful(Tuple2("", "")))
+      val block = Future.successful[Either[UpstreamErrorResponse, String]](leftUpstreamErrorResponse)
+      whenReady(sut.cacheEither(key)(block).unsafeToFuture()) { result =>
+        result mustBe leftUpstreamErrorResponse
+        val putArgCaptor: ArgumentCaptor[Either[UpstreamErrorResponseWrapper, String]] =
+          ArgumentCaptor.forClass(classOf[Either[UpstreamErrorResponseWrapper, String]])
+        verify(mockTaiSessionCacheRepository, times(1)).getFromSession(any())(any(), any())
+        verify(mockTaiSessionCacheRepository, times(1)).putSession(any(), putArgCaptor.capture())(any(), any(), any())
+        putArgCaptor.getValue.swap.map(_.upstreamErrorResponse) mustBe Right(upstreamErrorResponse)
+        verify(mockCacheConfig, times(1)).cacheErrorInSecondsTTL
+      }
+    }
+
     "return left (error) from block when not in session repository and save to session repository" in {
       when(mockTaiSessionCacheRepository.getFromSession(any())(any(), any())).thenReturn(Future.successful(None))
       when(mockTaiSessionCacheRepository.putSession(any(), any())(any(), any(), any()))
@@ -98,7 +115,7 @@ class CacheServiceSpec extends BaseSpec {
         verify(mockTaiSessionCacheRepository, times(1)).getFromSession(any())(any(), any())
         verify(mockTaiSessionCacheRepository, times(1)).putSession(any(), putArgCaptor.capture())(any(), any(), any())
         putArgCaptor.getValue.swap.map(_.upstreamErrorResponse) mustBe Right(upstreamErrorResponse)
-        verify(mockCacheConfig, times(0)).cacheErrorInSecondsTTL
+        verify(mockCacheConfig, times(1)).cacheErrorInSecondsTTL
       }
     }
 
