@@ -115,22 +115,22 @@ trait ConnectorBaseSpec
     ex.message mustBe message
   }
 
-  class FakeLockService extends LockService {
-    private var withLockCalled: Boolean = false
-    def reset(): Unit = withLockCalled = false
-    def isWithLockCalled: Boolean = withLockCalled
-    override def withLock[A](key: String)(block: => IO[A])(implicit hc: HeaderCarrier): IO[A] = {
-      withLockCalled = true
-      block
-    }
-
-    override def sessionId(implicit hc: HeaderCarrier): String =
-      "some session id"
-
-    override def takeLock[L](owner: String)(implicit hc: HeaderCarrier): EitherT[Future, L, Boolean] =
-      EitherT.rightT(true)
-
-    override def releaseLock[L](owner: String)(implicit hc: HeaderCarrier): Future[Unit] =
-      Future.successful(())
-  }
+//  class FakeLockService extends LockService {
+//    private var withLockCalled: Boolean = false
+//    def reset(): Unit = withLockCalled = false
+//    def isWithLockCalled: Boolean = withLockCalled
+//    override def withLock[A](key: String)(block: => IO[A])(implicit hc: HeaderCarrier): IO[A] = {
+//      withLockCalled = true
+//      block
+//    }
+//
+//    override def sessionId(implicit hc: HeaderCarrier): String =
+//      "some session id"
+//
+//    override def takeLock[L](owner: String)(implicit hc: HeaderCarrier): EitherT[Future, L, Boolean] =
+//      EitherT.rightT(true)
+//
+//    override def releaseLock[L](owner: String)(implicit hc: HeaderCarrier): Future[Unit] =
+//      Future.successful(())
+//  }
 }

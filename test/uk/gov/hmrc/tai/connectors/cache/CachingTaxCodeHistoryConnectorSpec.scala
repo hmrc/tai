@@ -54,7 +54,7 @@ class CachingTaxCodeHistoryConnectorSpec extends ConnectorBaseSpec {
       bind[EmploymentDetailsConnector].to[DefaultEmploymentDetailsConnector],
       bind[TaxAccountConnector].to[DefaultTaxAccountConnector],
       bind[AuthorisedFunctions].to[MicroserviceAuthorisedFunctions],
-      bind[LockService].toInstance(spy(new FakeLockService)),
+      //    bind[LockService].toInstance(spy(new FakeLockService)),
       bind[SensitiveFormatService].toInstance(mockEncryptionService)
     )
     .build()
