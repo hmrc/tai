@@ -20,27 +20,38 @@ import cats.effect.IO
 import cats.effect.unsafe.implicits.global
 import com.google.inject.Inject
 import uk.gov.hmrc.tai.config.RtiConfig
-import uk.gov.hmrc.tai.util.LockedException
 
 import scala.concurrent.Future
 import scala.concurrent.duration.{DurationInt, FiniteDuration}
 class RetryService @Inject() (appConfig: RtiConfig) {
   import RetryService.*
 
-  def retry[A](block: => IO[A]): Future[A] =
+  private val retryAllExceptions: PartialFunction[Throwable, Boolean] = { case _ => true }
+
+  // TODO: 10123 - Overload retry - add one for IO[Either[UpstreamErrorREsponse, A]] and retry if left returned
+
+  def withRetry[A](
+    exceptionsToRetry: PartialFunction[Throwable, Boolean] = retryAllExceptions
+  )(block: => IO[A]): Future[A] =
     block
-      .simpleRetry(appConfig.hodRetryMaximum, appConfig.hodRetryDelayInMillis.millis)
+      .simpleRetry(appConfig.hodRetryMaximum, appConfig.hodRetryDelayInMillis.millis, exceptionsToRetry)
       .unsafeToFuture()
 }
 
 object RetryService {
   private implicit class Retryable[A](io: IO[A]) {
-    def simpleRetry(noOfRetries: Int, sleep: FiniteDuration): IO[A] = {
+    def simpleRetry(
+      noOfRetries: Int,
+      sleep: FiniteDuration,
+      exceptionsToRetry: PartialFunction[Throwable, Boolean]
+    ): IO[A] = {
       def retryLoop(times: Int): IO[A] =
-        io.map(identity).handleErrorWith { // Do we need map(identity)?
-          case _: LockedException if times != 0 =>
+        io.map(identity).handleErrorWith { ex =>
+          if (exceptionsToRetry.applyOrElse(ex, _ => false) && times != 0) {
             IO.sleep(sleep) >> retryLoop(times - 1)
-          case ex => IO.raiseError(ex)
+          } else {
+            IO.raiseError(ex)
+          }
         }
       retryLoop(noOfRetries)
     }

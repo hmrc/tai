@@ -116,8 +116,13 @@ trait ConnectorBaseSpec
   }
 
   class FakeLockService extends LockService {
-
-    override def withLock[A](key: String)(block: => IO[A])(implicit hc: HeaderCarrier): IO[A] = block
+    private var withLockCalled: Boolean = false
+    def reset(): Unit = withLockCalled = false
+    def isWithLockCalled: Boolean = withLockCalled
+    override def withLock[A](key: String)(block: => IO[A])(implicit hc: HeaderCarrier): IO[A] = {
+      withLockCalled = true
+      block
+    }
 
     override def sessionId(implicit hc: HeaderCarrier): String =
       "some session id"

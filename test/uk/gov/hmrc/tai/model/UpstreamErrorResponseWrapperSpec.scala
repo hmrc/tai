@@ -1,0 +1,70 @@
+/*
+ * Copyright 2025 HM Revenue & Customs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package uk.gov.hmrc.tai.model
+
+import org.scalatestplus.play.PlaySpec
+import play.api.libs.json.{Format, Json}
+import uk.gov.hmrc.http.UpstreamErrorResponse
+import uk.gov.hmrc.tai.model.UpstreamErrorResponseWrapper.formatEitherWithWrapper
+
+import java.time.LocalDateTime
+
+class UpstreamErrorResponseWrapperSpec extends PlaySpec {
+  private val localDateTime = LocalDateTime.of(2025, 2, 3, 1, 1, 1)
+  private val upstreamErrorResponse = UpstreamErrorResponse("error", 500, 500)
+  private val upstreamErrorResponseWrapper: UpstreamErrorResponseWrapper =
+    UpstreamErrorResponseWrapper(localDateTime, upstreamErrorResponse)
+
+  private case class Dummy(first: String, second: String)
+  private object Dummy {
+    implicit val formats: Format[Dummy] = Json.format[Dummy]
+  }
+
+  private val dummy = Dummy("one", "two")
+
+  private val leftUpstreamErrorResponseWrapper: Left[UpstreamErrorResponseWrapper, Dummy] = Left(
+    upstreamErrorResponseWrapper
+  )
+  private val rightUpstreamErrorResponseWrapper: Right[UpstreamErrorResponseWrapper, Dummy] = Right(dummy)
+
+  "formatEitherWithWrapper" must {
+    "serialise a right" in {
+      val fmt: Format[Either[UpstreamErrorResponseWrapper, Dummy]] = formatEitherWithWrapper[Dummy](implicitly)
+      val result = Json.toJson(rightUpstreamErrorResponseWrapper)(fmt)
+      result mustBe Json.obj(
+        "success" -> Json.obj(
+          "first"  -> "one",
+          "second" -> "two"
+        )
+      )
+
+    }
+    "serialise a left" in {
+      val fmt: Format[Either[UpstreamErrorResponseWrapper, Dummy]] = formatEitherWithWrapper[Dummy](implicitly)
+      val result = Json.toJson(leftUpstreamErrorResponseWrapper)(fmt)
+      result mustBe Json.obj(
+        "failure" -> Json.obj(
+          "statusCode" -> 500,
+          "reportAs"   -> 500,
+          "message"    -> "error",
+          "dateTime"   -> localDateTime
+        )
+      )
+
+    }
+  }
+}

@@ -59,7 +59,7 @@ class LockServiceImpl @Inject() (lockRepo: MongoLockRepository, appConfig: Mongo
       .recover { case NonFatal(error) => IO.fromFuture(IO(Future.failed[A](error))) }
       .flatten
 
-  def newTakeLock[L](owner: String)(implicit hc: HeaderCarrier): Future[Boolean] =
+  private def newTakeLock[L](owner: String)(implicit hc: HeaderCarrier): Future[Boolean] =
     lockRepo
       .takeLock(
         lockId = sessionId,

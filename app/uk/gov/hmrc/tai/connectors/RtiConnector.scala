@@ -33,6 +33,7 @@ import uk.gov.hmrc.tai.model.domain.*
 import uk.gov.hmrc.tai.model.domain.AnnualAccount.{annualAccountHodReads, format}
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.service.{CacheService, LockService, RetryService, SensitiveFormatService}
+import uk.gov.hmrc.tai.util.LockedException
 
 import java.util.UUID
 import javax.inject.Named
@@ -69,18 +70,23 @@ class CachingRtiConnector @Inject() (
   retryService: RetryService,
   cacheService: CacheService
 ) extends RtiConnector with Logging {
+  import cacheService.cacheEither
+  import lockService.withLock
+  import retryService.withRetry
+
+  private val lockedException: PartialFunction[Throwable, Boolean] = { case _: LockedException => true }
+
   def getPaymentsForYear(nino: Nino, taxYear: TaxYear)(implicit
     hc: HeaderCarrier,
     request: Request[_]
   ): EitherT[Future, UpstreamErrorResponse, Seq[AnnualAccount]] = {
     val key = s"getPaymentsForYear-$nino-${taxYear.year}"
     EitherT(
-      retryService.retry {
-        lockService.withLock(key) {
-          cacheService.cacheEither(key)(underlying.getPaymentsForYear(nino: Nino, taxYear: TaxYear).value)(
-            implicitly,
-            sensitiveFormatService.sensitiveFormatFromReadsWritesJsArray[Seq[AnnualAccount]]
-          )
+      withRetry(exceptionsToRetry = lockedException) {
+        withLock(key) {
+          cacheEither(key)(
+            underlying.getPaymentsForYear(nino: Nino, taxYear: TaxYear).value
+          )(implicitly, sensitiveFormatService.sensitiveFormatFromReadsWritesJsArray[Seq[AnnualAccount]])
         }
       }
     )
