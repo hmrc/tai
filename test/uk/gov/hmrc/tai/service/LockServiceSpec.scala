@@ -23,11 +23,11 @@ import play.api.Application
 import play.api.inject.guice.GuiceApplicationBuilder
 import uk.gov.hmrc.mongo.lock.{Lock, MongoLockRepository}
 import uk.gov.hmrc.mongo.test.DefaultPlayMongoRepositorySupport
-import uk.gov.hmrc.tai.util.BaseSpec
+import uk.gov.hmrc.tai.util.{BaseSpec, LockedException}
 
 import java.time.Instant
 import java.time.temporal.ChronoUnit
-import scala.concurrent.duration.{Duration, DurationInt}
+import scala.concurrent.duration.Duration
 import scala.concurrent.{Await, Future}
 import scala.language.postfixOps
 
@@ -37,7 +37,7 @@ class LockServiceSpec extends BaseSpec with DefaultPlayMongoRepositorySupport[Lo
     new GuiceApplicationBuilder()
       .configure(additionalConfiguration)
       .configure(
-        "mongo.lock.expiryInMicroseconds" -> 2000,
+        "mongo.lock.expiryInMilliseconds" -> 2000,
         "auditing.enabled"                -> false
       )
       .build()
@@ -45,92 +45,36 @@ class LockServiceSpec extends BaseSpec with DefaultPlayMongoRepositorySupport[Lo
   lazy val sut: LockService = app.injector.instanceOf[LockService]
   val repository: MongoLockRepository = app.injector.instanceOf[MongoLockRepository]
 
-  "withLock" should {
-    "takes lock" when {
-      "no lock is present" in {
+  private def findForSessionId: Future[Seq[Lock]] = find(Filters.equal("_id", sessionIdValue))
 
-        /*
-                  find(Filters.equal("_id", sessionIdValue)).map { (result: Seq[Lock]) =>
-              result.size mustBe 1
-              val expiry = result.head.expiryTime
-              val start = result.head.timeCreated
-              ChronoUnit.SECONDS.between(start, expiry) mustBe 2
-            }
-         */
-
-        // val result = sut.takeLock("lockId")
-        val result = sut.withLock[Seq[Lock]]("lockId") {
-          IO.fromFuture(IO(find(Filters.equal("_id", sessionIdValue))))
-        }
-        val rr = Await.result(result.unsafeToFuture(), Duration.Inf)
-
-        rr.size mustBe 1
-        val expiry = rr.head.expiryTime
-        val start = rr.head.timeCreated
-        ChronoUnit.SECONDS.between(start, expiry) mustBe 2
-
-        //        result.futureValue mustBe "action"
-
-        //        val a = find(Filters.equal("_id", sessionIdValue))
-        //        .map { (result: Seq[Lock]) =>
-        //          result.size mustBe 1
-        //          val expiry = result.head.expiryTime
-        //          val start = result.head.timeCreated
-        //          ChronoUnit.SECONDS.between(start, expiry) mustBe 2
-        //        }
+  "withLock" must {
+    "take lock when no lock is present and release it when action completed" in {
+      val ioResult = sut.withLock[Seq[Lock]]("lockId") {
+        IO.fromFuture(IO(findForSessionId))
       }
+      val result = Await.result(ioResult.unsafeToFuture(), Duration.Inf)
 
-      //      "previous lock was released" in {
-      //        val timestamp = Instant.now()
-      //        insert(Lock("some session id", "lockId", timestamp, timestamp.plusSeconds(2)))
-      //
-      //        val result = for {
-      //          _      <- sut.releaseLock[Boolean]("lockId")
-      //          result <- sut.takeLock[Boolean]("lockId").value
-      //        } yield result
-      //        result.futureValue mustBe Right(true)
-      //
-      //        find(Filters.equal("_id", sessionIdValue)).map { (result: Seq[Lock]) =>
-      //          result.size mustBe 1
-      //          val expiry = result.head.expiryTime
-      //          val start = result.head.timeCreated
-      //          ChronoUnit.SECONDS.between(start, expiry) mustBe 2
-      //        }
-      //      }
+      result.size mustBe 1
+      val expiry = result.head.expiryTime
+      val start = result.head.timeCreated
+      ChronoUnit.SECONDS.between(start, expiry) mustBe 2
+
+      Await.result(findForSessionId, Duration.Inf).size mustBe 0
     }
 
-    //    "returns false" when {
-    //      "a lock is present" in {
-    //        val timestamp = Instant.now()
-    //        Await.result(
-    //          deleteAll().flatMap { _ =>
-    //            insert(Lock(sessionIdValue, "lockId", timestamp, timestamp.plusSeconds(2)))
-    //          },
-    //          5 seconds
-    //        )
-    //        val result = sut.takeLock("lockId")
-    //        result.value.futureValue mustBe Right(false)
-    //      }
-    //    }
-    //  }
-    //
-    //  "releaseLock" should {
-    //    "released the lock" in {
-    //      val timestamp = Instant.now()
-    //      insert(Lock(sessionIdValue, "lockId", timestamp, timestamp.plusSeconds(2)))
-    //
-    //      sut.releaseLock[Boolean]("lockId").futureValue
-    //
-    //      find(Filters.equal("_id", sessionIdValue)).map { (result: Seq[Lock]) =>
-    //        result.isEmpty mustBe true
-    //      }
-    //    }
-    //  }
-    //
-    //  "sessionId" should {
-    //    "returns the session id" in {
-    //      sut.sessionId mustBe "some session id"
-    //    }
-    //  }
+    "return locked exception when a lock is present" in {
+      val timestamp = Instant.now()
+      Await.result(
+        deleteAll().flatMap { _ =>
+          insert(Lock(sessionIdValue, "lockId", timestamp, timestamp.plusSeconds(2)))
+        },
+        Duration.Inf
+      )
+
+      val ioResult = sut.withLock[Seq[Lock]]("lockId") {
+        IO.fromFuture(IO(findForSessionId))
+      }
+      a[LockedException] mustBe thrownBy(Await.result(ioResult.unsafeToFuture(), Duration.Inf))
+    }
   }
 }
