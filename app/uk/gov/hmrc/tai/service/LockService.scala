@@ -55,7 +55,7 @@ class LockService @Inject() (lockRepo: MongoLockRepository, appConfig: MongoConf
       .recover { case NonFatal(error) => IO.fromFuture(IO(Future.failed[A](error))) }
       .flatten
 
-  private def takeLock[L](owner: String)(implicit hc: HeaderCarrier): Future[Boolean] = {
+  private def takeLock[L](owner: String)(implicit hc: HeaderCarrier): Future[Boolean] =
     lockRepo
       .takeLock(
         lockId = sessionId,
@@ -70,7 +70,6 @@ class LockService @Inject() (lockRepo: MongoLockRepository, appConfig: MongoConf
         // Duplicates calls to HOD will be present in such a case
         true
       }
-  }
 
   private def sessionId(implicit hc: HeaderCarrier): String = hc.sessionId.fold {
     val ex = new RuntimeException("Session id is missing from HeaderCarrier")
