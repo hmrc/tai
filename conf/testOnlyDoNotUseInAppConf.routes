@@ -15,6 +15,6 @@
 ->            /                                                             prod.Routes
 ->            /tai                                                          mongoFeatureTogglesTestOnly.Routes
 
-GET           /v1/api/employment/employee/:nino/tax-year/:taxYear/employment-details   @testOnly.controllers.ApiCallController.employmentDetails(nino: Nino, taxYear: Int)
-GET           /v1/api/person/:nino/tax-account/:taxYear                                @testOnly.controllers.ApiCallController.taxAccount(nino: Nino, taxYear: Int)
-GET           /v1/api/iabd/taxpayer/:nino/tax-year/:taxYear                            @testOnly.controllers.ApiCallController.iabds(nino: Nino, taxYear: Int)
+GET           /test-only/v1/api/employment/employee/:nino/tax-year/:taxYear/employment-details   @testOnly.controllers.ApiCallController.employmentDetails(nino: Nino, taxYear: Int)
+GET           /test-only/v1/api/person/:nino/tax-account/:taxYear                                @testOnly.controllers.ApiCallController.taxAccount(nino: Nino, taxYear: Int)
+GET           /test-only/v1/api/iabd/taxpayer/:nino/tax-year/:taxYear                            @testOnly.controllers.ApiCallController.iabds(nino: Nino, taxYear: Int)
