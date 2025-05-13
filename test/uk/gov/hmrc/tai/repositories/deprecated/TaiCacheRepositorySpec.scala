@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.tai.repositories.cache
+package uk.gov.hmrc.tai.repositories.deprecated
 
 import org.mockito.ArgumentMatchers.{any, anyString}
 import org.mockito.Mockito.{reset, times, verify, when}
@@ -24,11 +24,10 @@ import play.api.libs.json.{JsObject, JsString, Json}
 import uk.gov.hmrc.crypto.json.JsonEncryption
 import uk.gov.hmrc.crypto.{ApplicationCrypto, Decrypter, Encrypter}
 import uk.gov.hmrc.mongo.cache.CacheItem
-import uk.gov.hmrc.tai.config.MongoConfig
+import uk.gov.hmrc.tai.config.{MongoConfig, SensitiveT}
 import uk.gov.hmrc.tai.connectors.cache.TaiCacheConnector
 import uk.gov.hmrc.tai.repositories.deprecated.TaiCacheRepository
 import uk.gov.hmrc.tai.util.BaseSpec
-import uk.gov.hmrc.tai.config.SensitiveT
 
 import java.time.Instant
 import scala.concurrent.Future
@@ -65,7 +64,7 @@ class TaiCacheRepositorySpec extends BaseSpec with IntegrationPatience {
     ()
   }
 
-  "Cache Connector" must {
+  "createOrUpdate" must {
     "save the data in cache" when {
       "provided with string data" in {
         val mockMongoConfig = mock[MongoConfig]
@@ -123,6 +122,9 @@ class TaiCacheRepositorySpec extends BaseSpec with IntegrationPatience {
         data mustBe stringSeq
       }
     }
+  }
+
+  "find" must {
 
     "retrieve the data from cache" when {
       "id is present in the cache" in {
@@ -314,6 +316,9 @@ class TaiCacheRepositorySpec extends BaseSpec with IntegrationPatience {
         verify(taiRepository, times(1)).findById(cacheIdValue)
       }
     }
+  }
+
+  "removeById" must {
 
     "remove the session data from cache" when {
       "remove has been called with id" in {

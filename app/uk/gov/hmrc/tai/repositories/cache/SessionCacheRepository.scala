@@ -81,9 +81,9 @@ abstract class SessionCacheRepository(
       cacheRepo.get[T](hc)(dataKey)
     }
 
-  private def getWithDateTime[A: Reads](
+  def getWithDateTime[A](
     cacheId: HeaderCarrier
-  )(dataKey: DataKey[A]): Future[Option[(A, Instant)]] = {
+  )(dataKey: DataKey[A])(implicit reads: Reads[A]): Future[Option[(A, Instant)]] = {
     def dataPath: JsPath =
       dataKey.unwrap.split('.').foldLeft[JsPath](JsPath)(_ \ _)
     cacheRepo
