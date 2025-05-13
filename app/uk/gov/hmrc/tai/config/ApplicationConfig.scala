@@ -113,8 +113,8 @@ class RtiConfig @Inject() extends BaseConfig {
 }
 @Singleton
 class CacheConfig @Inject() (val runModeConfiguration: Configuration) extends BaseConfig {
-  lazy val cacheErrorInSecondsTTL: Int =
-    runModeConfiguration.getOptional[Int]("tai.cache.upstream-errors.expiryInSeconds").getOrElse(0)
+  lazy val cacheErrorInSecondsTTL: Long =
+    runModeConfiguration.getOptional[Long]("tai.cache.upstream-errors.expiryInSeconds").getOrElse(0L)
 }
 
 @Singleton

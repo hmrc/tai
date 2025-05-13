@@ -36,6 +36,11 @@ case object OopsCannotAcquireLock extends Exception
 class LockService @Inject() (lockRepo: MongoLockRepository, appConfig: MongoConfig)(implicit ec: ExecutionContext)
     extends Logging {
 
+  private def recoverRelease[A](result: IO[A]): PartialFunction[Throwable, IO[A]] = { case ex: Exception =>
+    logger.warn("Error while releasing lock: " + ex.getMessage, ex)
+    result
+  }
+
   def withLock[A](key: String)(block: => IO[A])(implicit hc: HeaderCarrier): IO[A] =
     IO
       .fromFuture(IO(takeLock(key)))
@@ -44,12 +49,12 @@ class LockService @Inject() (lockRepo: MongoLockRepository, appConfig: MongoConf
           block
             .flatMap { result =>
               IO.fromFuture(IO(releaseLock(key)))
-                .recoverWith { case exception: Exception => IO(result) }
+                .recoverWith(recoverRelease(IO(result)))
                 .map(_ => result)
             }
             .recoverWith { case exception: Exception =>
               IO.fromFuture(IO(releaseLock(key)))
-                .recoverWith { case exception: Exception => IO((): Unit) }
+                .recoverWith(recoverRelease(IO((): Unit)))
                 .flatMap(_ => IO.raiseError[A](exception))
             }
         } else {
