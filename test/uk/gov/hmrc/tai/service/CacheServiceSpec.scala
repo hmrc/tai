@@ -22,7 +22,6 @@ import org.mockito.Mockito.{reset, times, verify, when}
 import org.mockito.{ArgumentCaptor, ArgumentMatchers}
 import uk.gov.hmrc.http.UpstreamErrorResponse
 import uk.gov.hmrc.tai.config.CacheConfig
-import uk.gov.hmrc.tai.model.UpstreamErrorResponseWrapper
 import uk.gov.hmrc.tai.repositories.cache.TaiSessionCacheRepository
 import uk.gov.hmrc.tai.util.BaseSpec
 
@@ -37,116 +36,108 @@ class CacheServiceSpec extends BaseSpec {
   private val dummyValue: String = "dummy"
   private val secondDummyValue: String = "dummy2"
   private val upstreamErrorResponse = UpstreamErrorResponse("", 500, 500)
-  private val localDateTimeOutOfDate = LocalDateTime.of(2025, 1, 1, 1, 1, 1)
-  private val upstreamErrorResponseWrapper: UpstreamErrorResponseWrapper =
-    UpstreamErrorResponseWrapper(LocalDateTime.now, UpstreamErrorResponse("", 500, 500))
-  private val upstreamErrorResponseWrapperOutOfDate: UpstreamErrorResponseWrapper =
-    UpstreamErrorResponseWrapper(localDateTimeOutOfDate, UpstreamErrorResponse("", 500, 500))
-  private val leftUpstreamErrorResponseWrapper: Left[UpstreamErrorResponseWrapper, String] =
-    Left[UpstreamErrorResponseWrapper, String](upstreamErrorResponseWrapper)
-  private val leftUpstreamErrorResponseWrapperOutOfDate: Left[UpstreamErrorResponseWrapper, String] =
-    Left[UpstreamErrorResponseWrapper, String](upstreamErrorResponseWrapperOutOfDate)
-  private val rightUpstreamErrorResponseWrapper: Right[UpstreamErrorResponseWrapper, String] =
-    Right[UpstreamErrorResponseWrapper, String](secondDummyValue)
+  private val upstreamErrorResponseWrapper: UpstreamErrorResponse = UpstreamErrorResponse("", 500, 500)
+
   private val leftUpstreamErrorResponse: Left[UpstreamErrorResponse, String] =
-    Left[UpstreamErrorResponse, String](upstreamErrorResponse)
+    Left[UpstreamErrorResponse, String](upstreamErrorResponseWrapper)
+
+  private val rightUpstreamErrorResponseWrapper: Right[UpstreamErrorResponse, String] =
+    Right[UpstreamErrorResponse, String](secondDummyValue)
   override def beforeEach(): Unit = {
     super.beforeEach()
     reset(mockTaiSessionCacheRepository)
     reset(mockCacheConfig)
-    when(mockCacheConfig.cacheErrorInSecondsTTL).thenReturn(60)
+    when(mockCacheConfig.cacheErrorInSecondsTTL).thenReturn(60L)
 
     ()
   }
 
   "cacheEither" must {
     "return right block value when not in session repository and save to session repository" in {
-      when(mockTaiSessionCacheRepository.getFromSession(any())(any(), any())).thenReturn(Future.successful(None))
+      when(mockTaiSessionCacheRepository.getEitherFromSession(any())(any(), any())).thenReturn(Future.successful(None))
       when(mockTaiSessionCacheRepository.putSession(any(), any())(any(), any(), any()))
         .thenReturn(Future.successful(Tuple2("", "")))
       val block = Future.successful[Either[UpstreamErrorResponse, String]](Right(dummyValue))
       whenReady(sut.cacheEither(key)(block).unsafeToFuture()) { result =>
         result mustBe Right(dummyValue)
-        verify(mockTaiSessionCacheRepository, times(1)).getFromSession(any())(any(), any())
+        verify(mockTaiSessionCacheRepository, times(1)).getEitherFromSession(any())(any(), any())
         verify(mockTaiSessionCacheRepository, times(1)).putSession(
           any(),
-          ArgumentMatchers.eq(Right[UpstreamErrorResponseWrapper, String](dummyValue))
+          ArgumentMatchers.eq(Right[UpstreamErrorResponse, String](dummyValue))
         )(any(), any(), any())
         verify(mockCacheConfig, times(0)).cacheErrorInSecondsTTL
       }
     }
     "return right cached block value when in session repository and don't re-save to session repository" in {
-      when(mockTaiSessionCacheRepository.getFromSession(any())(any(), any()))
+      when(mockTaiSessionCacheRepository.getEitherFromSession(any())(any(), any()))
         .thenReturn(Future.successful(Some(rightUpstreamErrorResponseWrapper)))
       val block = Future.successful[Either[UpstreamErrorResponse, String]](Right(dummyValue))
       whenReady(sut.cacheEither(key)(block).unsafeToFuture()) { result =>
         result mustBe Right(secondDummyValue)
-        verify(mockTaiSessionCacheRepository, times(1)).getFromSession(any())(any(), any())
+        verify(mockTaiSessionCacheRepository, times(1)).getEitherFromSession(any())(any(), any())
         verify(mockTaiSessionCacheRepository, times(0)).putSession(any(), any())(any(), any(), any())
         verify(mockCacheConfig, times(0)).cacheErrorInSecondsTTL
       }
     }
 
     "return left (error) from block when not in session repository and save to session repository if appConfig.cacheErrorInSecondsTTL > 0" in {
-      when(mockTaiSessionCacheRepository.getFromSession(any())(any(), any())).thenReturn(Future.successful(None))
+      when(mockTaiSessionCacheRepository.getEitherFromSession(any())(any(), any())).thenReturn(Future.successful(None))
       when(mockTaiSessionCacheRepository.putSession(any(), any())(any(), any(), any()))
         .thenReturn(Future.successful(Tuple2("", "")))
       val block = Future.successful[Either[UpstreamErrorResponse, String]](leftUpstreamErrorResponse)
       whenReady(sut.cacheEither(key)(block).unsafeToFuture()) { result =>
         result mustBe leftUpstreamErrorResponse
-        val putArgCaptor: ArgumentCaptor[Either[UpstreamErrorResponseWrapper, String]] =
-          ArgumentCaptor.forClass(classOf[Either[UpstreamErrorResponseWrapper, String]])
-        verify(mockTaiSessionCacheRepository, times(1)).getFromSession(any())(any(), any())
+        val putArgCaptor: ArgumentCaptor[Either[UpstreamErrorResponse, String]] =
+          ArgumentCaptor.forClass(classOf[Either[UpstreamErrorResponse, String]])
+        verify(mockTaiSessionCacheRepository, times(1)).getEitherFromSession(any())(any(), any())
         verify(mockTaiSessionCacheRepository, times(1)).putSession(any(), putArgCaptor.capture())(any(), any(), any())
-        putArgCaptor.getValue.swap.map(_.upstreamErrorResponse) mustBe Right(upstreamErrorResponse)
+        putArgCaptor.getValue.swap.map(ex =>
+          UpstreamErrorResponse(ex.message, ex.statusCode, ex.reportAs)
+        ) mustBe Right(upstreamErrorResponse)
         verify(mockCacheConfig, times(1)).cacheErrorInSecondsTTL
       }
     }
 
     "return left (error) from block when not in session repository and save to session repository" in {
-      when(mockTaiSessionCacheRepository.getFromSession(any())(any(), any())).thenReturn(Future.successful(None))
+      when(mockTaiSessionCacheRepository.getEitherFromSession(any())(any(), any())).thenReturn(Future.successful(None))
       when(mockTaiSessionCacheRepository.putSession(any(), any())(any(), any(), any()))
         .thenReturn(Future.successful(Tuple2("", "")))
       val block = Future.successful[Either[UpstreamErrorResponse, String]](leftUpstreamErrorResponse)
       whenReady(sut.cacheEither(key)(block).unsafeToFuture()) { result =>
         result mustBe leftUpstreamErrorResponse
-        val putArgCaptor: ArgumentCaptor[Either[UpstreamErrorResponseWrapper, String]] =
-          ArgumentCaptor.forClass(classOf[Either[UpstreamErrorResponseWrapper, String]])
-        verify(mockTaiSessionCacheRepository, times(1)).getFromSession(any())(any(), any())
+        val putArgCaptor: ArgumentCaptor[Either[UpstreamErrorResponse, String]] =
+          ArgumentCaptor.forClass(classOf[Either[UpstreamErrorResponse, String]])
+        verify(mockTaiSessionCacheRepository, times(1)).getEitherFromSession(any())(any(), any())
         verify(mockTaiSessionCacheRepository, times(1)).putSession(any(), putArgCaptor.capture())(any(), any(), any())
-        putArgCaptor.getValue.swap.map(_.upstreamErrorResponse) mustBe Right(upstreamErrorResponse)
+        putArgCaptor.getValue.swap.map(ex =>
+          UpstreamErrorResponse(ex.message, ex.statusCode, ex.reportAs)
+        ) mustBe Right(upstreamErrorResponse)
+        verify(mockCacheConfig, times(1)).cacheErrorInSecondsTTL
+      }
+    }
+    "return left (error) from block when not in session repository and NOT save to session repository when error ttl zero" in {
+      when(mockCacheConfig.cacheErrorInSecondsTTL).thenReturn(0L)
+      when(mockTaiSessionCacheRepository.getEitherFromSession(any())(any(), any())).thenReturn(Future.successful(None))
+      when(mockTaiSessionCacheRepository.putSession(any(), any())(any(), any(), any()))
+        .thenReturn(Future.successful(Tuple2("", "")))
+      val block = Future.successful[Either[UpstreamErrorResponse, String]](leftUpstreamErrorResponse)
+      whenReady(sut.cacheEither(key)(block).unsafeToFuture()) { result =>
+        result mustBe leftUpstreamErrorResponse
+        verify(mockTaiSessionCacheRepository, times(1)).getEitherFromSession(any())(any(), any())
+        verify(mockTaiSessionCacheRepository, times(0)).putSession(any(), any())(any(), any(), any())
         verify(mockCacheConfig, times(1)).cacheErrorInSecondsTTL
       }
     }
 
-    "return left (error) from block when in session repository but out of date and save to session repository" in {
-      when(mockTaiSessionCacheRepository.getFromSession(any())(any(), any()))
-        .thenReturn(Future.successful(Some(leftUpstreamErrorResponseWrapperOutOfDate)))
-      when(mockTaiSessionCacheRepository.putSession(any(), any())(any(), any(), any()))
-        .thenReturn(Future.successful(Tuple2("", "")))
+    "return left (error) from session repository when in session repository and don't re-save to session repository" in {
+      when(mockTaiSessionCacheRepository.getEitherFromSession(any())(any(), any()))
+        .thenReturn(Future.successful(Some(leftUpstreamErrorResponse)))
       val block = Future.successful[Either[UpstreamErrorResponse, String]](leftUpstreamErrorResponse)
       whenReady(sut.cacheEither(key)(block).unsafeToFuture()) { result =>
         result mustBe leftUpstreamErrorResponse
-        val putArgCaptor: ArgumentCaptor[Either[UpstreamErrorResponseWrapper, String]] =
-          ArgumentCaptor.forClass(classOf[Either[UpstreamErrorResponseWrapper, String]])
-        verify(mockTaiSessionCacheRepository, times(1)).getFromSession(any())(any(), any())
-        verify(mockTaiSessionCacheRepository, times(1)).putSession(
-          any(),
-          putArgCaptor.capture()
-        )(any(), any(), any())
-        putArgCaptor.getValue.swap.map(_.upstreamErrorResponse) mustBe Right(upstreamErrorResponse)
-        verify(mockCacheConfig, times(1)).cacheErrorInSecondsTTL
-      }
-    }
-    "return left (error) from session repository when in session repository and NOT out of date and don't re-save to session repository" in {
-      when(mockTaiSessionCacheRepository.getFromSession(any())(any(), any()))
-        .thenReturn(Future.successful(Some(leftUpstreamErrorResponseWrapper)))
-      val block = Future.successful[Either[UpstreamErrorResponse, String]](leftUpstreamErrorResponse)
-      whenReady(sut.cacheEither(key)(block).unsafeToFuture()) { result =>
-        result mustBe leftUpstreamErrorResponse
-        verify(mockTaiSessionCacheRepository, times(1)).getFromSession(any())(any(), any())
+        verify(mockTaiSessionCacheRepository, times(1)).getEitherFromSession(any())(any(), any())
         verify(mockTaiSessionCacheRepository, times(0)).putSession(any(), any())(any(), any(), any())
-        verify(mockCacheConfig, times(1)).cacheErrorInSecondsTTL
+        verify(mockCacheConfig, times(0)).cacheErrorInSecondsTTL
       }
     }
   }

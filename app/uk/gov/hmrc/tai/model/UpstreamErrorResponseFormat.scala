@@ -19,57 +19,43 @@ package uk.gov.hmrc.tai.model
 import play.api.libs.json.*
 import uk.gov.hmrc.http.UpstreamErrorResponse
 
-import java.time.LocalDateTime
-
-case class UpstreamErrorResponseWrapper(dateTime: LocalDateTime, upstreamErrorResponse: UpstreamErrorResponse)
-
-object UpstreamErrorResponseWrapper {
+object UpstreamErrorResponseFormat {
 
   val leftNode: String = "failure"
   val rightNode: String = "success"
 
-  private def parseLeft[A](left: JsObject): JsResult[Either[UpstreamErrorResponseWrapper, A]] = {
+  private def parseLeft[A](left: JsObject): JsResult[Either[UpstreamErrorResponse, A]] = {
     val statusCode = (left \ "statusCode").as[Int]
     val reportAs = (left \ "reportAs").as[Int]
     val message = (left \ "message").as[String]
-    val dateTime = (left \ "dateTime").as[LocalDateTime]
     JsSuccess(
-      Left[UpstreamErrorResponseWrapper, A](
-        UpstreamErrorResponseWrapper(dateTime, UpstreamErrorResponse(message, statusCode, reportAs))
+      Left[UpstreamErrorResponse, A](
+        UpstreamErrorResponse(message, statusCode, reportAs)
       )
     )
   }
 
-  def formatEitherWithWrapper[A](implicit fmt: Format[A]): Format[Either[UpstreamErrorResponseWrapper, A]] = {
-    val reads: Reads[Either[UpstreamErrorResponseWrapper, A]] = Reads { json =>
+  def format[A](implicit fmt: Format[A]): Format[Either[UpstreamErrorResponse, A]] = {
+    val reads: Reads[Either[UpstreamErrorResponse, A]] = Reads { json =>
       def asLeftNode: Option[JsObject] = (json \ leftNode).asOpt[JsObject]
       def asRightNode: Option[A] = (json \ rightNode).asOpt[A]
       asRightNode
-        .map(rn => JsSuccess(Right[UpstreamErrorResponseWrapper, A](rn)))
+        .map(rn => JsSuccess(Right[UpstreamErrorResponse, A](rn)))
         .orElse(asLeftNode.map(ln => parseLeft(ln)))
         .orElse(json.asOpt[A].map(rn => JsSuccess(Right(rn))))
         .getOrElse(JsError(s"Neither $leftNode nor $rightNode found in cache"))
     }
-    val writes: Writes[Either[UpstreamErrorResponseWrapper, A]] = Writes {
-      case Left(UpstreamErrorResponseWrapper(dt, e)) =>
+    val writes: Writes[Either[UpstreamErrorResponse, A]] = Writes {
+      case Left(UpstreamErrorResponse(message, statusCode, reportAs, _)) =>
         Json.obj(
           leftNode -> Json.obj(
-            "statusCode" -> e.statusCode,
-            "reportAs"   -> e.reportAs,
-            "message"    -> e.message,
-            "dateTime"   -> Json.toJson(dt)
+            "statusCode" -> statusCode,
+            "reportAs"   -> reportAs,
+            "message"    -> message
           )
         )
       case Right(s) => Json.obj(rightNode -> Json.toJson(s))
     }
     Format(reads, writes)
   }
-
-  def fromEitherUpstreamErrorResponse[A](
-    result: Either[UpstreamErrorResponse, A]
-  ): Either[UpstreamErrorResponseWrapper, A] =
-    result match {
-      case Left(e)  => Left[UpstreamErrorResponseWrapper, A](UpstreamErrorResponseWrapper(LocalDateTime.now, e))
-      case Right(r) => Right[UpstreamErrorResponseWrapper, A](r)
-    }
 }

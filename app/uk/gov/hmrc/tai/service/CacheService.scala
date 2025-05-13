@@ -23,8 +23,7 @@ import play.api.libs.json.*
 import uk.gov.hmrc.http.{HeaderCarrier, UpstreamErrorResponse}
 import uk.gov.hmrc.mongo.cache.DataKey
 import uk.gov.hmrc.tai.config.CacheConfig
-import uk.gov.hmrc.tai.model.UpstreamErrorResponseWrapper
-import uk.gov.hmrc.tai.model.UpstreamErrorResponseWrapper.{formatEitherWithWrapper, fromEitherUpstreamErrorResponse}
+import uk.gov.hmrc.tai.model.UpstreamErrorResponseFormat.format
 import uk.gov.hmrc.tai.repositories.cache.TaiSessionCacheRepository
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -36,7 +35,7 @@ class CacheService @Inject() (sessionCacheRepository: TaiSessionCacheRepository,
   def cacheEither[A](key: String)(
     block: => Future[Either[UpstreamErrorResponse, A]]
   )(implicit hc: HeaderCarrier, fmt: Format[A]): IO[Either[UpstreamErrorResponse, A]] = {
-    implicit val eitherFormat: Format[Either[UpstreamErrorResponseWrapper, A]] = formatEitherWithWrapper[A]
+    implicit val eitherFormat: Format[Either[UpstreamErrorResponse, A]] = format[A]
     val blockResult = IO.fromFuture(IO(block))
     lazy val cacheErrorInSecondsTTL = appConfig.cacheErrorInSecondsTTL
 
@@ -47,8 +46,8 @@ class CacheService @Inject() (sessionCacheRepository: TaiSessionCacheRepository,
             IO(
               sessionCacheRepository
                 .putSession(
-                  DataKey[Either[UpstreamErrorResponseWrapper, A]](key),
-                  fromEitherUpstreamErrorResponse(result)
+                  DataKey[Either[UpstreamErrorResponse, A]](key),
+                  result
                 )
                 .map(_ => result)
             )
@@ -58,17 +57,17 @@ class CacheService @Inject() (sessionCacheRepository: TaiSessionCacheRepository,
         }
       }
 
-    val retrievalResult: IO[Option[Either[UpstreamErrorResponseWrapper, A]]] =
+    val retrievalResult: IO[Option[Either[UpstreamErrorResponse, A]]] =
       IO.fromFuture(
-        IO(sessionCacheRepository.getEitherFromSession(DataKey[Either[UpstreamErrorResponseWrapper, A]](key)))
+        IO(sessionCacheRepository.getEitherFromSession(DataKey[Either[UpstreamErrorResponse, A]](key)))
       ).recoverWith { case e =>
         logger.warn("An error occurred when retrieving from cache. Will re-execute block to get data.", e)
         IO(None)
       }
     retrievalResult.flatMap {
-      case None                                                       => resultAndCache
-      case Some(Left(UpstreamErrorResponseWrapper(_, retrievedItem))) => IO(Left(retrievedItem))
-      case Some(Right(r))                                             => IO(Right(r))
+      case None                                                                                => resultAndCache
+      case Some(retrievedItem @ Left(UpstreamErrorResponse(message, statusCode, reportAs, _))) => IO(retrievedItem)
+      case Some(Right(r))                                                                      => IO(Right(r))
     }
 
   }
