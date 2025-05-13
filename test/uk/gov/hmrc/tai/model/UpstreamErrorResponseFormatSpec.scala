@@ -21,8 +21,6 @@ import play.api.libs.json.{Format, JsObject, Json}
 import uk.gov.hmrc.http.UpstreamErrorResponse
 import uk.gov.hmrc.tai.model.UpstreamErrorResponseFormat.format
 
-import java.time.LocalDateTime
-
 class UpstreamErrorResponseFormatSpec extends PlaySpec {
   private val upstreamErrorResponse = UpstreamErrorResponse("error", 500, 500)
 

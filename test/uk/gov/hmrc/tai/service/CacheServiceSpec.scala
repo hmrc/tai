@@ -25,7 +25,6 @@ import uk.gov.hmrc.tai.config.CacheConfig
 import uk.gov.hmrc.tai.repositories.cache.TaiSessionCacheRepository
 import uk.gov.hmrc.tai.util.BaseSpec
 
-import java.time.LocalDateTime
 import scala.concurrent.Future
 
 class CacheServiceSpec extends BaseSpec {

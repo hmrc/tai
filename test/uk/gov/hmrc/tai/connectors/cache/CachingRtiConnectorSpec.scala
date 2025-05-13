@@ -38,7 +38,7 @@ import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.repositories.cache.TaiSessionCacheRepository
 import uk.gov.hmrc.tai.service.SensitiveFormatService
 
-import java.time.{Instant, LocalDate, LocalDateTime}
+import java.time.{Instant, LocalDate}
 import scala.concurrent.Future
 
 class CachingRtiConnectorSpec extends ConnectorBaseSpec {
