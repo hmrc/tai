@@ -54,7 +54,7 @@ abstract class SessionCacheRepository(
     This class has been adapted from the one from hmrc-mongo to use the session id from the headerCarrier instead.
    */
 
-  private val cacheRepo: MongoCacheRepository[HeaderCarrier] = new MongoCacheRepository[HeaderCarrier](
+  private[cache] val cacheRepo: MongoCacheRepository[HeaderCarrier] = new MongoCacheRepository[HeaderCarrier](
     mongoComponent = mongoComponent,
     collectionName = collectionName,
     replaceIndexes = replaceIndexes,
