@@ -159,7 +159,7 @@ class CachingRtiConnectorSpec extends ConnectorBaseSpec {
           .putSession[Either[UpstreamErrorResponse, Seq[AnnualAccount]]](any(), any())(any(), any(), any())
         verify(mockRtiConnector, times(1)).getPaymentsForYear(any(), any())(any(), any())
         verify(mockMongoLockRepository, times(2)).takeLock(any(), any(), any())
-        verify(mockMongoLockRepository, times(1)).releaseLock(any(), any())
+        verify(mockMongoLockRepository, times(2)).releaseLock(any(), any())
       }
 
       "no value is cached but a non-fatal exception thrown in lock repo - exception should be ignored and no retry should happen" in {

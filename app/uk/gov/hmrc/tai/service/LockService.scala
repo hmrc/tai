@@ -36,33 +36,22 @@ case object OopsCannotAcquireLock extends Exception
 class LockService @Inject() (lockRepo: MongoLockRepository, appConfig: MongoConfig)(implicit ec: ExecutionContext)
     extends Logging {
 
-  private def recoverRelease[A](result: IO[A]): PartialFunction[Throwable, IO[A]] = { case ex: Exception =>
+  private def recoverRelease[A](result: IO[A]): PartialFunction[Throwable, IO[A]] = { case NonFatal(ex) =>
     logger.warn("Error while releasing lock: " + ex.getMessage, ex)
     result
   }
 
   def withLock[A](key: String)(block: => IO[A])(implicit hc: HeaderCarrier): IO[A] =
-    IO
-      .fromFuture(IO(takeLock(key)))
-      .map { isLockAcquired =>
+    IO.fromFuture(IO(takeLock(key)))
+      .bracket { isLockAcquired =>
         if (isLockAcquired) {
           block
-            .flatMap { result =>
-              IO.fromFuture(IO(releaseLock(key)))
-                .recoverWith(recoverRelease(IO(result)))
-                .map(_ => result)
-            }
-            .recoverWith { case exception: Exception =>
-              IO.fromFuture(IO(releaseLock(key)))
-                .recoverWith(recoverRelease(IO((): Unit)))
-                .flatMap(_ => IO.raiseError[A](exception))
-            }
         } else {
           IO.fromFuture(IO(Future.failed[A](new LockedException(s"Lock for $key could not be acquired"))))
         }
+      } { _ =>
+        IO.fromFuture(IO(releaseLock(key))).recoverWith(recoverRelease(IO((): Unit)))
       }
-      .recover { case NonFatal(error) => IO.fromFuture(IO(Future.failed[A](error))) }
-      .flatten
 
   private def takeLock[L](owner: String)(implicit hc: HeaderCarrier): Future[Boolean] =
     lockRepo
