@@ -17,7 +17,6 @@
 package uk.gov.hmrc.tai.service
 
 import cats.effect.IO
-import cats.implicits.*
 import com.google.inject.Inject
 import play.api.Logging
 import uk.gov.hmrc.http.{HeaderCarrier, LockedException}
@@ -28,8 +27,6 @@ import javax.inject.Singleton
 import scala.concurrent.duration.{Duration, MILLISECONDS}
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.control.NonFatal
-
-case object OopsCannotAcquireLock extends Exception
 
 @Singleton
 class LockService @Inject() (lockRepo: MongoLockRepository, appConfig: MongoConfig)(implicit ec: ExecutionContext)
