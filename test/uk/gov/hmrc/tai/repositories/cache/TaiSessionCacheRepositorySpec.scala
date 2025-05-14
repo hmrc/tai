@@ -63,7 +63,6 @@ class TaiSessionCacheRepositorySpec extends BaseSpec { // scalastyle:off magic.n
         _ <- taiSessionCacheRepository.putSession(key, storedValueRight)
         result: Option[Either[UpstreamErrorResponse, String]] <- taiSessionCacheRepository.getEitherFromSession(key)
       } yield result
-      assert(true)
       whenReady(result) { r =>
         r mustBe Some(Right("test"))
       }
@@ -73,7 +72,6 @@ class TaiSessionCacheRepositorySpec extends BaseSpec { // scalastyle:off magic.n
         _ <- taiSessionCacheRepository.putSession(key, storedValueLeft)
         result: Option[Either[UpstreamErrorResponse, String]] <- taiSessionCacheRepository.getEitherFromSession(key)
       } yield result
-      assert(true)
       whenReady(result) { r =>
         r mustBe Some(Left(upstreamErrorResponse))
       }
@@ -84,7 +82,6 @@ class TaiSessionCacheRepositorySpec extends BaseSpec { // scalastyle:off magic.n
         _ <- taiSessionCacheRepository.putSession(key, storedValueLeft)
         result: Option[Either[UpstreamErrorResponse, String]] <- taiSessionCacheRepository.getEitherFromSession(key)
       } yield result
-      assert(true)
       whenReady(result) { r =>
         r mustBe None
       }
