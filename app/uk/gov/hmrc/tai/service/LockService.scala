@@ -20,10 +20,9 @@ import cats.effect.IO
 import cats.implicits.*
 import com.google.inject.Inject
 import play.api.Logging
-import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.http.{HeaderCarrier, LockedException}
 import uk.gov.hmrc.mongo.lock.MongoLockRepository
 import uk.gov.hmrc.tai.config.MongoConfig
-import uk.gov.hmrc.tai.util.LockedException
 
 import javax.inject.Singleton
 import scala.concurrent.duration.{Duration, MILLISECONDS}

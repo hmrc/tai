@@ -24,9 +24,10 @@ import org.mongodb.scala.model.Filters
 import play.api.Application
 import play.api.inject.bind
 import play.api.inject.guice.GuiceApplicationBuilder
+import uk.gov.hmrc.http.LockedException
 import uk.gov.hmrc.mongo.lock.{Lock, MongoLockRepository}
 import uk.gov.hmrc.mongo.test.DefaultPlayMongoRepositorySupport
-import uk.gov.hmrc.tai.util.{BaseSpec, LockedException}
+import uk.gov.hmrc.tai.util.BaseSpec
 
 import java.time.Instant
 import java.time.temporal.ChronoUnit

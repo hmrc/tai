@@ -25,7 +25,7 @@ import play.api.{Logger, Logging}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HttpReads.Implicits.{readEitherOf, readRaw}
 import uk.gov.hmrc.http.client.HttpClientV2
-import uk.gov.hmrc.http.{HeaderCarrier, HeaderNames, HttpException, HttpResponse, StringContextOps, UpstreamErrorResponse}
+import uk.gov.hmrc.http.{HeaderCarrier, HeaderNames, HttpException, HttpResponse, LockedException, StringContextOps, UpstreamErrorResponse}
 import uk.gov.hmrc.mongoFeatureToggles.services.FeatureFlagService
 import uk.gov.hmrc.tai.config.DesConfig
 import uk.gov.hmrc.tai.model.admin.RtiCallToggle
@@ -33,7 +33,6 @@ import uk.gov.hmrc.tai.model.domain.*
 import uk.gov.hmrc.tai.model.domain.AnnualAccount.{annualAccountHodReads, format}
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.service.{CacheService, LockService, RetryService, SensitiveFormatService}
-import uk.gov.hmrc.tai.util.LockedException
 
 import java.util.UUID
 import javax.inject.Named
