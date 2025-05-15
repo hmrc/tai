@@ -18,7 +18,7 @@ package uk.gov.hmrc.tai.service.helper
 
 import com.google.inject.{Inject, Singleton}
 import uk.gov.hmrc.domain.Nino
-import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.http.{HeaderCarrier, NotFoundException}
 import uk.gov.hmrc.tai.connectors.TaxAccountConnector
 import uk.gov.hmrc.tai.model.domain.IabdDetails
 import uk.gov.hmrc.tai.model.domain.income.*
@@ -57,10 +57,16 @@ class TaxCodeIncomeHelper @Inject() (
 
   def incomeAmountForEmploymentId(nino: Nino, year: TaxYear, employmentId: Int)(implicit
     hc: HeaderCarrier
-  ): Future[Option[String]] = {
-    val taxCodeIncomes = fetchTaxCodeIncomes(nino, year)
-    taxCodeIncomes.map { taxCodeIncomes =>
-      taxCodeIncomes.find(_.employmentId.contains(employmentId)).map(_.amount.toString())
-    }
-  }
+  ): Future[Option[String]] =
+    taxAccountConnector
+      .taxAccount(nino, year)
+      .map { httpResponse =>
+        httpResponse
+          .as[Seq[TaxCodeIncome]](TaxCodeIncomeHipReads.taxCodeIncomeSourcesReads)
+          .find(_.employmentId.contains(employmentId))
+          .map(_.amount.toString())
+      }
+      .recover { case _: NotFoundException =>
+        None
+      }
 }

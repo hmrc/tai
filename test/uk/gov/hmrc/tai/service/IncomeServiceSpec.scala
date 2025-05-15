@@ -1313,6 +1313,70 @@ class IncomeServiceSpec extends BaseSpec {
 
           verify(mockAuditor).sendDataEvent(meq("Update Multiple Employments Data"), meq(auditMap))(any())
         }
+
+        "the current estimated in not found" in {
+          val taxYear = TaxYear().next
+
+          val mockEmploymentSvc = mock[EmploymentService]
+          when(mockEmploymentSvc.employmentAsEitherT(any(), any())(any(), any()))
+            .thenReturn(
+              EitherT.rightT(
+                Employment(
+                  "",
+                  Live,
+                  None,
+                  LocalDate.now(),
+                  None,
+                  Seq.empty[AnnualAccount],
+                  "",
+                  "",
+                  0,
+                  Some(100),
+                  hasPayrolledBenefit = false,
+                  receivingOccupationalPension = false,
+                  PensionIncome
+                )
+              )
+            )
+
+          val citizenDetailsConnector = mock[CitizenDetailsConnector]
+          when(citizenDetailsConnector.getEtag(any())(any())).thenReturn(Future.successful(Some(etag)))
+
+          val mockTaxCodeIncomeHelper = mock[TaxCodeIncomeHelper]
+          when(mockTaxCodeIncomeHelper.incomeAmountForEmploymentId(any(), any(), any())(any()))
+            .thenReturn(Future.successful(None))
+
+          val mockIabdService = mock[IabdService]
+          when(mockIabdService.updateTaxCodeAmount(any(), meq[TaxYear](taxYear), any(), any(), any())(any(), any()))
+            .thenReturn(
+              Future.successful(IncomeUpdateSuccess)
+            )
+
+          val mockAuditor = mock[Auditor]
+          doNothing().when(mockAuditor).sendDataEvent(any(), any())(any())
+
+          val SUT = createSUT(
+            employmentService = mockEmploymentSvc,
+            citizenDetailsConnector = citizenDetailsConnector,
+            taxCodeIncomeHelper = mockTaxCodeIncomeHelper,
+            iabdService = mockIabdService,
+            auditor = mockAuditor
+          )
+
+          val result = SUT.updateTaxCodeIncome(nino, taxYear, 1, 1234)(HeaderCarrier(), implicitly).futureValue
+
+          result mustBe IncomeUpdateSuccess
+
+          val auditMap = Map(
+            "nino"          -> nino.value,
+            "year"          -> taxYear.toString,
+            "employmentId"  -> "1",
+            "newAmount"     -> "1234",
+            "currentAmount" -> "Unknown"
+          )
+
+          verify(mockAuditor).sendDataEvent(meq("Update Multiple Employments Data"), meq(auditMap))(any())
+        }
       }
     }
 
@@ -1400,7 +1464,7 @@ class IncomeServiceSpec extends BaseSpec {
       )
 
       val result = SUT.updateTaxCodeIncome(nino, taxYear, 1, 1234)(HeaderCarrier(), implicitly)
-      result.futureValue mustBe IncomeUpdateFailed("Could not parse etag")
+      result.futureValue mustBe IncomeUpdateFailed("Failed to update income")
     }
   }
 }
