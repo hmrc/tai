@@ -21,7 +21,7 @@ import org.mockito.Mockito.when
 import play.api.libs.json.Json
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{status, *}
-import uk.gov.hmrc.http.{BadRequestException, LockedException}
+import uk.gov.hmrc.http.LockedException
 import uk.gov.hmrc.tai.controllers.auth.AuthJourney
 import uk.gov.hmrc.tai.model.domain.calculation.{IncomeCategory, TaxBand, TotalTax, UkDividendsIncomeCategory}
 import uk.gov.hmrc.tai.model.domain.taxAdjustments.*
@@ -158,21 +158,30 @@ class TotalTaxControllerSpec extends BaseSpec with NpsExceptions {
       "hod throws coding calculation error for cy+1" in {
         val mockTotalTaxService = mock[TotalTaxService]
         when(mockTotalTaxService.totalTax(meq(nino), meq(TaxYear()))(any()))
-          .thenReturn(Future.failed(new BadRequestException(CodingCalculationCYPlusOne)))
+          .thenReturn(Future.failed(badRequestException))
 
         val sut = createSUT(mockTotalTaxService)
-        val result = sut.totalTax(nino, TaxYear())(FakeRequest())
-        status(result) mustBe BAD_REQUEST
+
+        checkControllerResponse(
+          badRequestException,
+          sut.totalTax(nino, TaxYear())(FakeRequest()),
+          BAD_REQUEST
+        )
+
       }
 
       "hod throws bad request for cy" in {
         val mockTotalTaxService = mock[TotalTaxService]
         when(mockTotalTaxService.totalTax(meq(nino), meq(TaxYear()))(any()))
-          .thenReturn(Future.failed(new BadRequestException("Cannot perform a Coding Calculation for CY")))
+          .thenReturn(Future.failed(badRequestException))
 
         val sut = createSUT(mockTotalTaxService)
-        val result = sut.totalTax(nino, TaxYear())(FakeRequest())
-        status(result) mustBe BAD_REQUEST
+
+        checkControllerResponse(
+          badRequestException,
+          sut.totalTax(nino, TaxYear())(FakeRequest()),
+          BAD_REQUEST
+        )
       }
     }
 

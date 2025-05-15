@@ -41,7 +41,11 @@ class CompanyCarBenefitControllerSpec extends BaseSpec {
         when(mockCompanyCarService.companyCarBenefits(any())(any()))
           .thenReturn(Future.successful(Nil))
 
-        val sut = new CompanyCarBenefitController(mockCompanyCarService, loggedInAuthenticationAuthJourney, cc)
+        val sut = new CompanyCarBenefitController(
+          mockCompanyCarService,
+          loggedInAuthenticationAuthJourney,
+          cc
+        )
         val result = sut.companyCarBenefits(nino)(FakeRequest())
         status(result) mustBe NOT_FOUND
       }
@@ -71,7 +75,11 @@ class CompanyCarBenefitControllerSpec extends BaseSpec {
         when(mockCompanyCarService.companyCarBenefits(any())(any()))
           .thenReturn(Future.successful(companyCarSeq))
 
-        val sut = new CompanyCarBenefitController(mockCompanyCarService, loggedInAuthenticationAuthJourney, cc)
+        val sut = new CompanyCarBenefitController(
+          mockCompanyCarService,
+          loggedInAuthenticationAuthJourney,
+          cc
+        )
         val result = sut.companyCarBenefits(nino)(FakeRequest())
 
         status(result) mustBe OK
@@ -123,7 +131,11 @@ class CompanyCarBenefitControllerSpec extends BaseSpec {
         when(mockCompanyCarService.companyCarBenefits(any())(any()))
           .thenReturn(Future.successful(companyCarSeq))
 
-        val sut = new CompanyCarBenefitController(mockCompanyCarService, loggedInAuthenticationAuthJourney, cc)
+        val sut = new CompanyCarBenefitController(
+          mockCompanyCarService,
+          loggedInAuthenticationAuthJourney,
+          cc
+        )
         val result = sut.companyCarBenefits(nino)(FakeRequest())
 
         status(result) mustBe OK

@@ -21,7 +21,7 @@ import org.mockito.Mockito.when
 import play.api.libs.json.Json
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{status, *}
-import uk.gov.hmrc.http.{BadRequestException, NotFoundException, UnauthorizedException}
+import uk.gov.hmrc.http.UnauthorizedException
 import uk.gov.hmrc.tai.controllers.auth.AuthJourney
 import uk.gov.hmrc.tai.model.domain.*
 import uk.gov.hmrc.tai.model.domain.calculation.CodingComponent
@@ -89,11 +89,13 @@ class CodingComponentControllerSpec extends BaseSpec with NpsExceptions {
         val mockCodingComponentService = mock[CodingComponentService]
         val sut = createSUT(mockCodingComponentService)
         when(mockCodingComponentService.codingComponents(meq(nino), meq(TaxYear().next))(any()))
-          .thenReturn(Future.failed(new BadRequestException("bad request exception")))
-        val result = sut.codingComponentsForYear(nino, TaxYear().next)(FakeRequest())
-        status(result) mustBe 400
-        val expectedJson = """{"reason":"bad request exception"}"""
-        contentAsString(result) mustBe expectedJson
+          .thenReturn(Future.failed(badRequestException))
+
+        checkControllerResponse(
+          badRequestException,
+          sut.codingComponentsForYear(nino, TaxYear().next)(FakeRequest()),
+          BAD_REQUEST
+        )
       }
     }
 
@@ -103,13 +105,14 @@ class CodingComponentControllerSpec extends BaseSpec with NpsExceptions {
         val sut = createSUT(mockCodingComponentService)
 
         when(mockCodingComponentService.codingComponents(meq(nino), meq(TaxYear().next))(any()))
-          .thenReturn(Future.failed(new NotFoundException("not found exception")))
+          .thenReturn(Future.failed(notFoundException))
 
-        val result = sut.codingComponentsForYear(nino, TaxYear().next)(FakeRequest())
-        status(result) mustBe 404
+        checkControllerResponse(
+          notFoundException,
+          sut.codingComponentsForYear(nino, TaxYear().next)(FakeRequest()),
+          NOT_FOUND
+        )
 
-        val expectedJson = """{"reason":"not found exception"}"""
-        contentAsString(result) mustBe expectedJson
       }
     }
   }

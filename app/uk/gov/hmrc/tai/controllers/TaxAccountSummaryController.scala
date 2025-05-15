@@ -36,12 +36,12 @@ class TaxAccountSummaryController @Inject() (
   cc: ControllerComponents
 )(implicit
   ec: ExecutionContext
-) extends BackendController(cc) with NpsExceptions with ControllerErrorHandler {
+) extends BackendController(cc) with NpsExceptions {
 
   def taxAccountSummaryForYear(nino: Nino, year: TaxYear): Action[AnyContent] =
     authentication.authWithUserDetails.async { implicit request =>
       taxAccountSummaryService.taxAccountSummary(nino, year) map { taxAccountSummary =>
         Ok(Json.toJson(ApiResponse(taxAccountSummary, Nil)))
-      } recoverWith taxAccountErrorHandler()
+      }
     }
 }

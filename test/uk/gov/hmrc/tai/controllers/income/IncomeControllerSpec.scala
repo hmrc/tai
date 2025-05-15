@@ -23,7 +23,8 @@ import org.mockito.Mockito.when
 import play.api.libs.json.*
 import play.api.test.Helpers.*
 import play.api.test.{FakeHeaders, FakeRequest}
-import uk.gov.hmrc.http.{BadRequestException, NotFoundException, UpstreamErrorResponse}
+import uk.gov.hmrc.http.UpstreamErrorResponse
+import uk.gov.hmrc.tai.config.CustomErrorHandler
 import uk.gov.hmrc.tai.controllers.auth.AuthJourney
 import uk.gov.hmrc.tai.model.domain.*
 import uk.gov.hmrc.tai.model.domain.income.*
@@ -125,13 +126,10 @@ class IncomeControllerSpec extends BaseSpec {
       }
 
       "a Not Found Exception occurs" in {
-        when(mockIncomeService.untaxedInterest(any())(any()))
-          .thenReturn(Future.failed(new NotFoundException("Error")))
 
+        when(mockIncomeService.untaxedInterest(any())(any())).thenReturn(Future.failed(notFoundException))
         val SUT = createSUT(mockIncomeService)
-        val result = SUT.untaxedInterest(nino)(FakeRequest())
-
-        status(result) mustBe NOT_FOUND
+        checkControllerResponse(notFoundException, SUT.untaxedInterest(nino)(FakeRequest()), NOT_FOUND)
       }
     }
   }
@@ -151,12 +149,15 @@ class IncomeControllerSpec extends BaseSpec {
 
       "a Not Found Exception occurs" in {
         when(mockIncomeService.taxCodeIncomes(any(), meq(TaxYear().next))(any(), any()))
-          .thenReturn(Future.failed(new NotFoundException("Error")))
+          .thenReturn(Future.failed(notFoundException))
 
         val SUT = createSUT(mockIncomeService)
-        val result = SUT.taxCodeIncomesForYear(nino, TaxYear().next)(FakeRequest())
 
-        status(result) mustBe NOT_FOUND
+        checkControllerResponse(
+          notFoundException,
+          SUT.taxCodeIncomesForYear(nino, TaxYear().next)(FakeRequest()),
+          NOT_FOUND
+        )
       }
     }
 
@@ -271,13 +272,16 @@ class IncomeControllerSpec extends BaseSpec {
 
       when(mockIncomeService.matchedTaxCodeIncomesForYear(any(), meq(TaxYear().next), any(), any())(any(), any()))
         .thenReturn(
-          EitherT[Future, UpstreamErrorResponse, Seq[IncomeSource]](Future.failed(new NotFoundException("message")))
+          EitherT[Future, UpstreamErrorResponse, Seq[IncomeSource]](Future.failed(notFoundException))
         )
 
       val SUT = createSUT(mockIncomeService)
-      val result = SUT.matchedTaxCodeIncomesForYear(nino, TaxYear().next, EmploymentIncome, Live)(FakeRequest())
 
-      status(result) mustBe NOT_FOUND
+      checkControllerResponse(
+        notFoundException,
+        SUT.matchedTaxCodeIncomesForYear(nino, TaxYear().next, EmploymentIncome, Live)(FakeRequest()),
+        NOT_FOUND
+      )
     }
 
     "return NotFound when a Not Found UpstreamErrorResponse occurs" in {
@@ -303,16 +307,18 @@ class IncomeControllerSpec extends BaseSpec {
     }
 
     "return BadRequest when a BadRequestException is thrown" in {
-
       when(mockIncomeService.matchedTaxCodeIncomesForYear(any(), meq(TaxYear().next), any(), any())(any(), any()))
         .thenReturn(
-          EitherT[Future, UpstreamErrorResponse, Seq[IncomeSource]](Future.failed(new BadRequestException("message")))
+          EitherT[Future, UpstreamErrorResponse, Seq[IncomeSource]](Future.failed(badRequestException))
         )
 
       val SUT = createSUT(mockIncomeService)
-      val result = SUT.matchedTaxCodeIncomesForYear(nino, TaxYear().next, EmploymentIncome, Live)(FakeRequest())
 
-      status(result) mustBe BAD_REQUEST
+      checkControllerResponse(
+        badRequestException,
+        SUT.matchedTaxCodeIncomesForYear(nino, TaxYear().next, EmploymentIncome, Live)(FakeRequest()),
+        BAD_REQUEST
+      )
     }
   }
 
@@ -367,26 +373,32 @@ class IncomeControllerSpec extends BaseSpec {
 
       when(mockIncomeService.nonMatchingCeasedEmployments(any(), meq(TaxYear().next))(any(), any()))
         .thenReturn(
-          EitherT[Future, UpstreamErrorResponse, Seq[Employment]](Future.failed(new NotFoundException("message")))
+          EitherT[Future, UpstreamErrorResponse, Seq[Employment]](Future.failed(notFoundException))
         )
 
       val SUT = createSUT(mockIncomeService)
-      val result = SUT.nonMatchingCeasedEmployments(nino, TaxYear().next)(FakeRequest())
 
-      status(result) mustBe NOT_FOUND
+      checkControllerResponse(
+        notFoundException,
+        SUT.nonMatchingCeasedEmployments(nino, TaxYear().next)(FakeRequest()),
+        NOT_FOUND
+      )
     }
 
     "return BadRequest when a BadRequestException is thrown" in {
 
       when(mockIncomeService.nonMatchingCeasedEmployments(any(), meq(TaxYear().next))(any(), any()))
         .thenReturn(
-          EitherT[Future, UpstreamErrorResponse, Seq[Employment]](Future.failed(new BadRequestException("message")))
+          EitherT[Future, UpstreamErrorResponse, Seq[Employment]](Future.failed(badRequestException))
         )
 
       val SUT = createSUT(mockIncomeService)
-      val result = SUT.nonMatchingCeasedEmployments(nino, TaxYear().next)(FakeRequest())
 
-      status(result) mustBe BAD_REQUEST
+      checkControllerResponse(
+        badRequestException,
+        SUT.nonMatchingCeasedEmployments(nino, TaxYear().next)(FakeRequest()),
+        BAD_REQUEST
+      )
     }
 
     "return BadRequest when a bad request UpstreamErrorResponse occurs" in {
@@ -465,10 +477,14 @@ class IncomeControllerSpec extends BaseSpec {
       }
 
       "any exception has been thrown" in {
-        val SUT = setup(Future.failed(new RuntimeException("Error")))
-        val result = SUT.updateTaxCodeIncome(nino, TaxYear(), employmentId)(fakeTaxCodeIncomeRequest)
+        val runTimeException = new RuntimeException("Error")
+        val SUT = setup(Future.failed(runTimeException))
 
-        status(result) mustBe INTERNAL_SERVER_ERROR
+        checkControllerResponse(
+          runTimeException,
+          SUT.updateTaxCodeIncome(nino, TaxYear(), employmentId)(fakeTaxCodeIncomeRequest),
+          INTERNAL_SERVER_ERROR
+        )
       }
     }
   }
@@ -477,7 +493,7 @@ class IncomeControllerSpec extends BaseSpec {
     incomeService: IncomeService = mock[IncomeService],
     authentication: AuthJourney = loggedInAuthenticationAuthJourney
   ) =
-    new IncomeController(incomeService, authentication, cc)
+    new IncomeController(incomeService, authentication, cc, inject[CustomErrorHandler])
 
   private def fakeTaxCodeIncomeRequest: FakeRequest[JsValue] = {
     val updateTaxCodeIncomeRequest = UpdateTaxCodeIncomeRequest(1234)
