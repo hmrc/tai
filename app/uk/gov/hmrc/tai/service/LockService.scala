@@ -43,7 +43,7 @@ class LockService @Inject() (lockRepo: MongoLockRepository, appConfig: MongoConf
         if (isLockAcquired) {
           block
         } else {
-          IO.fromFuture(IO(Future.failed[A](new LockedException(s"Lock for $key could not be acquired"))))
+          IO.raiseError[A](new LockedException(s"Lock for $key could not be acquired"))
         }
       } { _ =>
         IO.fromFuture(IO(releaseLock(key))).recoverWith(recoverRelease(IO((): Unit)))
