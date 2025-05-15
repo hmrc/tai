@@ -16,11 +16,10 @@
 
 package uk.gov.hmrc.tai.service
 
-import cats.data.EitherT
-import cats.implicits._
+import cats.effect.IO
 import com.google.inject.Inject
 import play.api.Logging
-import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.http.{HeaderCarrier, LockedException}
 import uk.gov.hmrc.mongo.lock.MongoLockRepository
 import uk.gov.hmrc.tai.config.MongoConfig
 
@@ -29,46 +28,50 @@ import scala.concurrent.duration.{Duration, MILLISECONDS}
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.control.NonFatal
 
-case object OopsCannotAcquireLock extends Exception
-
-trait LockService {
-  def sessionId(implicit hc: HeaderCarrier): String
-
-  def takeLock[L](owner: String)(implicit hc: HeaderCarrier): EitherT[Future, L, Boolean]
-
-  def releaseLock[L](owner: String)(implicit hc: HeaderCarrier): Future[Unit]
-}
-
 @Singleton
-class LockServiceImpl @Inject() (lockRepo: MongoLockRepository, appConfig: MongoConfig)(implicit ec: ExecutionContext)
-    extends LockService with Logging {
+class LockService @Inject() (lockRepo: MongoLockRepository, appConfig: MongoConfig)(implicit ec: ExecutionContext)
+    extends Logging {
 
-  def sessionId(implicit hc: HeaderCarrier): String = hc.sessionId.fold {
+  private def recoverRelease[A](result: IO[A]): PartialFunction[Throwable, IO[A]] = { case NonFatal(ex) =>
+    logger.warn("Error while releasing lock: " + ex.getMessage, ex)
+    result
+  }
+
+  def withLock[A](key: String)(block: => IO[A])(implicit hc: HeaderCarrier): IO[A] =
+    IO.fromFuture(IO(takeLock(key)))
+      .bracket { isLockAcquired =>
+        if (isLockAcquired) {
+          block
+        } else {
+          IO.raiseError[A](new LockedException(s"Lock for $key could not be acquired"))
+        }
+      } { _ =>
+        IO.fromFuture(IO(releaseLock(key))).recoverWith(recoverRelease(IO((): Unit)))
+      }
+
+  private def takeLock[L](owner: String)(implicit hc: HeaderCarrier): Future[Boolean] =
+    lockRepo
+      .takeLock(
+        lockId = sessionId,
+        owner = owner,
+        ttl = Duration(appConfig.mongoLockTTL, MILLISECONDS) // this need to be longer than the timeout from http_verbs
+      )
+      .map(_.fold(false)(_ => true))
+      .recover { case NonFatal(ex) =>
+        logger.error(ex.getMessage, ex)
+        // This lock is used to lock the cache while it is populated by the HOD response
+        // if it is failing we still allow the caller to go through so the user gets a better experience
+        // Duplicates calls to HOD will be present in such a case
+        true
+      }
+
+  private def sessionId(implicit hc: HeaderCarrier): String = hc.sessionId.fold {
     val ex = new RuntimeException("Session id is missing from HeaderCarrier")
     logger.error(ex.getMessage, ex)
     java.util.UUID.randomUUID.toString
   }(_.value)
 
-  def takeLock[L](owner: String)(implicit hc: HeaderCarrier): EitherT[Future, L, Boolean] =
-    EitherT.right[L](
-      lockRepo
-        .takeLock(
-          lockId = sessionId,
-          owner = owner,
-          ttl =
-            Duration(appConfig.mongoLockTTL, MILLISECONDS) // this need to be longer than the timeout from http_verbs
-        )
-        .map(_.fold(false)(_ => true))
-        .recover { case NonFatal(ex) =>
-          logger.error(ex.getMessage, ex)
-          // This lock is used to lock the cache while it is populated by the HOD response
-          // if it is failing we still allow the caller to go through so the user gets a better experience
-          // Duplicates calls to HOD will be present in such a case
-          true
-        }
-    )
-
-  def releaseLock[L](owner: String)(implicit hc: HeaderCarrier): Future[Unit] =
+  private def releaseLock[L](owner: String)(implicit hc: HeaderCarrier): Future[Unit] =
     lockRepo
       .releaseLock(
         lockId = sessionId,
