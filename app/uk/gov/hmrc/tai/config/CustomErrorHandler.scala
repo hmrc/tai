@@ -136,29 +136,29 @@ class CustomErrorHandler @Inject() (
   }
 
   private def serverExceptionMapper(request: RequestHeader): PartialFunction[Throwable, Analysis] =
-    case e: BadRequestException     => Analysis(BAD_REQUEST, errMessage(e), doAudit = false)
-    case e: NotFoundException       =>
+    case e: BadRequestException => Analysis(BAD_REQUEST, errMessage(e), doAudit = false)
+    case e: NotFoundException =>
       logger.info(s"${request.method} ${request.uri} failed with ${e.getClass.getName}: ${e.getMessage}")
       Analysis(NOT_FOUND, errMessage(e), doAudit = false)
     case e: GatewayTimeoutException =>
       logger.info(s"${request.method} ${request.uri} failed with ${e.getClass.getName}: ${e.getMessage}")
       Analysis(BAD_GATEWAY, errMessage(e), doAudit = false)
-    case e: BadGatewayException     =>
+    case e: BadGatewayException =>
       logger.info(s"${request.method} ${request.uri} failed with ${e.getClass.getName}: ${e.getMessage}")
       Analysis(BAD_GATEWAY, errMessage(e), doAudit = false)
-    case e: HttpException           =>
+    case e: HttpException =>
       logger.info(s"${request.method} ${request.uri} failed with ${e.getClass.getName}: ${e.getMessage}")
       Analysis(BAD_GATEWAY, errMessage(e), doAudit = false)
-    case e: AuthorisationException  =>
+    case e: AuthorisationException =>
       logger.warn(s"${request.method} ${request.uri} failed with ${e.getClass.getName}: ${e.getMessage}", e)
       Analysis(UNAUTHORIZED, e.getMessage, doAudit = true)
-    case e: UpstreamErrorResponse if e.statusCode == NOT_FOUND  =>
+    case e: UpstreamErrorResponse if e.statusCode == NOT_FOUND =>
       logger.info(s"${request.method} ${request.uri} failed with ${e.getClass.getName}: ${e.getMessage}")
       Analysis(e.reportAs, upstreamMessage(e), doAudit = true)
-    case e: UpstreamErrorResponse if e.statusCode > 948  =>
+    case e: UpstreamErrorResponse if e.statusCode > 948 =>
       logger.warn(s"${request.method} ${request.uri} failed with ${e.getClass.getName}: ${e.getMessage}")
       Analysis(e.reportAs, upstreamMessage(e), doAudit = true)
-    case e: UpstreamErrorResponse   =>
+    case e: UpstreamErrorResponse =>
       logger.warn(s"${request.method} ${request.uri} failed with ${e.getClass.getName}: ${e.getMessage}", e)
       Analysis(e.reportAs, upstreamMessage(e), doAudit = true)
     case e: Throwable =>
