@@ -136,13 +136,31 @@ class CustomErrorHandler @Inject() (
   }
 
   private def serverExceptionMapper(request: RequestHeader): PartialFunction[Throwable, Analysis] =
-    case e: BadRequestException     => Analysis(BAD_REQUEST, errMessage(e), doAudit = false)
-    case e: NotFoundException       => Analysis(NOT_FOUND, errMessage(e), doAudit = false)
-    case e: GatewayTimeoutException => Analysis(BAD_GATEWAY, errMessage(e), doAudit = false)
-    case e: BadGatewayException     => Analysis(BAD_GATEWAY, errMessage(e), doAudit = false)
-    case e: HttpException           => Analysis(BAD_GATEWAY, errMessage(e), doAudit = false)
-    case e: AuthorisationException  => Analysis(UNAUTHORIZED, e.getMessage, doAudit = true)
-    case e: UpstreamErrorResponse   => Analysis(e.reportAs, upstreamMessage(e), doAudit = true)
+    case e: BadRequestException => Analysis(BAD_REQUEST, errMessage(e), doAudit = false)
+    case e: NotFoundException =>
+      logger.info(s"${request.method} ${request.uri} failed with ${e.getClass.getName}: ${e.getMessage}")
+      Analysis(NOT_FOUND, errMessage(e), doAudit = false)
+    case e: GatewayTimeoutException =>
+      logger.info(s"${request.method} ${request.uri} failed with ${e.getClass.getName}: ${e.getMessage}")
+      Analysis(BAD_GATEWAY, errMessage(e), doAudit = false)
+    case e: BadGatewayException =>
+      logger.info(s"${request.method} ${request.uri} failed with ${e.getClass.getName}: ${e.getMessage}")
+      Analysis(BAD_GATEWAY, errMessage(e), doAudit = false)
+    case e: HttpException =>
+      logger.info(s"${request.method} ${request.uri} failed with ${e.getClass.getName}: ${e.getMessage}")
+      Analysis(BAD_GATEWAY, errMessage(e), doAudit = false)
+    case e: AuthorisationException =>
+      logger.warn(s"${request.method} ${request.uri} failed with ${e.getClass.getName}: ${e.getMessage}", e)
+      Analysis(UNAUTHORIZED, e.getMessage, doAudit = true)
+    case e: UpstreamErrorResponse if e.statusCode == NOT_FOUND =>
+      logger.info(s"${request.method} ${request.uri} failed with ${e.getClass.getName}: ${e.getMessage}")
+      Analysis(e.reportAs, upstreamMessage(e), doAudit = true)
+    case e: UpstreamErrorResponse if e.statusCode > 948 =>
+      logger.warn(s"${request.method} ${request.uri} failed with ${e.getClass.getName}: ${e.getMessage}")
+      Analysis(e.reportAs, upstreamMessage(e), doAudit = true)
+    case e: UpstreamErrorResponse =>
+      logger.warn(s"${request.method} ${request.uri} failed with ${e.getClass.getName}: ${e.getMessage}", e)
+      Analysis(e.reportAs, upstreamMessage(e), doAudit = true)
     case e: Throwable =>
       logger.error(s"! Internal server error, for (${request.method}) [${request.uri}] -> ", e)
       Analysis(INTERNAL_SERVER_ERROR, throwableMessage(e), doAudit = true)
@@ -150,8 +168,6 @@ class CustomErrorHandler @Inject() (
   override def onServerError(request: RequestHeader, ex: Throwable): Future[Result] = {
     implicit val headerCarrier: HeaderCarrier = hc(request)
     val analysis: Analysis = serverExceptionMapper(request)(ex)
-
-    logger.warn(s"${request.method} ${request.uri} failed with ${ex.getClass.getName}: ${ex.getMessage}", ex)
 
     val auditResult = if (analysis.doAudit) {
       val eventTypeForAudit: String = ex match {
