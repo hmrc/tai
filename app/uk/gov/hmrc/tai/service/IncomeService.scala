@@ -32,6 +32,7 @@ import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.service.helper.TaxCodeIncomeHelper
 
 import scala.concurrent.{ExecutionContext, Future}
+import scala.util.control.NonFatal
 
 @Singleton
 class IncomeService @Inject() (
@@ -205,10 +206,9 @@ class IncomeService @Inject() (
           }
         case None => Future.successful(IncomeUpdateFailed("Could not find an ETag"))
       }
-      .recover { case ex: Exception =>
-        ex.printStackTrace()
-        logger.error(s"IncomeService.updateTaxCodeIncome - failed to update income: ${ex.getMessage}")
-        IncomeUpdateFailed("Could not parse etag")
+      .recover { case NonFatal(ex) =>
+        logger.error(s"IncomeService.updateTaxCodeIncome - failed to update income: ${ex.getMessage}", ex)
+        IncomeUpdateFailed("Failed to update income")
       }
   }
 }

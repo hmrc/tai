@@ -25,6 +25,7 @@ import uk.gov.hmrc.tai.model.domain.{EmploymentIncome, IabdDetails}
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.service.IabdService
 import uk.gov.hmrc.tai.util.BaseSpec
+import uk.gov.hmrc.http.NotFoundException
 
 import java.time.LocalDate
 import scala.concurrent.Future
@@ -330,6 +331,18 @@ class TaxCodeIncomeHelperSpec extends BaseSpec {
         val iabdDetailsSeq = Seq.empty[IabdDetails]
         when(mockTaxAccountConnector.taxAccount(meq(nino), meq(TaxYear()))(any()))
           .thenReturn(Future.successful(taxAccountJsonWithTaxableIncome))
+        when(mockIabdService.retrieveIabdDetails(any(), any())(any()))
+          .thenReturn(Future.successful(iabdDetailsSeq))
+
+        val result = createSut().incomeAmountForEmploymentId(nino, TaxYear(), employmentId).futureValue
+        result mustBe None
+      }
+
+      "tax account details returns not found" in {
+        val employmentId = 123456
+        val iabdDetailsSeq = Seq.empty[IabdDetails]
+        when(mockTaxAccountConnector.taxAccount(meq(nino), meq(TaxYear()))(any()))
+          .thenReturn(Future.failed(new NotFoundException("Not found")))
         when(mockIabdService.retrieveIabdDetails(any(), any())(any()))
           .thenReturn(Future.successful(iabdDetailsSeq))
 
