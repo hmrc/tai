@@ -17,7 +17,7 @@
 package uk.gov.hmrc.tai.repositories.cache
 
 import uk.gov.hmrc.mongo.{CurrentTimestampSupport, MongoComponent}
-import uk.gov.hmrc.tai.config.MongoConfig
+import uk.gov.hmrc.tai.config.{CacheConfig, MongoConfig}
 
 import java.util.concurrent.TimeUnit
 import javax.inject.{Inject, Singleton}
@@ -25,11 +25,16 @@ import scala.concurrent.ExecutionContext
 import scala.concurrent.duration.Duration
 
 @Singleton
-class TaiSessionCacheRepository @Inject() (appConfig: MongoConfig, mongoComponent: MongoComponent)(implicit
+class TaiSessionCacheRepository @Inject() (
+  appConfig: MongoConfig,
+  mongoComponent: MongoComponent,
+  cacheConfig: CacheConfig
+)(implicit
   ec: ExecutionContext
 ) extends SessionCacheRepository(
       mongoComponent = mongoComponent,
       collectionName = "sessions",
       ttl = Duration(appConfig.mongoTTL, TimeUnit.SECONDS),
-      timestampSupport = new CurrentTimestampSupport()
+      timestampSupport = new CurrentTimestampSupport(),
+      cacheConfig = cacheConfig
     )
