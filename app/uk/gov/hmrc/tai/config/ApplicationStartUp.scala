@@ -23,7 +23,8 @@ class ApplicationStartUp {
   FeatureFlagNamesLibrary.addFlags(
     List(
       RtiCallToggle,
-      HipToggleIabdsUpdateExpenses
+      HipToggleIabdsUpdateExpenses,
+      HipToggleTaxAccountHistory
     )
   )
 }

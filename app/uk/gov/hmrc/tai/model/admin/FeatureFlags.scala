@@ -31,3 +31,10 @@ case object HipToggleIabdsUpdateExpenses extends FeatureFlagName {
     "Enable/disable toggle for IABDS update expenses PUT"
   )
 }
+
+case object HipToggleTaxAccountHistory extends FeatureFlagName {
+  override val name: String = "hip-tax-account-history"
+  override val description: Option[String] = Some(
+    "Enable/disable toggle for GET tax account history"
+  )
+}
