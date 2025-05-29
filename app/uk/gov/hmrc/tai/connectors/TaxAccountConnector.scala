@@ -30,6 +30,7 @@ import uk.gov.hmrc.tai.model.enums.APITypes
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.service.SensitiveFormatService
 import uk.gov.hmrc.tai.service.SensitiveFormatService.SensitiveJsValue
+import uk.gov.hmrc.tai.util.TaiConstants
 
 import java.nio.charset.StandardCharsets
 import java.util.{Base64, UUID}
@@ -42,6 +43,7 @@ class CachingTaxAccountConnector @Inject() (
   sensitiveFormatService: SensitiveFormatService
 )(implicit ec: ExecutionContext)
     extends TaxAccountConnector {
+
   def taxAccount(nino: Nino, taxYear: TaxYear)(implicit hc: HeaderCarrier): Future[JsValue] =
     cachingConnector
       .cache(s"tax-account-$nino-${taxYear.year}") {
@@ -70,6 +72,19 @@ class DefaultTaxAccountConnector @Inject() (
 )(implicit ec: ExecutionContext)
     extends TaxAccountConnector {
 
+  private def getUuid: String = UUID.randomUUID().toString
+
+  private def hcWithDesHeaders(implicit hc: HeaderCarrier): Seq[(String, String)] =
+    Seq(
+      "Gov-Uk-Originator-Id" -> desConfig.originatorId,
+      HeaderNames.xSessionId -> hc.sessionId.fold("-")(_.value),
+      HeaderNames.xRequestId -> hc.requestId.fold("-")(_.value),
+      "Environment"          -> desConfig.environment,
+      "Authorization"        -> desConfig.authorization,
+      "Content-Type"         -> TaiConstants.contentType,
+      "CorrelationId"        -> getUuid
+    )
+
   def taxAccount(nino: Nino, taxYear: TaxYear)(implicit hc: HeaderCarrier): Future[JsValue] = {
     val (baseUrl, originatorId, extraInfo) =
       (hipConfig.baseURL, hipConfig.originatorId, Some(Tuple2(hipConfig.clientId, hipConfig.clientSecret)))
@@ -86,17 +101,16 @@ class DefaultTaxAccountConnector @Inject() (
 
   def taxAccountHistory(nino: Nino, iocdSeqNo: Int)(implicit hc: HeaderCarrier): Future[JsValue] =
     featureFlagService.get(HipToggleTaxAccountHistory).flatMap { toggle =>
-      val (url, originatorId, extraInfo) =
+      val (url, headers) =
         if (toggle.isEnabled) {
           (
             s"${hipConfig.baseURL}/person/$nino/tax-account/history/$iocdSeqNo",
-            hipConfig.originatorId,
-            Some(Tuple2(hipConfig.clientId, hipConfig.clientSecret))
+            basicHeaders(hipConfig.originatorId, hc, Some(Tuple2(hipConfig.clientId, hipConfig.clientSecret)))
           )
         } else
-          (taxAccountUrls.taxAccountHistoricSnapshotUrl(nino, iocdSeqNo), desConfig.originatorId, None)
+          (taxAccountUrls.taxAccountHistoricSnapshotUrl(nino, iocdSeqNo), hcWithDesHeaders)
 
-      httpHandler.getFromApi(url, APITypes.DesTaxAccountAPI, basicHeaders(originatorId, hc, extraInfo))
+      httpHandler.getFromApi(url, APITypes.DesTaxAccountAPI, headers)
     }
 }
 
