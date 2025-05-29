@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.tai.model.admin
 
+import uk.gov.hmrc.mongoFeatureToggles.model.Environment.{Environment, Local, Production, Qa, Staging}
 import uk.gov.hmrc.mongoFeatureToggles.model.FeatureFlagName
 
 case object RtiCallToggle extends FeatureFlagName {
@@ -30,6 +31,7 @@ case object HipToggleIabdsUpdateExpenses extends FeatureFlagName {
   override val description: Option[String] = Some(
     "Enable/disable toggle for IABDS update expenses PUT"
   )
+  override val lockedEnvironments: Seq[Environment] = Seq(Local, Staging, Qa, Production)
 }
 
 case object HipToggleTaxAccountHistory extends FeatureFlagName {
@@ -37,4 +39,5 @@ case object HipToggleTaxAccountHistory extends FeatureFlagName {
   override val description: Option[String] = Some(
     "Enable/disable toggle for GET tax account history"
   )
+  override val lockedEnvironments: Seq[Environment] = Seq(Local, Staging, Qa, Production)
 }
