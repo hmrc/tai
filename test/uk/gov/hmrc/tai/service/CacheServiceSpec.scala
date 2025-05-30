@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2024 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,57 +16,129 @@
 
 package uk.gov.hmrc.tai.service
 
+import cats.effect.unsafe.implicits.global
 import org.mockito.ArgumentMatchers.any
-import org.mockito.Mockito.{never, times, verify, when}
-import uk.gov.hmrc.tai.config.MongoConfig
-import uk.gov.hmrc.tai.repositories.deprecated.TaiCacheRepository
+import org.mockito.Mockito.{reset, times, verify, when}
+import org.mockito.{ArgumentCaptor, ArgumentMatchers}
+import uk.gov.hmrc.http.UpstreamErrorResponse
+import uk.gov.hmrc.tai.config.CacheConfig
+import uk.gov.hmrc.tai.repositories.cache.TaiSessionCacheRepository
 import uk.gov.hmrc.tai.util.BaseSpec
 
 import scala.concurrent.Future
 
 class CacheServiceSpec extends BaseSpec {
+  private val mockTaiSessionCacheRepository = mock[TaiSessionCacheRepository]
+  private val mockCacheConfig = mock[CacheConfig]
+  private val sut: CacheService = new CacheService(mockTaiSessionCacheRepository, mockCacheConfig)
+  private val key: String = "key"
+  private val dummyValue: String = "dummy"
+  private val secondDummyValue: String = "dummy2"
+  private val upstreamErrorResponse = UpstreamErrorResponse("", 500, 500)
+  private val upstreamErrorResponseWrapper: UpstreamErrorResponse = UpstreamErrorResponse("", 500, 500)
 
-  "invalidateTaiData" must {
-    "remove the session data" when {
-      "cache is enabled" in {
-        val mockCacheConnector = mock[TaiCacheRepository]
-        when(mockCacheConnector.removeById(any()))
-          .thenReturn(Future.successful(true))
+  private val leftUpstreamErrorResponse: Left[UpstreamErrorResponse, String] =
+    Left[UpstreamErrorResponse, String](upstreamErrorResponseWrapper)
 
-        val mockMongoConfig = mock[MongoConfig]
-        when(mockMongoConfig.mongoEnabled)
-          .thenReturn(true)
-        when(mockMongoConfig.mongoEncryptionEnabled)
-          .thenReturn(false)
+  private val rightUpstreamErrorResponseWrapper: Right[UpstreamErrorResponse, String] =
+    Right[UpstreamErrorResponse, String](secondDummyValue)
+  override def beforeEach(): Unit = {
+    super.beforeEach()
+    reset(mockTaiSessionCacheRepository)
+    reset(mockCacheConfig)
+    when(mockCacheConfig.cacheErrorInSecondsTTL).thenReturn(60L)
 
-        val sut = new CacheService(mockMongoConfig, mockCacheConnector)
+    ()
+  }
 
-        sut.invalidateTaiCacheData(nino)(hc, ec).futureValue
-
-        verify(mockCacheConnector, times(1))
-          .removeById(any())
+  "cacheEither" must {
+    "return right block value when not in session repository and save to session repository" in {
+      when(mockTaiSessionCacheRepository.getEitherFromSession(any())(any(), any())).thenReturn(Future.successful(None))
+      when(mockTaiSessionCacheRepository.putSession(any(), any())(any(), any(), any()))
+        .thenReturn(Future.successful(Tuple2("", "")))
+      val block = Future.successful[Either[UpstreamErrorResponse, String]](Right(dummyValue))
+      whenReady(sut.cacheEither(key)(block).unsafeToFuture()) { result =>
+        result mustBe Right(dummyValue)
+        verify(mockTaiSessionCacheRepository, times(1)).getEitherFromSession(any())(any(), any())
+        verify(mockTaiSessionCacheRepository, times(1)).putSession(
+          any(),
+          ArgumentMatchers.eq(Right[UpstreamErrorResponse, String](dummyValue))
+        )(any(), any(), any())
+        verify(mockCacheConfig, times(0)).cacheErrorInSecondsTTL
+      }
+    }
+    "return right cached block value when in session repository and don't re-save to session repository" in {
+      when(mockTaiSessionCacheRepository.getEitherFromSession(any())(any(), any()))
+        .thenReturn(Future.successful(Some(rightUpstreamErrorResponseWrapper)))
+      val block = Future.successful[Either[UpstreamErrorResponse, String]](Right(dummyValue))
+      whenReady(sut.cacheEither(key)(block).unsafeToFuture()) { result =>
+        result mustBe Right(secondDummyValue)
+        verify(mockTaiSessionCacheRepository, times(1)).getEitherFromSession(any())(any(), any())
+        verify(mockTaiSessionCacheRepository, times(0)).putSession(any(), any())(any(), any(), any())
+        verify(mockCacheConfig, times(0)).cacheErrorInSecondsTTL
       }
     }
 
-    "not call remove data operation" when {
-      "cache is disabled" in {
-        val mockCacheConnector = mock[TaiCacheRepository]
-        when(mockCacheConnector.removeById(any()))
-          .thenReturn(Future.successful(true))
+    "return left (error) from block when not in session repository and save to session repository if appConfig.cacheErrorInSecondsTTL > 0" in {
+      when(mockTaiSessionCacheRepository.getEitherFromSession(any())(any(), any())).thenReturn(Future.successful(None))
+      when(mockTaiSessionCacheRepository.putSession(any(), any())(any(), any(), any()))
+        .thenReturn(Future.successful(Tuple2("", "")))
+      val block = Future.successful[Either[UpstreamErrorResponse, String]](leftUpstreamErrorResponse)
+      whenReady(sut.cacheEither(key)(block).unsafeToFuture()) { result =>
+        result mustBe leftUpstreamErrorResponse
+        val putArgCaptor: ArgumentCaptor[Either[UpstreamErrorResponse, String]] =
+          ArgumentCaptor.forClass(classOf[Either[UpstreamErrorResponse, String]])
+        verify(mockTaiSessionCacheRepository, times(1)).getEitherFromSession(any())(any(), any())
+        verify(mockTaiSessionCacheRepository, times(1)).putSession(any(), putArgCaptor.capture())(any(), any(), any())
+        putArgCaptor.getValue.swap.map(ex =>
+          UpstreamErrorResponse(ex.message, ex.statusCode, ex.reportAs)
+        ) mustBe Right(upstreamErrorResponse)
+        verify(mockCacheConfig, times(1)).cacheErrorInSecondsTTL
+      }
+    }
 
-        val mockMongoConfig = mock[MongoConfig]
-        when(mockMongoConfig.mongoEnabled)
-          .thenReturn(false)
-        when(mockMongoConfig.mongoEncryptionEnabled)
-          .thenReturn(false)
+    "return left (error) from block when not in session repository and save to session repository" in {
+      when(mockTaiSessionCacheRepository.getEitherFromSession(any())(any(), any())).thenReturn(Future.successful(None))
+      when(mockTaiSessionCacheRepository.putSession(any(), any())(any(), any(), any()))
+        .thenReturn(Future.successful(Tuple2("", "")))
+      val block = Future.successful[Either[UpstreamErrorResponse, String]](leftUpstreamErrorResponse)
+      whenReady(sut.cacheEither(key)(block).unsafeToFuture()) { result =>
+        result mustBe leftUpstreamErrorResponse
+        val putArgCaptor: ArgumentCaptor[Either[UpstreamErrorResponse, String]] =
+          ArgumentCaptor.forClass(classOf[Either[UpstreamErrorResponse, String]])
+        verify(mockTaiSessionCacheRepository, times(1)).getEitherFromSession(any())(any(), any())
+        verify(mockTaiSessionCacheRepository, times(1)).putSession(any(), putArgCaptor.capture())(any(), any(), any())
+        putArgCaptor.getValue.swap.map(ex =>
+          UpstreamErrorResponse(ex.message, ex.statusCode, ex.reportAs)
+        ) mustBe Right(upstreamErrorResponse)
+        verify(mockCacheConfig, times(1)).cacheErrorInSecondsTTL
+      }
+    }
+    "return left (error) from block when not in session repository and NOT save to session repository when error ttl zero" in {
+      when(mockCacheConfig.cacheErrorInSecondsTTL).thenReturn(0L)
+      when(mockTaiSessionCacheRepository.getEitherFromSession(any())(any(), any())).thenReturn(Future.successful(None))
+      when(mockTaiSessionCacheRepository.putSession(any(), any())(any(), any(), any()))
+        .thenReturn(Future.successful(Tuple2("", "")))
+      val block = Future.successful[Either[UpstreamErrorResponse, String]](leftUpstreamErrorResponse)
+      whenReady(sut.cacheEither(key)(block).unsafeToFuture()) { result =>
+        result mustBe leftUpstreamErrorResponse
+        verify(mockTaiSessionCacheRepository, times(1)).getEitherFromSession(any())(any(), any())
+        verify(mockTaiSessionCacheRepository, times(0)).putSession(any(), any())(any(), any(), any())
+        verify(mockCacheConfig, times(1)).cacheErrorInSecondsTTL
+      }
+    }
 
-        val sut = new CacheService(mockMongoConfig, mockCacheConnector)
-
-        sut.invalidateTaiCacheData(nino)(hc, ec).futureValue
-
-        verify(mockCacheConnector, never)
-          .createOrUpdate(any(), any(), any())(any())
+    "return left (error) from session repository when in session repository and don't re-save to session repository" in {
+      when(mockTaiSessionCacheRepository.getEitherFromSession(any())(any(), any()))
+        .thenReturn(Future.successful(Some(leftUpstreamErrorResponse)))
+      val block = Future.successful[Either[UpstreamErrorResponse, String]](leftUpstreamErrorResponse)
+      whenReady(sut.cacheEither(key)(block).unsafeToFuture()) { result =>
+        result mustBe leftUpstreamErrorResponse
+        verify(mockTaiSessionCacheRepository, times(1)).getEitherFromSession(any())(any(), any())
+        verify(mockTaiSessionCacheRepository, times(0)).putSession(any(), any())(any(), any(), any())
+        verify(mockCacheConfig, times(0)).cacheErrorInSecondsTTL
       }
     }
   }
+
 }

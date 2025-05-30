@@ -17,35 +17,27 @@
 package uk.gov.hmrc.tai.connectors
 
 import cats.data.EitherT
-import cats.effect.IO
-import cats.effect.unsafe.implicits.global
 import cats.implicits.*
 import com.google.inject.{Inject, Singleton}
 import play.api.http.Status.*
-import play.api.libs.json.Format
 import play.api.mvc.Request
 import play.api.{Logger, Logging}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HttpReads.Implicits.{readEitherOf, readRaw}
 import uk.gov.hmrc.http.client.HttpClientV2
-import uk.gov.hmrc.http.{HeaderCarrier, HeaderNames, HttpException, HttpResponse, StringContextOps, UpstreamErrorResponse}
-import uk.gov.hmrc.mongo.cache.DataKey
+import uk.gov.hmrc.http.{HeaderCarrier, HeaderNames, HttpException, HttpResponse, LockedException, StringContextOps, UpstreamErrorResponse}
 import uk.gov.hmrc.mongoFeatureToggles.services.FeatureFlagService
-import uk.gov.hmrc.tai.config.{DesConfig, RtiConfig}
+import uk.gov.hmrc.tai.config.DesConfig
 import uk.gov.hmrc.tai.model.admin.RtiCallToggle
 import uk.gov.hmrc.tai.model.domain.*
 import uk.gov.hmrc.tai.model.domain.AnnualAccount.{annualAccountHodReads, format}
 import uk.gov.hmrc.tai.model.tai.TaxYear
-import uk.gov.hmrc.tai.repositories.cache.TaiSessionCacheRepository
-import uk.gov.hmrc.tai.service.{LockService, SensitiveFormatService}
-import uk.gov.hmrc.tai.util.IORetryExtension.Retryable
-import uk.gov.hmrc.tai.util.LockedException
+import uk.gov.hmrc.tai.service.{CacheService, LockService, RetryService, SensitiveFormatService}
 
 import java.util.UUID
 import javax.inject.Named
 import scala.concurrent.duration.DurationInt
 import scala.concurrent.{ExecutionContext, Future}
-import scala.util.control.NonFatal
 
 trait RtiConnector extends RawResponseReads {
   def getPaymentsForYear(nino: Nino, taxYear: TaxYear)(implicit
@@ -72,73 +64,32 @@ trait RtiConnector extends RawResponseReads {
 @Singleton
 class CachingRtiConnector @Inject() (
   @Named("default") underlying: RtiConnector,
-  sessionCacheRepository: TaiSessionCacheRepository,
   lockService: LockService,
-  appConfig: RtiConfig,
-  sensitiveFormatService: SensitiveFormatService
-)(implicit ec: ExecutionContext)
-    extends RtiConnector with Logging {
+  sensitiveFormatService: SensitiveFormatService,
+  retryService: RetryService,
+  cacheService: CacheService
+) extends RtiConnector with Logging {
+  import cacheService.cacheEither
+  import lockService.withLock
+  import retryService.withRetry
 
-  private def cache[L, A: Format](
-    key: String
-  )(f: => EitherT[Future, L, A])(implicit hc: HeaderCarrier): EitherT[Future, L, A] = {
-    def fetchAndCache: IO[Either[L, A]] =
-      IO.fromFuture(IO((for {
-        result <- f
-        _ <- EitherT[Future, L, (String, String)](
-               sessionCacheRepository
-                 .putSession[A](DataKey[A](key), result)
-                 .map(Right(_))
-             )
-      } yield result).value))
-    def readAndUpdate: IO[Either[L, A]] =
-      IO.fromFuture(IO(lockService.takeLock[L](key).value)).flatMap {
-        case Right(true) =>
-          IO.fromFuture(
-            IO(
-              sessionCacheRepository
-                .getFromSession[A](DataKey[A](key))
-            )
-          ).flatMap {
-            case None =>
-              fetchAndCache
-            case Some(value) =>
-              IO(Right(value): Either[L, A])
-          }
-        case Right(false) =>
-          throw new LockedException(s"Lock for $key could not be acquired")
-        case Left(error) => IO(Left(error))
-      }
-    EitherT(
-      readAndUpdate
-        .simpleRetry(appConfig.hodRetryMaximum, appConfig.hodRetryDelayInMillis.millis)
-        .unsafeToFuture()
-        .flatMap { result =>
-          lockService
-            .releaseLock(key)
-            .map { _ =>
-              result
-            }
-            .recover { case NonFatal(ex) =>
-              logger.error(ex.getMessage, ex)
-              result
-            }
-        }
-        .recoverWith { case NonFatal(ex) =>
-          lockService.releaseLock(key).map { _ =>
-            throw ex
-          }
-        }
-    )
-  }
+  private val lockedException: PartialFunction[Throwable, Boolean] = { case _: LockedException => true }
 
   def getPaymentsForYear(nino: Nino, taxYear: TaxYear)(implicit
     hc: HeaderCarrier,
     request: Request[_]
-  ): EitherT[Future, UpstreamErrorResponse, Seq[AnnualAccount]] =
-    cache(s"getPaymentsForYear-$nino-${taxYear.year}") {
-      underlying.getPaymentsForYear(nino: Nino, taxYear: TaxYear)
-    }(sensitiveFormatService.sensitiveFormatFromReadsWritesJsArray[Seq[AnnualAccount]], implicitly)
+  ): EitherT[Future, UpstreamErrorResponse, Seq[AnnualAccount]] = {
+    val key = s"getPaymentsForYear-$nino-${taxYear.year}"
+    EitherT(
+      withRetry(exceptionsToRetry = lockedException) {
+        withLock(key) {
+          cacheEither(key)(
+            underlying.getPaymentsForYear(nino: Nino, taxYear: TaxYear).value
+          )(implicitly, sensitiveFormatService.sensitiveFormatFromReadsWritesJsArray[Seq[AnnualAccount]])
+        }
+      }
+    )
+  }
 }
 
 @Singleton

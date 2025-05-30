@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2025 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,21 +16,59 @@
 
 package uk.gov.hmrc.tai.service
 
+import cats.effect.IO
 import com.google.inject.Inject
-import uk.gov.hmrc.domain.Nino
-import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.tai.config.MongoConfig
-import uk.gov.hmrc.tai.connectors.cache.CacheId
-import uk.gov.hmrc.tai.repositories.deprecated.TaiCacheRepository
+import play.api.Logging
+import play.api.libs.json.*
+import uk.gov.hmrc.http.{HeaderCarrier, UpstreamErrorResponse}
+import uk.gov.hmrc.mongo.cache.DataKey
+import uk.gov.hmrc.tai.config.CacheConfig
+import uk.gov.hmrc.tai.model.UpstreamErrorResponseFormat.format
+import uk.gov.hmrc.tai.repositories.cache.TaiSessionCacheRepository
 
 import scala.concurrent.{ExecutionContext, Future}
 
-//TODO: Only used in tests. To be moved in test
-class CacheService @Inject() (mongoConfig: MongoConfig, taiCacheRepository: TaiCacheRepository) {
-  def invalidateTaiCacheData(nino: Nino)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Unit] =
-    if (mongoConfig.mongoEnabled) {
-      taiCacheRepository.removeById(CacheId(nino)).map(_ => ())
-    } else {
-      Future.successful(())
+class CacheService @Inject() (sessionCacheRepository: TaiSessionCacheRepository, appConfig: CacheConfig)(implicit
+  ec: ExecutionContext
+) extends Logging {
+
+  def cacheEither[A](key: String)(
+    block: => Future[Either[UpstreamErrorResponse, A]]
+  )(implicit hc: HeaderCarrier, fmt: Format[A]): IO[Either[UpstreamErrorResponse, A]] = {
+    implicit val eitherFormat: Format[Either[UpstreamErrorResponse, A]] = format[A]
+    val blockResult = IO.fromFuture(IO(block))
+    lazy val cacheErrorInSecondsTTL = appConfig.cacheErrorInSecondsTTL
+
+    def resultAndCache: IO[Either[UpstreamErrorResponse, A]] =
+      blockResult.flatMap { result =>
+        if (result.isRight || cacheErrorInSecondsTTL > 0) {
+          IO.fromFuture(
+            IO(
+              sessionCacheRepository
+                .putSession(
+                  DataKey[Either[UpstreamErrorResponse, A]](key),
+                  result
+                )
+                .map(_ => result)
+            )
+          )
+        } else {
+          IO(result)
+        }
+      }
+
+    val retrievalResult: IO[Option[Either[UpstreamErrorResponse, A]]] =
+      IO.fromFuture(
+        IO(sessionCacheRepository.getEitherFromSession(DataKey[Either[UpstreamErrorResponse, A]](key)))
+      ).recoverWith { case e =>
+        logger.warn("An error occurred when retrieving from cache. Will re-execute block to get data.", e)
+        IO(None)
+      }
+    retrievalResult.flatMap {
+      case None                                                                                => resultAndCache
+      case Some(retrievedItem @ Left(UpstreamErrorResponse(message, statusCode, reportAs, _))) => IO(retrievedItem)
+      case Some(Right(r))                                                                      => IO(Right(r))
     }
+
+  }
 }

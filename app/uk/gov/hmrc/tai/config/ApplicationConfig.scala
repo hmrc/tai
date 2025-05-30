@@ -111,6 +111,11 @@ class RtiConfig @Inject() extends BaseConfig {
   val hodRetryDelayInMillis: Int = 200
   val hodRetryMaximum: Int = 20
 }
+@Singleton
+class CacheConfig @Inject() (val runModeConfiguration: Configuration) extends BaseConfig {
+  lazy val cacheErrorInSecondsTTL: Long =
+    runModeConfiguration.getOptional[Long]("tai.cache.upstream-errors.expiryInSeconds").getOrElse(0L)
+}
 
 @Singleton
 class CacheMetricsConfig @Inject() (val runModeConfiguration: Configuration) extends BaseConfig {
