@@ -1,1 +1,474 @@
-{"taxAccountId":null,"date":"18/04/2016","nino":"$NINO","taxYear":2016,"previousTaxAccountId":36,"previousYearTaxAccountId":30,"nextTaxAccountId":null,"nextYearTaxAccountId":null,"totalEstTax":69391.85,"totalEstPay":{"npsDescription":null,"amount":176364.00,"type":null,"iabdSummaries":[{"amount":2555,"type":27,"npsDescription":"New Estimated Pay","employmentId":5,"defaultEstimatedPay":null},{"amount":173809,"type":27,"npsDescription":"New Estimated Pay","employmentId":3,"defaultEstimatedPay":null}],"sourceAmount":null},"adjustedNetIncome":{"npsDescription":null,"amount":185161,"type":null,"iabdSummaries":[{"amount":2555,"type":27,"npsDescription":"New Estimated Pay","employmentId":5,"defaultEstimatedPay":null},{"amount":173809,"type":27,"npsDescription":"New Estimated Pay","employmentId":3,"defaultEstimatedPay":null},{"amount":1550,"type":31,"npsDescription":"Car Benefit","employmentId":3},{"amount":150,"type":29,"npsDescription":"Car Fuel Benefit","employmentId":3},{"amount":6950.88,"type":66,"npsDescription":"State Pension","employmentId":null}],"sourceAmount":null},"totalLiability":{"nonSavings":{"totalIncome":{"npsDescription":null,"amount":185011,"type":null,"iabdSummaries":[{"amount":2555,"type":27,"npsDescription":"New Estimated Pay","employmentId":5,"defaultEstimatedPay":null},{"amount":173809,"type":27,"npsDescription":"New Estimated Pay","employmentId":3,"defaultEstimatedPay":null},{"amount":1550,"type":31,"npsDescription":"Car Benefit","employmentId":3},{"amount":150,"type":29,"npsDescription":"Car Fuel Benefit","employmentId":3},{"amount":6950.88,"type":66,"npsDescription":"State Pension","employmentId":null}],"sourceAmount":null},"allowReliefDeducts":{"npsDescription":null,"amount":0,"type":null,"iabdSummaries":[{"amount":0,"type":118,"npsDescription":"Personal Allowance (PA)","employmentId":null}],"sourceAmount":null},"totalTax":69354.95,"totalTaxableIncome":185011,"taxBands":[{"bandType":"B","taxCode":"BR","isBasicRate":true,"income":32000,"tax":6400.00,"lowerBand":0,"upperBand":32000,"rate":20.00},{"bandType":"D0","taxCode":"D0","isBasicRate":false,"income":118000,"tax":47200.00,"lowerBand":32000,"upperBand":150000,"rate":40.00},{"bandType":"D1","taxCode":"D1","isBasicRate":false,"income":35011,"tax":15754.95,"lowerBand":150000,"upperBand":0,"rate":45.00}]},"untaxedInterest":null,"bankInterest":{"totalIncome":{"npsDescription":null,"amount":150,"type":null,"iabdSummaries":[{"amount":150,"type":81,"npsDescription":"Purchased Life Annuities","employmentId":null}],"sourceAmount":null},"allowReliefDeducts":{"npsDescription":null,"amount":0,"type":null,"iabdSummaries":null,"sourceAmount":null},"totalTax":67.50,"totalTaxableIncome":150,"taxBands":[{"bandType":"SR","taxCode":"BR","isBasicRate":false,"income":null,"tax":null,"lowerBand":0,"upperBand":5000,"rate":0.00},{"bandType":"LSR","taxCode":"BR","isBasicRate":true,"income":null,"tax":null,"lowerBand":5000,"upperBand":32000,"rate":20.00},{"bandType":"HSR1","taxCode":"D0","isBasicRate":false,"income":null,"tax":null,"lowerBand":32000,"upperBand":150000,"rate":40.00},{"bandType":"HSR2","taxCode":"D1","isBasicRate":false,"income":150,"tax":67.50,"lowerBand":150000,"upperBand":0,"rate":45.00}]},"ukDividends":null,"foreignInterest":null,"foreignDividends":null,"basicRateExtensions":{"npsDescription":null,"amount":0,"type":null,"iabdSummaries":null,"sourceAmount":null,"personalPensionPayment":null,"giftAidPayments":null,"personalPensionPaymentRelief":null,"giftAidPaymentsRelief":null},"reliefsGivingBackTax":null,"otherTaxDue":null,"alreadyTaxedAtSource":{"npsDescription":null,"amount":30.00,"type":null,"iabdSummaries":null,"sourceAmount":null,"taxOnBankBSInterest":30.00,"taxCreditOnUKDividends":null,"taxCreditOnForeignInterest":null,"taxCreditOnForeignIncomeDividends":null},"totalLiability":69392.45},"incomeSources":[{"employmentId":3,"employmentType":1,"employmentStatus":1,"employmentTaxDistrictNumber":1,"employmentPayeRef":"000","pensionIndicator":true,"otherIncomeSourceIndicator":false,"jsaIndicator":false,"name":"EMPLOYER1","taxCode":"K872","potentialUnderpayment":0,"allowances":[{"npsDescription":"personal allowance","amount":0,"type":11,"iabdSummaries":[{"amount":0,"type":118,"npsDescription":"Personal Allowance (PA)","employmentId":null}],"sourceAmount":11000}],"deductions":[{"npsDescription":"car benefit","amount":1550,"type":8,"iabdSummaries":[{"amount":1550,"type":31,"npsDescription":"Car Benefit","employmentId":3}],"sourceAmount":1550},{"npsDescription":"car fuel ","amount":150,"type":10,"iabdSummaries":[{"amount":150,"type":29,"npsDescription":"Car Fuel Benefit","employmentId":3}],"sourceAmount":150},{"npsDescription":"state pension/state benefits","amount":6947,"type":1,"iabdSummaries":[{"amount":6950.88,"type":66,"npsDescription":"State Pension","employmentId":null}],"sourceAmount":6950.88},{"npsDescription":"savings income taxable at higher rate","amount":83,"type":32,"iabdSummaries":null,"sourceAmount":0}],"payAndTax":{"totalIncome":{"npsDescription":null,"amount":173809.00,"type":null,"iabdSummaries":[{"amount":173809,"type":27,"npsDescription":"New Estimated Pay","employmentId":3,"defaultEstimatedPay":null}],"sourceAmount":null},"allowReliefDeducts":{"npsDescription":null,"amount":-8729.76,"type":null,"iabdSummaries":null,"sourceAmount":null},"totalTax":68242.10,"totalTaxableIncome":182538.00,"taxBands":[{"bandType":"B","taxCode":"BR","isBasicRate":true,"income":32000.00,"tax":6400.00,"lowerBand":0,"upperBand":32000,"rate":20.00},{"bandType":"D0","taxCode":"D0","isBasicRate":false,"income":118000.00,"tax":47200.00,"lowerBand":32000,"upperBand":150000,"rate":40.00},{"bandType":"D1","taxCode":"D1","isBasicRate":false,"income":32538.00,"tax":14642.10,"lowerBand":150000,"upperBand":0,"rate":45.00}]}},{"employmentId":5,"employmentType":2,"employmentStatus":1,"employmentTaxDistrictNumber":1,"employmentPayeRef":"VI11","pensionIndicator":false,"otherIncomeSourceIndicator":false,"jsaIndicator":false,"name":"EMPLOYER1","taxCode":"D1","potentialUnderpayment":0,"allowances":[],"deductions":[],"payAndTax":{"totalIncome":{"npsDescription":null,"amount":2555.00,"type":null,"iabdSummaries":[{"amount":2555,"type":27,"npsDescription":"New Estimated Pay","employmentId":5,"defaultEstimatedPay":null}],"sourceAmount":null},"allowReliefDeducts":{"npsDescription":null,"amount":0.00,"type":null,"iabdSummaries":null,"sourceAmount":null},"totalTax":1149.75,"totalTaxableIncome":2555.00,"taxBands":[{"bandType":"B","taxCode":"BR","isBasicRate":true,"income":null,"tax":null,"lowerBand":0,"upperBand":32000,"rate":20.00},{"bandType":"D0","taxCode":"D0","isBasicRate":false,"income":null,"tax":null,"lowerBand":32000,"upperBand":150000,"rate":40.00},{"bandType":"D1","taxCode":"D1","isBasicRate":false,"income":2555.00,"tax":1149.75,"lowerBand":150000,"upperBand":0,"rate":45.00}]}}]}
+{
+  "taxAccountId": null,
+  "date": "18/04/2016",
+  "nino": "$NINO",
+  "taxYear": 2016,
+  "previousTaxAccountId": 36,
+  "previousYearTaxAccountId": 30,
+  "nextTaxAccountId": null,
+  "nextYearTaxAccountId": null,
+  "totalEstTax": 69391.85,
+  "totalEstPay": {
+    "npsDescription": null,
+    "amount": 176364.00,
+    "type": null,
+    "iabdSummaries": [
+      {
+        "amount": 2555,
+        "type": 27,
+        "npsDescription": "New Estimated Pay",
+        "employmentId": 5,
+        "defaultEstimatedPay": null
+      },
+      {
+        "amount": 173809,
+        "type": 27,
+        "npsDescription": "New Estimated Pay",
+        "employmentId": 3,
+        "defaultEstimatedPay": null
+      }
+    ],
+    "sourceAmount": null
+  },
+  "adjustedNetIncome": {
+    "npsDescription": null,
+    "amount": 185161,
+    "type": null,
+    "iabdSummaries": [
+      {
+        "amount": 2555,
+        "type": 27,
+        "npsDescription": "New Estimated Pay",
+        "employmentId": 5,
+        "defaultEstimatedPay": null
+      },
+      {
+        "amount": 173809,
+        "type": 27,
+        "npsDescription": "New Estimated Pay",
+        "employmentId": 3,
+        "defaultEstimatedPay": null
+      },
+      {
+        "amount": 1550,
+        "type": 31,
+        "npsDescription": "Car Benefit",
+        "employmentId": 3
+      },
+      {
+        "amount": 150,
+        "type": 29,
+        "npsDescription": "Car Fuel Benefit",
+        "employmentId": 3
+      },
+      {
+        "amount": 6950.88,
+        "type": 66,
+        "npsDescription": "State Pension",
+        "employmentId": null
+      }
+    ],
+    "sourceAmount": null
+  },
+  "totalLiability": {
+    "nonSavings": {
+      "totalIncome": {
+        "npsDescription": null,
+        "amount": 185011,
+        "type": null,
+        "iabdSummaries": [
+          {
+            "amount": 2555,
+            "type": 27,
+            "npsDescription": "New Estimated Pay",
+            "employmentId": 5,
+            "defaultEstimatedPay": null
+          },
+          {
+            "amount": 173809,
+            "type": 27,
+            "npsDescription": "New Estimated Pay",
+            "employmentId": 3,
+            "defaultEstimatedPay": null
+          },
+          {
+            "amount": 1550,
+            "type": 31,
+            "npsDescription": "Car Benefit",
+            "employmentId": 3
+          },
+          {
+            "amount": 150,
+            "type": 29,
+            "npsDescription": "Car Fuel Benefit",
+            "employmentId": 3
+          },
+          {
+            "amount": 6950.88,
+            "type": 66,
+            "npsDescription": "State Pension",
+            "employmentId": null
+          }
+        ],
+        "sourceAmount": null
+      },
+      "allowReliefDeducts": {
+        "npsDescription": null,
+        "amount": 0,
+        "type": null,
+        "iabdSummaries": [
+          {
+            "amount": 0,
+            "type": 118,
+            "npsDescription": "Personal Allowance (PA)",
+            "employmentId": null
+          }
+        ],
+        "sourceAmount": null
+      },
+      "totalTax": 69354.95,
+      "totalTaxableIncome": 185011,
+      "taxBands": [
+        {
+          "bandType": "B",
+          "taxCode": "BR",
+          "isBasicRate": true,
+          "income": 32000,
+          "tax": 6400.00,
+          "lowerBand": 0,
+          "upperBand": 32000,
+          "rate": 20.00
+        },
+        {
+          "bandType": "D0",
+          "taxCode": "D0",
+          "isBasicRate": false,
+          "income": 118000,
+          "tax": 47200.00,
+          "lowerBand": 32000,
+          "upperBand": 150000,
+          "rate": 40.00
+        },
+        {
+          "bandType": "D1",
+          "taxCode": "D1",
+          "isBasicRate": false,
+          "income": 35011,
+          "tax": 15754.95,
+          "lowerBand": 150000,
+          "upperBand": 0,
+          "rate": 45.00
+        }
+      ]
+    },
+    "untaxedInterest": null,
+    "bankInterest": {
+      "totalIncome": {
+        "npsDescription": null,
+        "amount": 150,
+        "type": null,
+        "iabdSummaries": [
+          {
+            "amount": 150,
+            "type": 81,
+            "npsDescription": "Purchased Life Annuities",
+            "employmentId": null
+          }
+        ],
+        "sourceAmount": null
+      },
+      "allowReliefDeducts": {
+        "npsDescription": null,
+        "amount": 0,
+        "type": null,
+        "iabdSummaries": null,
+        "sourceAmount": null
+      },
+      "totalTax": 67.50,
+      "totalTaxableIncome": 150,
+      "taxBands": [
+        {
+          "bandType": "SR",
+          "taxCode": "BR",
+          "isBasicRate": false,
+          "income": null,
+          "tax": null,
+          "lowerBand": 0,
+          "upperBand": 5000,
+          "rate": 0.00
+        },
+        {
+          "bandType": "LSR",
+          "taxCode": "BR",
+          "isBasicRate": true,
+          "income": null,
+          "tax": null,
+          "lowerBand": 5000,
+          "upperBand": 32000,
+          "rate": 20.00
+        },
+        {
+          "bandType": "HSR1",
+          "taxCode": "D0",
+          "isBasicRate": false,
+          "income": null,
+          "tax": null,
+          "lowerBand": 32000,
+          "upperBand": 150000,
+          "rate": 40.00
+        },
+        {
+          "bandType": "HSR2",
+          "taxCode": "D1",
+          "isBasicRate": false,
+          "income": 150,
+          "tax": 67.50,
+          "lowerBand": 150000,
+          "upperBand": 0,
+          "rate": 45.00
+        }
+      ]
+    },
+    "ukDividends": null,
+    "foreignInterest": null,
+    "foreignDividends": null,
+    "basicRateExtensions": {
+      "npsDescription": null,
+      "amount": 0,
+      "type": null,
+      "iabdSummaries": null,
+      "sourceAmount": null,
+      "personalPensionPayment": null,
+      "giftAidPayment": null,
+      "personalPensionPaymentRelief": null,
+      "giftAidPaymentsRelief": null
+    },
+    "reliefsGivingBackTax": null,
+    "otherTaxDue": null,
+    "alreadyTaxedAtSource": {
+      "npsDescription": null,
+      "amount": 30.00,
+      "type": null,
+      "iabdSummaries": null,
+      "sourceAmount": null,
+      "taxOnBankBSInterest": 30.00,
+      "taxCreditOnUKDividends": null,
+      "taxCreditOnForeignInterest": null,
+      "taxCreditOnForeignIncomeDividends": null
+    },
+    "totalLiability": 69392.45
+  },
+  "incomeSources": [
+    {
+      "employmentId": 3,
+      "employmentType": 1,
+      "employmentStatus": 1,
+      "employmentTaxDistrictNumber": 1,
+      "employmentPayeRef": "000",
+      "pensionIndicator": true,
+      "otherIncomeSourceIndicator": false,
+      "jsaIndicator": false,
+      "name": "EMPLOYER1",
+      "taxCode": "K872",
+      "potentialUnderpayment": 0,
+      "allowances": [
+        {
+          "npsDescription": "personal allowance",
+          "amount": 0,
+          "type": 11,
+          "iabdSummaries": [
+            {
+              "amount": 0,
+              "type": 118,
+              "npsDescription": "Personal Allowance (PA)",
+              "employmentId": null
+            }
+          ],
+          "sourceAmount": 11000
+        }
+      ],
+      "deductions": [
+        {
+          "npsDescription": "car benefit",
+          "amount": 1550,
+          "type": 8,
+          "iabdSummaries": [
+            {
+              "amount": 1550,
+              "type": 31,
+              "npsDescription": "Car Benefit",
+              "employmentId": 3
+            }
+          ],
+          "sourceAmount": 1550
+        },
+        {
+          "npsDescription": "car fuel ",
+          "amount": 150,
+          "type": 10,
+          "iabdSummaries": [
+            {
+              "amount": 150,
+              "type": 29,
+              "npsDescription": "Car Fuel Benefit",
+              "employmentId": 3
+            }
+          ],
+          "sourceAmount": 150
+        },
+        {
+          "npsDescription": "state pension/state benefits",
+          "amount": 6947,
+          "type": 1,
+          "iabdSummaries": [
+            {
+              "amount": 6950.88,
+              "type": 66,
+              "npsDescription": "State Pension",
+              "employmentId": null
+            }
+          ],
+          "sourceAmount": 6950.88
+        },
+        {
+          "npsDescription": "savings income taxable at higher rate",
+          "amount": 83,
+          "type": 32,
+          "iabdSummaries": null,
+          "sourceAmount": 0
+        }
+      ],
+      "payAndTax": {
+        "totalIncome": {
+          "npsDescription": null,
+          "amount": 173809.00,
+          "type": null,
+          "iabdSummaries": [
+            {
+              "amount": 173809,
+              "type": 27,
+              "npsDescription": "New Estimated Pay",
+              "employmentId": 3,
+              "defaultEstimatedPay": null
+            }
+          ],
+          "sourceAmount": null
+        },
+        "allowReliefDeducts": {
+          "npsDescription": null,
+          "amount": -8729.76,
+          "type": null,
+          "iabdSummaries": null,
+          "sourceAmount": null
+        },
+        "totalTax": 68242.10,
+        "totalTaxableIncome": 182538.00,
+        "taxBands": [
+          {
+            "bandType": "B",
+            "taxCode": "BR",
+            "isBasicRate": true,
+            "income": 32000.00,
+            "tax": 6400.00,
+            "lowerBand": 0,
+            "upperBand": 32000,
+            "rate": 20.00
+          },
+          {
+            "bandType": "D0",
+            "taxCode": "D0",
+            "isBasicRate": false,
+            "income": 118000.00,
+            "tax": 47200.00,
+            "lowerBand": 32000,
+            "upperBand": 150000,
+            "rate": 40.00
+          },
+          {
+            "bandType": "D1",
+            "taxCode": "D1",
+            "isBasicRate": false,
+            "income": 32538.00,
+            "tax": 14642.10,
+            "lowerBand": 150000,
+            "upperBand": 0,
+            "rate": 45.00
+          }
+        ]
+      }
+    },
+    {
+      "employmentId": 5,
+      "employmentType": 2,
+      "employmentStatus": 1,
+      "employmentTaxDistrictNumber": 1,
+      "employmentPayeRef": "VI11",
+      "pensionIndicator": false,
+      "otherIncomeSourceIndicator": false,
+      "jsaIndicator": false,
+      "name": "EMPLOYER1",
+      "taxCode": "D1",
+      "potentialUnderpayment": 0,
+      "allowances": [],
+      "deductions": [],
+      "payAndTax": {
+        "totalIncome": {
+          "npsDescription": null,
+          "amount": 2555.00,
+          "type": null,
+          "iabdSummaries": [
+            {
+              "amount": 2555,
+              "type": 27,
+              "npsDescription": "New Estimated Pay",
+              "employmentId": 5,
+              "defaultEstimatedPay": null
+            }
+          ],
+          "sourceAmount": null
+        },
+        "allowReliefDeducts": {
+          "npsDescription": null,
+          "amount": 0.00,
+          "type": null,
+          "iabdSummaries": null,
+          "sourceAmount": null
+        },
+        "totalTax": 1149.75,
+        "totalTaxableIncome": 2555.00,
+        "taxBands": [
+          {
+            "bandType": "B",
+            "taxCode": "BR",
+            "isBasicRate": true,
+            "income": null,
+            "tax": null,
+            "lowerBand": 0,
+            "upperBand": 32000,
+            "rate": 20.00
+          },
+          {
+            "bandType": "D0",
+            "taxCode": "D0",
+            "isBasicRate": false,
+            "income": null,
+            "tax": null,
+            "lowerBand": 32000,
+            "upperBand": 150000,
+            "rate": 40.00
+          },
+          {
+            "bandType": "D1",
+            "taxCode": "D1",
+            "isBasicRate": false,
+            "income": 2555.00,
+            "tax": 1149.75,
+            "lowerBand": 150000,
+            "upperBand": 0,
+            "rate": 45.00
+          }
+        ]
+      }
+    }
+  ]
+}
