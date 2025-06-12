@@ -1,1 +1,475 @@
-{"taxAccountId":null,"date":"18/04/2016","nino":"$NINO","taxYear":2016,"previousTaxAccountId":31,"previousYearTaxAccountId":27,"nextTaxAccountId":null,"nextYearTaxAccountId":null,"totalEstTax":12392.40,"totalEstPay":{"npsDescription":null,"amount":52531.00,"type":null,"iabdSummaries":[{"amount":52531,"type":27,"npsDescription":"New Estimated Pay","employmentId":3,"defaultEstimatedPay":null}],"sourceAmount":null},"adjustedNetIncome":{"npsDescription":null,"amount":60279,"type":null,"iabdSummaries":[{"amount":52531,"type":27,"npsDescription":"New Estimated Pay","employmentId":3,"defaultEstimatedPay":null},{"amount":100,"type":56,"npsDescription":"Flat Rate Job Expenses","employmentId":null},{"amount":100,"type":55,"npsDescription":"Job Expenses","employmentId":null},{"amount":100,"type":58,"npsDescription":"Hotel and Meal Expenses","employmentId":null},{"amount":100,"type":59,"npsDescription":"Other Expenses","employmentId":null},{"amount":100,"type":60,"npsDescription":"Vehicle Expenses","employmentId":null},{"amount":100,"type":61,"npsDescription":"Mileage Allowance Relief","employmentId":null},{"amount":100,"type":57,"npsDescription":"Professional Subscriptions","employmentId":null},{"amount":8753.09,"type":66,"npsDescription":"State Pension","employmentId":null}],"sourceAmount":null},"totalLiability":{"nonSavings":{"totalIncome":{"npsDescription":null,"amount":61279,"type":null,"iabdSummaries":[{"amount":52531,"type":27,"npsDescription":"New Estimated Pay","employmentId":3,"defaultEstimatedPay":null},{"amount":8753.09,"type":66,"npsDescription":"State Pension","employmentId":null}],"sourceAmount":null},"allowReliefDeducts":{"npsDescription":null,"amount":14290,"type":null,"iabdSummaries":[{"amount":11000,"type":119,"npsDescription":"Personal Allowance Aged (PAA)","employmentId":null},{"amount":100,"type":56,"npsDescription":"Flat Rate Job Expenses","employmentId":null},{"amount":100,"type":55,"npsDescription":"Job Expenses","employmentId":null},{"amount":100,"type":58,"npsDescription":"Hotel and Meal Expenses","employmentId":null},{"amount":100,"type":59,"npsDescription":"Other Expenses","employmentId":null},{"amount":100,"type":60,"npsDescription":"Vehicle Expenses","employmentId":null},{"amount":100,"type":61,"npsDescription":"Mileage Allowance Relief","employmentId":null},{"amount":100,"type":57,"npsDescription":"Professional Subscriptions","employmentId":null},{"amount":100,"type":18,"npsDescription":"Retirement Annuity Payments","employmentId":null},{"amount":100,"type":104,"npsDescription":"Foreign Pension Allowance","employmentId":null},{"amount":100,"type":11,"npsDescription":"Loan Interest Amount","employmentId":null},{"amount":2290,"type":14,"npsDescription":"Blind Persons Allowance","employmentId":null}],"sourceAmount":null},"totalTax":12395.60,"totalTaxableIncome":46989,"taxBands":[{"bandType":"B","taxCode":"BR","isBasicRate":true,"income":32000,"tax":6400.00,"lowerBand":0,"upperBand":32000,"rate":20.00},{"bandType":"D0","taxCode":"D0","isBasicRate":false,"income":14989,"tax":5995.60,"lowerBand":32000,"upperBand":150000,"rate":40.00},{"bandType":"D1","taxCode":"D1","isBasicRate":false,"income":null,"tax":null,"lowerBand":150000,"upperBand":0,"rate":45.00}]},"untaxedInterest":null,"bankInterest":null,"ukDividends":null,"foreignInterest":null,"foreignDividends":null,"basicRateExtensions":{"npsDescription":null,"amount":0,"type":null,"iabdSummaries":null,"sourceAmount":null,"personalPensionPayment":null,"giftAidPayments":null,"personalPensionPaymentRelief":null,"giftAidPaymentsRelief":null},"reliefsGivingBackTax":null,"otherTaxDue":null,"alreadyTaxedAtSource":null,"totalLiability":12395.60},"incomeSources":[{"employmentId":3,"employmentType":1,"employmentStatus":1,"employmentTaxDistrictNumber":1,"employmentPayeRef":"000","pensionIndicator":true,"otherIncomeSourceIndicator":false,"jsaIndicator":false,"name":"EMPLOYER1","taxCode":"554L","potentialUnderpayment":0,"allowances":[{"npsDescription":"flat rate job expenses","amount":100,"type":2,"iabdSummaries":[{"amount":100,"type":56,"npsDescription":"Flat Rate Job Expenses","employmentId":null}],"sourceAmount":100},{"npsDescription":"job expenses","amount":500,"type":1,"iabdSummaries":[{"amount":100,"type":55,"npsDescription":"Job Expenses","employmentId":null},{"amount":100,"type":58,"npsDescription":"Hotel and Meal Expenses","employmentId":null},{"amount":100,"type":59,"npsDescription":"Other Expenses","employmentId":null},{"amount":100,"type":60,"npsDescription":"Vehicle Expenses","employmentId":null},{"amount":100,"type":61,"npsDescription":"Mileage Allowance Relief","employmentId":null}],"sourceAmount":500},{"npsDescription":"professional subscriptions","amount":100,"type":3,"iabdSummaries":[{"amount":100,"type":57,"npsDescription":"Professional Subscriptions","employmentId":null}],"sourceAmount":100},{"npsDescription":"payments towards a retirement annuity","amount":100,"type":4,"iabdSummaries":[{"amount":100,"type":18,"npsDescription":"Retirement Annuity Payments","employmentId":null}],"sourceAmount":100},{"npsDescription":"foreign pension allowance","amount":100,"type":30,"iabdSummaries":[{"amount":100,"type":104,"npsDescription":"Foreign Pension Allowance","employmentId":null}],"sourceAmount":100},{"npsDescription":"loan interest","amount":100,"type":8,"iabdSummaries":[{"amount":100,"type":11,"npsDescription":"Loan Interest Amount","employmentId":null}],"sourceAmount":100},{"npsDescription":"personal allowance","amount":11000,"type":12,"iabdSummaries":[{"amount":11000,"type":119,"npsDescription":"Personal Allowance Aged (PAA)","employmentId":null}],"sourceAmount":11000},{"npsDescription":"blind person's allowance","amount":2290,"type":22,"iabdSummaries":[{"amount":2290,"type":14,"npsDescription":"Blind Persons Allowance","employmentId":null}],"sourceAmount":2290}],"deductions":[{"npsDescription":"state pension/state benefits","amount":8748,"type":1,"iabdSummaries":[{"amount":8753.09,"type":66,"npsDescription":"State Pension","employmentId":null}],"sourceAmount":8753.09}],"payAndTax":{"totalIncome":{"npsDescription":null,"amount":52531.00,"type":null,"iabdSummaries":[{"amount":52531,"type":27,"npsDescription":"New Estimated Pay","employmentId":3,"defaultEstimatedPay":null}],"sourceAmount":null},"allowReliefDeducts":{"npsDescription":null,"amount":5549.44,"type":null,"iabdSummaries":null,"sourceAmount":null},"totalTax":12392.40,"totalTaxableIncome":46981.00,"taxBands":[{"bandType":"B","taxCode":"BR","isBasicRate":true,"income":32000.00,"tax":6400.00,"lowerBand":0,"upperBand":32000,"rate":20.00},{"bandType":"D0","taxCode":"D0","isBasicRate":false,"income":14981.00,"tax":5992.40,"lowerBand":32000,"upperBand":150000,"rate":40.00},{"bandType":"D1","taxCode":"D1","isBasicRate":false,"income":null,"tax":null,"lowerBand":150000,"upperBand":0,"rate":45.00}]}}]}
+{
+  "taxAccountId": null,
+  "date": "18/04/2016",
+  "nino": "$NINO",
+  "taxYear": 2016,
+  "previousTaxAccountId": 31,
+  "previousYearTaxAccountId": 27,
+  "nextTaxAccountId": null,
+  "nextYearTaxAccountId": null,
+  "totalEstTax": 12392.40,
+  "totalEstPay": {
+    "npsDescription": null,
+    "amount": 52531.00,
+    "type": null,
+    "iabdSummaries": [
+      {
+        "amount": 52531,
+        "type": 27,
+        "npsDescription": "New Estimated Pay",
+        "employmentId": 3,
+        "defaultEstimatedPay": null
+      }
+    ],
+    "sourceAmount": null
+  },
+  "adjustedNetIncome": {
+    "npsDescription": null,
+    "amount": 60279,
+    "type": null,
+    "iabdSummaries": [
+      {
+        "amount": 52531,
+        "type": 27,
+        "npsDescription": "New Estimated Pay",
+        "employmentId": 3,
+        "defaultEstimatedPay": null
+      },
+      {
+        "amount": 100,
+        "type": 56,
+        "npsDescription": "Flat Rate Job Expenses",
+        "employmentId": null
+      },
+      {
+        "amount": 100,
+        "type": 55,
+        "npsDescription": "Job Expenses",
+        "employmentId": null
+      },
+      {
+        "amount": 100,
+        "type": 58,
+        "npsDescription": "Hotel and Meal Expenses",
+        "employmentId": null
+      },
+      {
+        "amount": 100,
+        "type": 59,
+        "npsDescription": "Other Expenses",
+        "employmentId": null
+      },
+      {
+        "amount": 100,
+        "type": 60,
+        "npsDescription": "Vehicle Expenses",
+        "employmentId": null
+      },
+      {
+        "amount": 100,
+        "type": 61,
+        "npsDescription": "Mileage Allowance Relief",
+        "employmentId": null
+      },
+      {
+        "amount": 100,
+        "type": 57,
+        "npsDescription": "Professional Subscriptions",
+        "employmentId": null
+      },
+      {
+        "amount": 8753.09,
+        "type": 66,
+        "npsDescription": "State Pension",
+        "employmentId": null
+      }
+    ],
+    "sourceAmount": null
+  },
+  "totalLiability": {
+    "nonSavings": {
+      "totalIncome": {
+        "npsDescription": null,
+        "amount": 61279,
+        "type": null,
+        "iabdSummaries": [
+          {
+            "amount": 52531,
+            "type": 27,
+            "npsDescription": "New Estimated Pay",
+            "employmentId": 3,
+            "defaultEstimatedPay": null
+          },
+          {
+            "amount": 8753.09,
+            "type": 66,
+            "npsDescription": "State Pension",
+            "employmentId": null
+          }
+        ],
+        "sourceAmount": null
+      },
+      "allowReliefDeducts": {
+        "npsDescription": null,
+        "amount": 14290,
+        "type": null,
+        "iabdSummaries": [
+          {
+            "amount": 11000,
+            "type": 119,
+            "npsDescription": "Personal Allowance Aged (PAA)",
+            "employmentId": null
+          },
+          {
+            "amount": 100,
+            "type": 56,
+            "npsDescription": "Flat Rate Job Expenses",
+            "employmentId": null
+          },
+          {
+            "amount": 100,
+            "type": 55,
+            "npsDescription": "Job Expenses",
+            "employmentId": null
+          },
+          {
+            "amount": 100,
+            "type": 58,
+            "npsDescription": "Hotel and Meal Expenses",
+            "employmentId": null
+          },
+          {
+            "amount": 100,
+            "type": 59,
+            "npsDescription": "Other Expenses",
+            "employmentId": null
+          },
+          {
+            "amount": 100,
+            "type": 60,
+            "npsDescription": "Vehicle Expenses",
+            "employmentId": null
+          },
+          {
+            "amount": 100,
+            "type": 61,
+            "npsDescription": "Mileage Allowance Relief",
+            "employmentId": null
+          },
+          {
+            "amount": 100,
+            "type": 57,
+            "npsDescription": "Professional Subscriptions",
+            "employmentId": null
+          },
+          {
+            "amount": 100,
+            "type": 18,
+            "npsDescription": "Retirement Annuity Payments",
+            "employmentId": null
+          },
+          {
+            "amount": 100,
+            "type": 104,
+            "npsDescription": "Foreign Pension Allowance",
+            "employmentId": null
+          },
+          {
+            "amount": 100,
+            "type": 11,
+            "npsDescription": "Loan Interest Amount",
+            "employmentId": null
+          },
+          {
+            "amount": 2290,
+            "type": 14,
+            "npsDescription": "Blind Persons Allowance",
+            "employmentId": null
+          }
+        ],
+        "sourceAmount": null
+      },
+      "totalTax": 12395.60,
+      "totalTaxableIncome": 46989,
+      "taxBands": [
+        {
+          "bandType": "B",
+          "taxCode": "BR",
+          "isBasicRate": true,
+          "income": 32000,
+          "tax": 6400.00,
+          "lowerBand": 0,
+          "upperBand": 32000,
+          "rate": 20.00
+        },
+        {
+          "bandType": "D0",
+          "taxCode": "D0",
+          "isBasicRate": false,
+          "income": 14989,
+          "tax": 5995.60,
+          "lowerBand": 32000,
+          "upperBand": 150000,
+          "rate": 40.00
+        },
+        {
+          "bandType": "D1",
+          "taxCode": "D1",
+          "isBasicRate": false,
+          "income": null,
+          "tax": null,
+          "lowerBand": 150000,
+          "upperBand": 0,
+          "rate": 45.00
+        }
+      ]
+    },
+    "untaxedInterest": null,
+    "bankInterest": null,
+    "ukDividends": null,
+    "foreignInterest": null,
+    "foreignDividends": null,
+    "basicRateExtensions": {
+      "npsDescription": null,
+      "amount": 0,
+      "type": null,
+      "iabdSummaries": null,
+      "sourceAmount": null,
+      "personalPensionPayment": null,
+      "giftAidPayment": null,
+      "personalPensionPaymentRelief": null,
+      "giftAidPaymentsRelief": null
+    },
+    "reliefsGivingBackTax": null,
+    "otherTaxDue": null,
+    "alreadyTaxedAtSource": null,
+    "totalLiability": 12395.60
+  },
+  "incomeSources": [
+    {
+      "employmentId": 3,
+      "employmentType": 1,
+      "employmentStatus": 1,
+      "employmentTaxDistrictNumber": 1,
+      "employmentPayeRef": "000",
+      "pensionIndicator": true,
+      "otherIncomeSourceIndicator": false,
+      "jsaIndicator": false,
+      "name": "EMPLOYER1",
+      "taxCode": "554L",
+      "potentialUnderpayment": 0,
+      "allowances": [
+        {
+          "npsDescription": "flat rate job expenses",
+          "amount": 100,
+          "type": 2,
+          "iabdSummaries": [
+            {
+              "amount": 100,
+              "type": 56,
+              "npsDescription": "Flat Rate Job Expenses",
+              "employmentId": null
+            }
+          ],
+          "sourceAmount": 100
+        },
+        {
+          "npsDescription": "job expenses",
+          "amount": 500,
+          "type": 1,
+          "iabdSummaries": [
+            {
+              "amount": 100,
+              "type": 55,
+              "npsDescription": "Job Expenses",
+              "employmentId": null
+            },
+            {
+              "amount": 100,
+              "type": 58,
+              "npsDescription": "Hotel and Meal Expenses",
+              "employmentId": null
+            },
+            {
+              "amount": 100,
+              "type": 59,
+              "npsDescription": "Other Expenses",
+              "employmentId": null
+            },
+            {
+              "amount": 100,
+              "type": 60,
+              "npsDescription": "Vehicle Expenses",
+              "employmentId": null
+            },
+            {
+              "amount": 100,
+              "type": 61,
+              "npsDescription": "Mileage Allowance Relief",
+              "employmentId": null
+            }
+          ],
+          "sourceAmount": 500
+        },
+        {
+          "npsDescription": "professional subscriptions",
+          "amount": 100,
+          "type": 3,
+          "iabdSummaries": [
+            {
+              "amount": 100,
+              "type": 57,
+              "npsDescription": "Professional Subscriptions",
+              "employmentId": null
+            }
+          ],
+          "sourceAmount": 100
+        },
+        {
+          "npsDescription": "payments towards a retirement annuity",
+          "amount": 100,
+          "type": 4,
+          "iabdSummaries": [
+            {
+              "amount": 100,
+              "type": 18,
+              "npsDescription": "Retirement Annuity Payments",
+              "employmentId": null
+            }
+          ],
+          "sourceAmount": 100
+        },
+        {
+          "npsDescription": "foreign pension allowance",
+          "amount": 100,
+          "type": 30,
+          "iabdSummaries": [
+            {
+              "amount": 100,
+              "type": 104,
+              "npsDescription": "Foreign Pension Allowance",
+              "employmentId": null
+            }
+          ],
+          "sourceAmount": 100
+        },
+        {
+          "npsDescription": "loan interest",
+          "amount": 100,
+          "type": 8,
+          "iabdSummaries": [
+            {
+              "amount": 100,
+              "type": 11,
+              "npsDescription": "Loan Interest Amount",
+              "employmentId": null
+            }
+          ],
+          "sourceAmount": 100
+        },
+        {
+          "npsDescription": "personal allowance",
+          "amount": 11000,
+          "type": 12,
+          "iabdSummaries": [
+            {
+              "amount": 11000,
+              "type": 119,
+              "npsDescription": "Personal Allowance Aged (PAA)",
+              "employmentId": null
+            }
+          ],
+          "sourceAmount": 11000
+        },
+        {
+          "npsDescription": "blind person's allowance",
+          "amount": 2290,
+          "type": 22,
+          "iabdSummaries": [
+            {
+              "amount": 2290,
+              "type": 14,
+              "npsDescription": "Blind Persons Allowance",
+              "employmentId": null
+            }
+          ],
+          "sourceAmount": 2290
+        }
+      ],
+      "deductions": [
+        {
+          "npsDescription": "state pension/state benefits",
+          "amount": 8748,
+          "type": 1,
+          "iabdSummaries": [
+            {
+              "amount": 8753.09,
+              "type": 66,
+              "npsDescription": "State Pension",
+              "employmentId": null
+            }
+          ],
+          "sourceAmount": 8753.09
+        }
+      ],
+      "payAndTax": {
+        "totalIncome": {
+          "npsDescription": null,
+          "amount": 52531.00,
+          "type": null,
+          "iabdSummaries": [
+            {
+              "amount": 52531,
+              "type": 27,
+              "npsDescription": "New Estimated Pay",
+              "employmentId": 3,
+              "defaultEstimatedPay": null
+            }
+          ],
+          "sourceAmount": null
+        },
+        "allowReliefDeducts": {
+          "npsDescription": null,
+          "amount": 5549.44,
+          "type": null,
+          "iabdSummaries": null,
+          "sourceAmount": null
+        },
+        "totalTax": 12392.40,
+        "totalTaxableIncome": 46981.00,
+        "taxBands": [
+          {
+            "bandType": "B",
+            "taxCode": "BR",
+            "isBasicRate": true,
+            "income": 32000.00,
+            "tax": 6400.00,
+            "lowerBand": 0,
+            "upperBand": 32000,
+            "rate": 20.00
+          },
+          {
+            "bandType": "D0",
+            "taxCode": "D0",
+            "isBasicRate": false,
+            "income": 14981.00,
+            "tax": 5992.40,
+            "lowerBand": 32000,
+            "upperBand": 150000,
+            "rate": 40.00
+          },
+          {
+            "bandType": "D1",
+            "taxCode": "D1",
+            "isBasicRate": false,
+            "income": null,
+            "tax": null,
+            "lowerBand": 150000,
+            "upperBand": 0,
+            "rate": 45.00
+          }
+        ]
+      }
+    }
+  ]
+}

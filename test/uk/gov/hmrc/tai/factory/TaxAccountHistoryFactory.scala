@@ -64,7 +64,7 @@ object TaxAccountHistoryFactory {
         "iabdSummaries"                -> JsNull,
         "sourceAmount"                 -> JsNull,
         "personalPensionPayment"       -> JsNull,
-        "giftAidPayments"              -> JsNull,
+        "giftAidPayment"               -> JsNull,
         "personalPensionPaymentRelief" -> JsNull,
         "giftAidPaymentsRelief"        -> JsNull
       ),

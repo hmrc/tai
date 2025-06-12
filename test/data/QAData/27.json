@@ -1,1 +1,312 @@
-{"taxAccountId":null,"date":"18/04/2016","nino":"$NINO","taxYear":2016,"previousTaxAccountId":19,"previousYearTaxAccountId":15,"nextTaxAccountId":null,"nextYearTaxAccountId":null,"totalEstTax":1798.00,"totalEstPay":{"npsDescription":null,"amount":20000.00,"type":null,"iabdSummaries":[{"amount":15000,"type":27,"npsDescription":"New Estimated Pay","employmentId":8,"defaultEstimatedPay":null},{"amount":5000,"type":27,"npsDescription":"New Estimated Pay","employmentId":9,"defaultEstimatedPay":null}],"sourceAmount":null},"adjustedNetIncome":{"npsDescription":null,"amount":20000,"type":null,"iabdSummaries":[{"amount":15000,"type":27,"npsDescription":"New Estimated Pay","employmentId":8,"defaultEstimatedPay":null},{"amount":5000,"type":27,"npsDescription":"New Estimated Pay","employmentId":9,"defaultEstimatedPay":null}],"sourceAmount":null},"totalLiability":{"nonSavings":{"totalIncome":{"npsDescription":null,"amount":20000,"type":null,"iabdSummaries":[{"amount":15000,"type":27,"npsDescription":"New Estimated Pay","employmentId":8,"defaultEstimatedPay":null},{"amount":5000,"type":27,"npsDescription":"New Estimated Pay","employmentId":9,"defaultEstimatedPay":null}],"sourceAmount":null},"allowReliefDeducts":{"npsDescription":null,"amount":11000,"type":null,"iabdSummaries":[{"amount":11000,"type":118,"npsDescription":"Personal Allowance (PA)","employmentId":null}],"sourceAmount":null},"totalTax":1800.00,"totalTaxableIncome":9000,"taxBands":[{"bandType":"B","taxCode":"BR","isBasicRate":true,"income":9000,"tax":1800.00,"lowerBand":0,"upperBand":32000,"rate":20.00},{"bandType":"D0","taxCode":"D0","isBasicRate":false,"income":null,"tax":null,"lowerBand":32000,"upperBand":150000,"rate":40.00},{"bandType":"D1","taxCode":"D1","isBasicRate":false,"income":null,"tax":null,"lowerBand":150000,"upperBand":0,"rate":45.00}]},"untaxedInterest":null,"bankInterest":null,"ukDividends":null,"foreignInterest":null,"foreignDividends":null,"basicRateExtensions":{"npsDescription":null,"amount":0,"type":null,"iabdSummaries":null,"sourceAmount":null,"personalPensionPayment":null,"giftAidPayments":null,"personalPensionPaymentRelief":null,"giftAidPaymentsRelief":null},"reliefsGivingBackTax":null,"otherTaxDue":null,"alreadyTaxedAtSource":null,"totalLiability":1800.00},"incomeSources":[{"employmentId":8,"employmentType":1,"employmentStatus":1,"employmentTaxDistrictNumber":1,"employmentPayeRef":"000","pensionIndicator":false,"otherIncomeSourceIndicator":false,"jsaIndicator":true,"name":"EMPLOYER1","taxCode":"1100L","potentialUnderpayment":0,"allowances":[{"npsDescription":"personal allowance","amount":11000,"type":11,"iabdSummaries":[{"amount":11000,"type":118,"npsDescription":"Personal Allowance (PA)","employmentId":null}],"sourceAmount":11000}],"deductions":[],"payAndTax":{"totalIncome":{"npsDescription":null,"amount":15000.00,"type":null,"iabdSummaries":[{"amount":15000,"type":27,"npsDescription":"New Estimated Pay","employmentId":8,"defaultEstimatedPay":null}],"sourceAmount":null},"allowReliefDeducts":{"npsDescription":null,"amount":11009.96,"type":null,"iabdSummaries":null,"sourceAmount":null},"totalTax":798.00,"totalTaxableIncome":3990.00,"taxBands":[{"bandType":"B","taxCode":"BR","isBasicRate":true,"income":3990.00,"tax":798.00,"lowerBand":0,"upperBand":32000,"rate":20.00},{"bandType":"D0","taxCode":"D0","isBasicRate":false,"income":null,"tax":null,"lowerBand":32000,"upperBand":150000,"rate":40.00},{"bandType":"D1","taxCode":"D1","isBasicRate":false,"income":null,"tax":null,"lowerBand":150000,"upperBand":0,"rate":45.00}]}},{"employmentId":9,"employmentType":2,"employmentStatus":1,"employmentTaxDistrictNumber":1,"employmentPayeRef":"U313","pensionIndicator":false,"otherIncomeSourceIndicator":false,"jsaIndicator":false,"name":"EMPLOYER1","taxCode":"BR","potentialUnderpayment":0,"allowances":[],"deductions":[],"payAndTax":{"totalIncome":{"npsDescription":null,"amount":5000.00,"type":null,"iabdSummaries":[{"amount":5000,"type":27,"npsDescription":"New Estimated Pay","employmentId":9,"defaultEstimatedPay":null}],"sourceAmount":null},"allowReliefDeducts":{"npsDescription":null,"amount":0.00,"type":null,"iabdSummaries":null,"sourceAmount":null},"totalTax":1000.00,"totalTaxableIncome":5000.00,"taxBands":[{"bandType":"B","taxCode":"BR","isBasicRate":true,"income":5000.00,"tax":1000.00,"lowerBand":0,"upperBand":32000,"rate":20.00},{"bandType":"D0","taxCode":"D0","isBasicRate":false,"income":null,"tax":null,"lowerBand":32000,"upperBand":150000,"rate":40.00},{"bandType":"D1","taxCode":"D1","isBasicRate":false,"income":null,"tax":null,"lowerBand":150000,"upperBand":0,"rate":45.00}]}}]}
+{
+  "taxAccountId": null,
+  "date": "18/04/2016",
+  "nino": "$NINO",
+  "taxYear": 2016,
+  "previousTaxAccountId": 19,
+  "previousYearTaxAccountId": 15,
+  "nextTaxAccountId": null,
+  "nextYearTaxAccountId": null,
+  "totalEstTax": 1798.00,
+  "totalEstPay": {
+    "npsDescription": null,
+    "amount": 20000.00,
+    "type": null,
+    "iabdSummaries": [
+      {
+        "amount": 15000,
+        "type": 27,
+        "npsDescription": "New Estimated Pay",
+        "employmentId": 8,
+        "defaultEstimatedPay": null
+      },
+      {
+        "amount": 5000,
+        "type": 27,
+        "npsDescription": "New Estimated Pay",
+        "employmentId": 9,
+        "defaultEstimatedPay": null
+      }
+    ],
+    "sourceAmount": null
+  },
+  "adjustedNetIncome": {
+    "npsDescription": null,
+    "amount": 20000,
+    "type": null,
+    "iabdSummaries": [
+      {
+        "amount": 15000,
+        "type": 27,
+        "npsDescription": "New Estimated Pay",
+        "employmentId": 8,
+        "defaultEstimatedPay": null
+      },
+      {
+        "amount": 5000,
+        "type": 27,
+        "npsDescription": "New Estimated Pay",
+        "employmentId": 9,
+        "defaultEstimatedPay": null
+      }
+    ],
+    "sourceAmount": null
+  },
+  "totalLiability": {
+    "nonSavings": {
+      "totalIncome": {
+        "npsDescription": null,
+        "amount": 20000,
+        "type": null,
+        "iabdSummaries": [
+          {
+            "amount": 15000,
+            "type": 27,
+            "npsDescription": "New Estimated Pay",
+            "employmentId": 8,
+            "defaultEstimatedPay": null
+          },
+          {
+            "amount": 5000,
+            "type": 27,
+            "npsDescription": "New Estimated Pay",
+            "employmentId": 9,
+            "defaultEstimatedPay": null
+          }
+        ],
+        "sourceAmount": null
+      },
+      "allowReliefDeducts": {
+        "npsDescription": null,
+        "amount": 11000,
+        "type": null,
+        "iabdSummaries": [
+          {
+            "amount": 11000,
+            "type": 118,
+            "npsDescription": "Personal Allowance (PA)",
+            "employmentId": null
+          }
+        ],
+        "sourceAmount": null
+      },
+      "totalTax": 1800.00,
+      "totalTaxableIncome": 9000,
+      "taxBands": [
+        {
+          "bandType": "B",
+          "taxCode": "BR",
+          "isBasicRate": true,
+          "income": 9000,
+          "tax": 1800.00,
+          "lowerBand": 0,
+          "upperBand": 32000,
+          "rate": 20.00
+        },
+        {
+          "bandType": "D0",
+          "taxCode": "D0",
+          "isBasicRate": false,
+          "income": null,
+          "tax": null,
+          "lowerBand": 32000,
+          "upperBand": 150000,
+          "rate": 40.00
+        },
+        {
+          "bandType": "D1",
+          "taxCode": "D1",
+          "isBasicRate": false,
+          "income": null,
+          "tax": null,
+          "lowerBand": 150000,
+          "upperBand": 0,
+          "rate": 45.00
+        }
+      ]
+    },
+    "untaxedInterest": null,
+    "bankInterest": null,
+    "ukDividends": null,
+    "foreignInterest": null,
+    "foreignDividends": null,
+    "basicRateExtensions": {
+      "npsDescription": null,
+      "amount": 0,
+      "type": null,
+      "iabdSummaries": null,
+      "sourceAmount": null,
+      "personalPensionPayment": null,
+      "giftAidPayment": null,
+      "personalPensionPaymentRelief": null,
+      "giftAidPaymentsRelief": null
+    },
+    "reliefsGivingBackTax": null,
+    "otherTaxDue": null,
+    "alreadyTaxedAtSource": null,
+    "totalLiability": 1800.00
+  },
+  "incomeSources": [
+    {
+      "employmentId": 8,
+      "employmentType": 1,
+      "employmentStatus": 1,
+      "employmentTaxDistrictNumber": 1,
+      "employmentPayeRef": "000",
+      "pensionIndicator": false,
+      "otherIncomeSourceIndicator": false,
+      "jsaIndicator": true,
+      "name": "EMPLOYER1",
+      "taxCode": "1100L",
+      "potentialUnderpayment": 0,
+      "allowances": [
+        {
+          "npsDescription": "personal allowance",
+          "amount": 11000,
+          "type": 11,
+          "iabdSummaries": [
+            {
+              "amount": 11000,
+              "type": 118,
+              "npsDescription": "Personal Allowance (PA)",
+              "employmentId": null
+            }
+          ],
+          "sourceAmount": 11000
+        }
+      ],
+      "deductions": [],
+      "payAndTax": {
+        "totalIncome": {
+          "npsDescription": null,
+          "amount": 15000.00,
+          "type": null,
+          "iabdSummaries": [
+            {
+              "amount": 15000,
+              "type": 27,
+              "npsDescription": "New Estimated Pay",
+              "employmentId": 8,
+              "defaultEstimatedPay": null
+            }
+          ],
+          "sourceAmount": null
+        },
+        "allowReliefDeducts": {
+          "npsDescription": null,
+          "amount": 11009.96,
+          "type": null,
+          "iabdSummaries": null,
+          "sourceAmount": null
+        },
+        "totalTax": 798.00,
+        "totalTaxableIncome": 3990.00,
+        "taxBands": [
+          {
+            "bandType": "B",
+            "taxCode": "BR",
+            "isBasicRate": true,
+            "income": 3990.00,
+            "tax": 798.00,
+            "lowerBand": 0,
+            "upperBand": 32000,
+            "rate": 20.00
+          },
+          {
+            "bandType": "D0",
+            "taxCode": "D0",
+            "isBasicRate": false,
+            "income": null,
+            "tax": null,
+            "lowerBand": 32000,
+            "upperBand": 150000,
+            "rate": 40.00
+          },
+          {
+            "bandType": "D1",
+            "taxCode": "D1",
+            "isBasicRate": false,
+            "income": null,
+            "tax": null,
+            "lowerBand": 150000,
+            "upperBand": 0,
+            "rate": 45.00
+          }
+        ]
+      }
+    },
+    {
+      "employmentId": 9,
+      "employmentType": 2,
+      "employmentStatus": 1,
+      "employmentTaxDistrictNumber": 1,
+      "employmentPayeRef": "U313",
+      "pensionIndicator": false,
+      "otherIncomeSourceIndicator": false,
+      "jsaIndicator": false,
+      "name": "EMPLOYER1",
+      "taxCode": "BR",
+      "potentialUnderpayment": 0,
+      "allowances": [],
+      "deductions": [],
+      "payAndTax": {
+        "totalIncome": {
+          "npsDescription": null,
+          "amount": 5000.00,
+          "type": null,
+          "iabdSummaries": [
+            {
+              "amount": 5000,
+              "type": 27,
+              "npsDescription": "New Estimated Pay",
+              "employmentId": 9,
+              "defaultEstimatedPay": null
+            }
+          ],
+          "sourceAmount": null
+        },
+        "allowReliefDeducts": {
+          "npsDescription": null,
+          "amount": 0.00,
+          "type": null,
+          "iabdSummaries": null,
+          "sourceAmount": null
+        },
+        "totalTax": 1000.00,
+        "totalTaxableIncome": 5000.00,
+        "taxBands": [
+          {
+            "bandType": "B",
+            "taxCode": "BR",
+            "isBasicRate": true,
+            "income": 5000.00,
+            "tax": 1000.00,
+            "lowerBand": 0,
+            "upperBand": 32000,
+            "rate": 20.00
+          },
+          {
+            "bandType": "D0",
+            "taxCode": "D0",
+            "isBasicRate": false,
+            "income": null,
+            "tax": null,
+            "lowerBand": 32000,
+            "upperBand": 150000,
+            "rate": 40.00
+          },
+          {
+            "bandType": "D1",
+            "taxCode": "D1",
+            "isBasicRate": false,
+            "income": null,
+            "tax": null,
+            "lowerBand": 150000,
+            "upperBand": 0,
+            "rate": 45.00
+          }
+        ]
+      }
+    }
+  ]
+}

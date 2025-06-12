@@ -40,7 +40,7 @@ object TaxAdjustmentComponentHipReads {
           val personalPensionPaymentRelief =
             readTaxAdjustmentComponent(js, "personalPensionPaymentRelief", PersonalPensionPaymentRelief)
           val giftAidPaymentsRelief = readTaxAdjustmentComponent(js, "giftAidPaymentsRelief", GiftAidPaymentsRelief)
-          val giftAidPayments = readTaxAdjustmentComponent(js, "giftAidPayments", GiftAidPayments)
+          val giftAidPayments = readTaxAdjustmentComponent(js, "giftAidPayment", GiftAidPayments)
 
           JsSuccess(
             flattenTaxAdjustmentComponents(
