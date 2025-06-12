@@ -22,8 +22,10 @@ import play.api.http.MimeTypes
 import play.api.libs.json.{JsObject, JsValue}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.{HeaderCarrier, *}
+import uk.gov.hmrc.mongoFeatureToggles.services.FeatureFlagService
 import uk.gov.hmrc.tai.config.{DesConfig, HipConfig}
 import uk.gov.hmrc.tai.connectors.cache.CachingConnector
+import uk.gov.hmrc.tai.model.admin.HipToggleTaxAccountHistory
 import uk.gov.hmrc.tai.model.enums.APITypes
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.service.SensitiveFormatService
@@ -41,6 +43,7 @@ class CachingTaxAccountConnector @Inject() (
   sensitiveFormatService: SensitiveFormatService
 )(implicit ec: ExecutionContext)
     extends TaxAccountConnector {
+
   def taxAccount(nino: Nino, taxYear: TaxYear)(implicit hc: HeaderCarrier): Future[JsValue] =
     cachingConnector
       .cache(s"tax-account-$nino-${taxYear.year}") {
@@ -64,9 +67,11 @@ class DefaultTaxAccountConnector @Inject() (
   httpHandler: HttpHandler,
   desConfig: DesConfig,
   taxAccountUrls: TaxAccountUrls,
-  hipConfig: HipConfig
+  hipConfig: HipConfig,
+  featureFlagService: FeatureFlagService
 )(implicit ec: ExecutionContext)
     extends TaxAccountConnector {
+
   private def getUuid: String = UUID.randomUUID().toString
 
   private def hcWithDesHeaders(implicit hc: HeaderCarrier): Seq[(String, String)] =
@@ -94,10 +99,19 @@ class DefaultTaxAccountConnector @Inject() (
 
   }
 
-  def taxAccountHistory(nino: Nino, iocdSeqNo: Int)(implicit hc: HeaderCarrier): Future[JsValue] = {
-    val url = taxAccountUrls.taxAccountHistoricSnapshotUrl(nino, iocdSeqNo)
-    httpHandler.getFromApi(url, APITypes.DesTaxAccountAPI, hcWithDesHeaders)
-  }
+  def taxAccountHistory(nino: Nino, iocdSeqNo: Int)(implicit hc: HeaderCarrier): Future[JsValue] =
+    featureFlagService.get(HipToggleTaxAccountHistory).flatMap { toggle =>
+      val (url, headers) =
+        if (toggle.isEnabled) {
+          (
+            s"${hipConfig.baseURL}/person/$nino/tax-account/history/$iocdSeqNo",
+            basicHeaders(hipConfig.originatorId, hc, Some(Tuple2(hipConfig.clientId, hipConfig.clientSecret)))
+          )
+        } else
+          (taxAccountUrls.taxAccountHistoricSnapshotUrl(nino, iocdSeqNo), hcWithDesHeaders)
+
+      httpHandler.getFromApi(url, APITypes.DesTaxAccountAPI, headers)
+    }
 }
 
 trait TaxAccountConnector {
