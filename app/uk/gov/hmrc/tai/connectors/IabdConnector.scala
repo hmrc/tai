@@ -26,7 +26,7 @@ import uk.gov.hmrc.mongoFeatureToggles.services.FeatureFlagService
 import uk.gov.hmrc.tai.config.{DesConfig, HipConfig}
 import uk.gov.hmrc.tai.connectors.cache.CachingConnector
 import uk.gov.hmrc.tai.controllers.auth.AuthenticatedRequest
-import uk.gov.hmrc.tai.model.admin.HipToggleIabdsUpdateExpenses
+import uk.gov.hmrc.tai.model.admin.HipIabdsUpdateExpensesToggle
 import uk.gov.hmrc.tai.model.domain.response.{HodUpdateFailure, HodUpdateResponse, HodUpdateSuccess}
 import uk.gov.hmrc.tai.model.enums.APITypes
 import uk.gov.hmrc.tai.model.enums.APITypes.{APITypes, HipIabdUpdateEmployeeExpensesAPI}
@@ -230,7 +230,7 @@ class DefaultIabdConnector @Inject() (
     expensesData: UpdateIabdEmployeeExpense,
     apiType: APITypes
   )(implicit hc: HeaderCarrier, request: AuthenticatedRequest[_]): Future[HttpResponse] =
-    featureFlagService.get(HipToggleIabdsUpdateExpenses).flatMap { toggle =>
+    featureFlagService.get(HipIabdsUpdateExpensesToggle).flatMap { toggle =>
       if (toggle.isEnabled) {
         httpHandler.putToApiHttpClientV2[UpdateHipIabdEmployeeExpense](
           s"${hipConfig.baseURL}/iabd/taxpayer/$nino/tax-year/$year/type/${IabdType.hipMapping(iabdType)}",
