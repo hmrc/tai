@@ -27,7 +27,7 @@ import uk.gov.hmrc.http.{BadRequestException, HeaderNames, HttpException, Intern
 import uk.gov.hmrc.mongoFeatureToggles.model.{FeatureFlag, FeatureFlagName}
 import uk.gov.hmrc.tai.config.{DesConfig, HipConfig}
 import uk.gov.hmrc.tai.controllers.auth.AuthenticatedRequest
-import uk.gov.hmrc.tai.model.admin.HipToggleIabdsUpdateExpenses
+import uk.gov.hmrc.tai.model.admin.HipIabdsUpdateExpensesToggle
 import uk.gov.hmrc.tai.model.domain.IabdDetails
 import uk.gov.hmrc.tai.model.domain.response.{HodUpdateFailure, HodUpdateSuccess}
 import uk.gov.hmrc.tai.model.enums.APITypes
@@ -623,8 +623,8 @@ class IabdConnectorSpec extends ConnectorBaseSpec {
       "return a status of 200 OK" when {
 
         "updating expenses data in DES using a valid update amount" in {
-          when(mockFeatureFlagService.get(eqTo[FeatureFlagName](HipToggleIabdsUpdateExpenses))).thenReturn(
-            Future.successful(FeatureFlag(HipToggleIabdsUpdateExpenses, isEnabled = true))
+          when(mockFeatureFlagService.get(eqTo[FeatureFlagName](HipIabdsUpdateExpensesToggle))).thenReturn(
+            Future.successful(FeatureFlag(HipIabdsUpdateExpensesToggle, isEnabled = true))
           )
 
           val json = Json.toJson(updateAmount)
@@ -667,8 +667,8 @@ class IabdConnectorSpec extends ConnectorBaseSpec {
       "return a 2xx status" when {
 
         "the connector returns NO_CONTENT" in {
-          when(mockFeatureFlagService.get(eqTo[FeatureFlagName](HipToggleIabdsUpdateExpenses))).thenReturn(
-            Future.successful(FeatureFlag(HipToggleIabdsUpdateExpenses, isEnabled = true))
+          when(mockFeatureFlagService.get(eqTo[FeatureFlagName](HipIabdsUpdateExpensesToggle))).thenReturn(
+            Future.successful(FeatureFlag(HipIabdsUpdateExpensesToggle, isEnabled = true))
           )
 
           server.stubFor(
@@ -691,8 +691,8 @@ class IabdConnectorSpec extends ConnectorBaseSpec {
         }
 
         "the connector returns ACCEPTED" in {
-          when(mockFeatureFlagService.get(eqTo[FeatureFlagName](HipToggleIabdsUpdateExpenses))).thenReturn(
-            Future.successful(FeatureFlag(HipToggleIabdsUpdateExpenses, isEnabled = true))
+          when(mockFeatureFlagService.get(eqTo[FeatureFlagName](HipIabdsUpdateExpensesToggle))).thenReturn(
+            Future.successful(FeatureFlag(HipIabdsUpdateExpensesToggle, isEnabled = true))
           )
 
           server.stubFor(
@@ -718,8 +718,8 @@ class IabdConnectorSpec extends ConnectorBaseSpec {
       "throw a HttpException" when {
 
         "a 4xx response is returned" in {
-          when(mockFeatureFlagService.get(eqTo[FeatureFlagName](HipToggleIabdsUpdateExpenses))).thenReturn(
-            Future.successful(FeatureFlag(HipToggleIabdsUpdateExpenses, isEnabled = true))
+          when(mockFeatureFlagService.get(eqTo[FeatureFlagName](HipIabdsUpdateExpensesToggle))).thenReturn(
+            Future.successful(FeatureFlag(HipIabdsUpdateExpensesToggle, isEnabled = true))
           )
 
           val exMessage = "Bad request"
@@ -745,8 +745,8 @@ class IabdConnectorSpec extends ConnectorBaseSpec {
         }
 
         "a BAD_REQUEST response is returned for BAD_REQUEST response status" in {
-          when(mockFeatureFlagService.get(eqTo[FeatureFlagName](HipToggleIabdsUpdateExpenses))).thenReturn(
-            Future.successful(FeatureFlag(HipToggleIabdsUpdateExpenses, isEnabled = true))
+          when(mockFeatureFlagService.get(eqTo[FeatureFlagName](HipIabdsUpdateExpensesToggle))).thenReturn(
+            Future.successful(FeatureFlag(HipIabdsUpdateExpensesToggle, isEnabled = true))
           )
 
           val exMessage = "Bad request"
@@ -772,8 +772,8 @@ class IabdConnectorSpec extends ConnectorBaseSpec {
         }
 
         "a NOT_FOUND response is returned for NOT_FOUND response status" in {
-          when(mockFeatureFlagService.get(eqTo[FeatureFlagName](HipToggleIabdsUpdateExpenses))).thenReturn(
-            Future.successful(FeatureFlag(HipToggleIabdsUpdateExpenses, isEnabled = true))
+          when(mockFeatureFlagService.get(eqTo[FeatureFlagName](HipIabdsUpdateExpensesToggle))).thenReturn(
+            Future.successful(FeatureFlag(HipIabdsUpdateExpensesToggle, isEnabled = true))
           )
 
           val exMessage = "Not Found"
@@ -799,8 +799,8 @@ class IabdConnectorSpec extends ConnectorBaseSpec {
         }
 
         "a 418 response is returned for 418 response status" in {
-          when(mockFeatureFlagService.get(eqTo[FeatureFlagName](HipToggleIabdsUpdateExpenses))).thenReturn(
-            Future.successful(FeatureFlag(HipToggleIabdsUpdateExpenses, isEnabled = true))
+          when(mockFeatureFlagService.get(eqTo[FeatureFlagName](HipIabdsUpdateExpensesToggle))).thenReturn(
+            Future.successful(FeatureFlag(HipIabdsUpdateExpensesToggle, isEnabled = true))
           )
 
           val exMessage = "An error occurred"
@@ -826,8 +826,8 @@ class IabdConnectorSpec extends ConnectorBaseSpec {
         }
 
         "a INTERNAL_SERVER_ERROR response is returned for INTERNAL_SERVER_ERROR response status" in {
-          when(mockFeatureFlagService.get(eqTo[FeatureFlagName](HipToggleIabdsUpdateExpenses))).thenReturn(
-            Future.successful(FeatureFlag(HipToggleIabdsUpdateExpenses, isEnabled = true))
+          when(mockFeatureFlagService.get(eqTo[FeatureFlagName](HipIabdsUpdateExpensesToggle))).thenReturn(
+            Future.successful(FeatureFlag(HipIabdsUpdateExpensesToggle, isEnabled = true))
           )
 
           val exMessage = "Internal Server Error"
@@ -852,8 +852,8 @@ class IabdConnectorSpec extends ConnectorBaseSpec {
         }
 
         "a SERVICE_UNAVAILABLE response is returned for SERVICE_UNAVAILABLE response status" in {
-          when(mockFeatureFlagService.get(eqTo[FeatureFlagName](HipToggleIabdsUpdateExpenses))).thenReturn(
-            Future.successful(FeatureFlag(HipToggleIabdsUpdateExpenses, isEnabled = true))
+          when(mockFeatureFlagService.get(eqTo[FeatureFlagName](HipIabdsUpdateExpensesToggle))).thenReturn(
+            Future.successful(FeatureFlag(HipIabdsUpdateExpensesToggle, isEnabled = true))
           )
 
           val exMessage = "Service unavailable"
@@ -878,8 +878,8 @@ class IabdConnectorSpec extends ConnectorBaseSpec {
         }
 
         "a 5xx response is returned" in {
-          when(mockFeatureFlagService.get(eqTo[FeatureFlagName](HipToggleIabdsUpdateExpenses))).thenReturn(
-            Future.successful(FeatureFlag(HipToggleIabdsUpdateExpenses, isEnabled = true))
+          when(mockFeatureFlagService.get(eqTo[FeatureFlagName](HipIabdsUpdateExpensesToggle))).thenReturn(
+            Future.successful(FeatureFlag(HipIabdsUpdateExpensesToggle, isEnabled = true))
           )
 
           val exMessage = "An error occurred"

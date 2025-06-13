@@ -21,11 +21,11 @@ import com.google.inject.{Inject, Singleton}
 import play.api.http.MimeTypes
 import play.api.libs.json.{JsObject, JsValue}
 import uk.gov.hmrc.domain.Nino
-import uk.gov.hmrc.http.{HeaderCarrier, *}
+import uk.gov.hmrc.http.*
 import uk.gov.hmrc.mongoFeatureToggles.services.FeatureFlagService
 import uk.gov.hmrc.tai.config.{DesConfig, HipConfig}
 import uk.gov.hmrc.tai.connectors.cache.CachingConnector
-import uk.gov.hmrc.tai.model.admin.HipToggleTaxAccountHistory
+import uk.gov.hmrc.tai.model.admin.HipTaxAccountHistoryToggle
 import uk.gov.hmrc.tai.model.enums.APITypes
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.service.SensitiveFormatService
@@ -100,15 +100,16 @@ class DefaultTaxAccountConnector @Inject() (
   }
 
   def taxAccountHistory(nino: Nino, iocdSeqNo: Int)(implicit hc: HeaderCarrier): Future[JsValue] =
-    featureFlagService.get(HipToggleTaxAccountHistory).flatMap { toggle =>
+    featureFlagService.get(HipTaxAccountHistoryToggle).flatMap { toggle =>
       val (url, headers) =
         if (toggle.isEnabled) {
           (
             s"${hipConfig.baseURL}/person/$nino/tax-account/history/$iocdSeqNo",
             basicHeaders(hipConfig.originatorId, hc, Some(Tuple2(hipConfig.clientId, hipConfig.clientSecret)))
           )
-        } else
+        } else {
           (taxAccountUrls.taxAccountHistoricSnapshotUrl(nino, iocdSeqNo), hcWithDesHeaders)
+        }
 
       httpHandler.getFromApi(url, APITypes.DesTaxAccountAPI, headers)
     }
