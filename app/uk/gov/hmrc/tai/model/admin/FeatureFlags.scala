@@ -22,22 +22,22 @@ import uk.gov.hmrc.mongoFeatureToggles.model.FeatureFlagName
 case object RtiCallToggle extends FeatureFlagName {
   override val name: String = "rti-call-toggle"
   override val description: Option[String] = Some(
-    "Enable/disable toggle for RTI in the RtiConnector, controlling access to the API: '/rti/individual/payments/nino/:nino'"
+    "Enable/disable calls to the RTI API for individual payment information: '/rti/individual/payments/nino/:nino'"
   )
 }
 
-case object HipToggleIabdsUpdateExpenses extends FeatureFlagName {
-  override val name: String = "hip-iabds-update-expenses"
+case object HipIabdsUpdateExpensesToggle extends FeatureFlagName {
+  override val name: String = "hip-iabds-update-expenses-toggle"
   override val description: Option[String] = Some(
-    "Enable/disable PUT call to IABDS employee expenses via hip instead of des."
+    "Enable/disable routing of PUT calls for IABDS employee expenses to HIP instead of DES."
   )
   override val lockedEnvironments: Seq[Environment] = Seq(Local, Staging, Qa, Production)
 }
 
-case object HipToggleTaxAccountHistory extends FeatureFlagName {
-  override val name: String = "hip-tax-account-history"
+case object HipTaxAccountHistoryToggle extends FeatureFlagName {
+  override val name: String = "hip-tax-account-history-toggle"
   override val description: Option[String] = Some(
-    "Enable/disable GET call to tax account history via hip instead of des."
+    "Enable/disable the GET call for tax account history via HIP instead of DES."
   )
   override val lockedEnvironments: Seq[Environment] = Seq(Local, Staging, Qa, Production)
 }
