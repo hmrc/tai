@@ -27,7 +27,7 @@ import uk.gov.hmrc.http.{HeaderNames, HttpException}
 import uk.gov.hmrc.mongoFeatureToggles.model.{FeatureFlag, FeatureFlagName}
 import uk.gov.hmrc.tai.integration.utils.IntegrationSpec
 import uk.gov.hmrc.tai.model.IabdUpdateExpensesRequest
-import uk.gov.hmrc.tai.model.admin.HipToggleIabdsUpdateExpenses
+import uk.gov.hmrc.tai.model.admin.HipIabdsUpdateExpensesToggle
 
 import scala.concurrent.Future
 
@@ -40,8 +40,8 @@ class PutEmployeeExpensesSpec extends IntegrationSpec {
   override def beforeEach(): Unit = {
     super.beforeEach()
 
-    when(mockFeatureFlagService.get(eqTo[FeatureFlagName](HipToggleIabdsUpdateExpenses))).thenReturn(
-      Future.successful(FeatureFlag(HipToggleIabdsUpdateExpenses, isEnabled = true))
+    when(mockFeatureFlagService.get(eqTo[FeatureFlagName](HipIabdsUpdateExpensesToggle))).thenReturn(
+      Future.successful(FeatureFlag(HipIabdsUpdateExpensesToggle, isEnabled = true))
     )
     ()
   }
