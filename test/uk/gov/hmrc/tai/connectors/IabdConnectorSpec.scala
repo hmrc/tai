@@ -156,7 +156,11 @@ class IabdConnectorSpec extends ConnectorBaseSpec {
         "NOT_FOUND is returned by the Nps API" in {
           server.stubFor(get(urlEqualTo(hipIabdsUrl)).willReturn(aResponse().withStatus(NOT_FOUND)))
 
-          sut().iabds(nino, taxYear).futureValue mustBe Json.obj("error" -> "NOT_FOUND")
+          assertConnectorException[NotFoundException](
+            sut().iabds(nino, taxYear),
+            NOT_FOUND,
+            ""
+          )
         }
       }
 

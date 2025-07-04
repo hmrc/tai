@@ -24,6 +24,7 @@ import uk.gov.hmrc.tai.util.IabdTypeConstants
 import uk.gov.hmrc.tai.util.JsonHelper.readsTypeTuple
 
 import java.time.LocalDate
+import uk.gov.hmrc.tai.util.JsonHelper
 
 case class IabdDetails(
   nino: Option[String],
@@ -38,7 +39,7 @@ case class IabdDetails(
 object IabdDetails extends IabdTypeConstants with Logging {
   private val dateReads: Reads[LocalDate] = localDateReads("yyyy-MM-dd")
 
-  private def sourceReads: Reads[Option[Int]] = {
+  def sourceReads: Reads[Option[Int]] = {
     case JsString(n) =>
       mapIabdSource.get(n) match {
         case Some(iabdSource) => JsSuccess(Some(iabdSource))

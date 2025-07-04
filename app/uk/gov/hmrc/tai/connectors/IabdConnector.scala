@@ -55,11 +55,13 @@ class CachingIabdConnector @Inject() (
 )(implicit ec: ExecutionContext)
     extends IabdConnector {
 
-  override def iabds(nino: Nino, taxYear: TaxYear)(implicit hc: HeaderCarrier): Future[JsValue] =
+  override def iabds(nino: Nino, taxYear: TaxYear, iabdType: Option[String] = None)(implicit
+    hc: HeaderCarrier
+  ): Future[JsValue] =
     cachingConnector
       .cache(s"iabds-$nino-${taxYear.year}") {
         underlying
-          .iabds(nino: Nino, taxYear: TaxYear)
+          .iabds(nino: Nino, taxYear: TaxYear, iabdType)
           .map(SensitiveJsValue.apply)
       }(sensitiveFormatService.sensitiveFormatJsValue[JsValue], implicitly)
       .map(_.decryptedValue)
@@ -137,21 +139,26 @@ class DefaultIabdConnector @Inject() (
       "CorrelationId"        -> UUID.randomUUID().toString
     )
 
-  override def iabds(nino: Nino, taxYear: TaxYear)(implicit hc: HeaderCarrier): Future[JsValue] =
+  override def iabds(nino: Nino, taxYear: TaxYear, iabdType: Option[String] = None)(implicit
+    hc: HeaderCarrier
+  ): Future[JsValue] = {
+    val queryString = iabdType match {
+      case Some(iabd) => s"?type=$iabd"
+      case None       => ""
+    }
+
     if (taxYear > TaxYear()) {
       Future.successful(JsArray(Seq.empty))
     } else {
       val (url, originatorId, extraInfo) = (
-        s"${hipConfig.baseURL}/iabd/taxpayer/$nino/tax-year/${taxYear.year}",
+        s"${hipConfig.baseURL}/iabd/taxpayer/$nino/tax-year/${taxYear.year}$queryString",
         hipConfig.originatorId,
         Some(Tuple2(hipConfig.clientId, hipConfig.clientSecret))
       )
-      httpHandler.getFromApi(url, APITypes.NpsIabdAllAPI, headersForIabds(originatorId, hc, extraInfo)).recover {
-        case _: NotFoundException =>
-          Json.toJson(Json.obj("error" -> "NOT_FOUND"))
-      }
+      httpHandler.getFromApi(url, APITypes.NpsIabdAllAPI, headersForIabds(originatorId, hc, extraInfo))
 
     }
+  }
 
   override def updateTaxCodeAmount(
     nino: Nino,
@@ -251,7 +258,7 @@ class DefaultIabdConnector @Inject() (
 
 trait IabdConnector {
 
-  def iabds(nino: Nino, taxYear: TaxYear)(implicit hc: HeaderCarrier): Future[JsValue]
+  def iabds(nino: Nino, taxYear: TaxYear, iabdType: Option[String] = None)(implicit hc: HeaderCarrier): Future[JsValue]
 
   def updateTaxCodeAmount(nino: Nino, taxYear: TaxYear, employmentId: Int, version: Int, iabdType: Int, amount: Int)(
     implicit

@@ -60,7 +60,7 @@ object JsonHelper {
       combineReads(reads, bReads)
   }
 
-  private def parseType(fullType: String): Option[(String, Int)] = {
+  def parseType(fullType: String): Option[(String, Int)] = {
     val trimmedValue = fullType.trim
     if (trimmedValue.endsWith(")")) {
       val reversedValue = trimmedValue.reverse

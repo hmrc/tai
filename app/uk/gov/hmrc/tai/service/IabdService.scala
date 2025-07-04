@@ -18,7 +18,7 @@ package uk.gov.hmrc.tai.service
 
 import com.google.inject.{Inject, Singleton}
 import uk.gov.hmrc.domain.Nino
-import uk.gov.hmrc.http.{HeaderCarrier, NotFoundException}
+import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.tai.connectors.IabdConnector
 import uk.gov.hmrc.tai.controllers.auth.AuthenticatedRequest
 import uk.gov.hmrc.tai.model.domain.response.*
@@ -37,10 +37,6 @@ class IabdService @Inject() (
     iabdConnector
       .iabds(nino, year)
       .map { responseJson =>
-        val responseNotFound = (responseJson \ "error").asOpt[String].contains("NOT_FOUND")
-        if (responseNotFound) {
-          throw new NotFoundException(s"No iadbs found for year $year")
-        }
         responseJson.as[Seq[IabdDetails]](IabdDetails.reads).filter(_.`type`.contains(NewEstimatedPay.code))
       }
 

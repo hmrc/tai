@@ -16,12 +16,11 @@
 
 package uk.gov.hmrc.tai.service
 
-import org.mockito.ArgumentMatchers.{any, eq as meq}
+import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.when
 import play.api.libs.json.{JsArray, JsNull, Json}
 import play.api.mvc.AnyContentAsEmpty
 import play.api.test.FakeRequest
-import uk.gov.hmrc.http.NotFoundException
 import uk.gov.hmrc.tai.connectors.IabdConnector
 import uk.gov.hmrc.tai.controllers.auth.AuthenticatedRequest
 import uk.gov.hmrc.tai.model.domain.IabdDetails
@@ -75,7 +74,7 @@ class IabdServiceSpec extends BaseSpec {
                                  |}
                                  |""".stripMargin)
 
-        when(mockIabdConnector.iabds(any(), any())(any())).thenReturn(Future.successful(json))
+        when(mockIabdConnector.iabds(any(), any(), any())(any())).thenReturn(Future.successful(json))
 
         val sut = createSut(mockIabdConnector)
         val result = sut.retrieveIabdDetails(nino, TaxYear()).futureValue
@@ -105,7 +104,7 @@ class IabdServiceSpec extends BaseSpec {
           "correlationId" -> ""
         )
 
-        when(mockIabdConnector.iabds(any(), any())(any())).thenReturn(Future.successful(json))
+        when(mockIabdConnector.iabds(any(), any(), any())(any())).thenReturn(Future.successful(json))
 
         val sut = createSut(mockIabdConnector)
         val result = sut.retrieveIabdDetails(nino, TaxYear()).futureValue
@@ -116,7 +115,7 @@ class IabdServiceSpec extends BaseSpec {
 
     "return an empty sequence of IabdDetails" when {
       "provided with next tax year" in {
-        when(mockIabdConnector.iabds(any(), any())(any())).thenReturn(Future.successful(JsArray.empty))
+        when(mockIabdConnector.iabds(any(), any(), any())(any())).thenReturn(Future.successful(JsArray.empty))
 
         val sut = createSut(mockIabdConnector)
         val result = sut.retrieveIabdDetails(nino, TaxYear().next).futureValue
@@ -125,19 +124,6 @@ class IabdServiceSpec extends BaseSpec {
       }
     }
 
-    "throw NotFoundException " when {
-      "error json is received from connector" in {
-        when(mockIabdConnector.iabds(meq(nino), meq(TaxYear()))(any()))
-          .thenReturn(Future.successful(Json.toJson(Json.obj("error" -> "NOT_FOUND"))))
-
-        val sut = createSut(mockIabdConnector)
-        val result = sut.retrieveIabdDetails(nino, TaxYear())
-
-        whenReady(result.failed) { ex =>
-          ex mustBe a[NotFoundException]
-        }
-      }
-    }
   }
 
   "updateTaxCodeAmount" must {
