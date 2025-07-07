@@ -27,9 +27,15 @@ import uk.gov.hmrc.tai.model.nps.NpsIabdRoot
 import uk.gov.hmrc.tai.model.tai.TaxYear
 
 import scala.concurrent.Future
+import uk.gov.hmrc.mongoFeatureToggles.services.FeatureFlagService
+import uk.gov.hmrc.tai.model.admin.HipGetIabdsExpensesToggle
+
+import scala.concurrent.ExecutionContext
 
 @Singleton
-class EmployeeExpensesService @Inject() (iabdConnector: IabdConnector) {
+class EmployeeExpensesService @Inject() (iabdConnector: IabdConnector, featureFlagService: FeatureFlagService)(implicit
+  ec: ExecutionContext
+) {
 
   def updateEmployeeExpensesData(
     nino: Nino,
@@ -48,5 +54,18 @@ class EmployeeExpensesService @Inject() (iabdConnector: IabdConnector) {
     )
 
   def getEmployeeExpenses(nino: Nino, taxYear: Int, iabd: Int)(implicit hc: HeaderCarrier): Future[List[NpsIabdRoot]] =
-    iabdConnector.getIabdsForType(nino, taxYear, iabd)
+    featureFlagService.get(HipGetIabdsExpensesToggle).flatMap { toggle =>
+      if (toggle.isEnabled) {
+        NpsIabdRoot.iabdTypeToString(iabd) match {
+          case None =>
+            Future.failed(new RuntimeException(s"Could not find IABD type for sourceType: $iabd"))
+          case Some(sourceTypeString) =>
+            iabdConnector.iabds(nino, TaxYear(taxYear), Some(sourceTypeString)).map { response =>
+              response.as[List[NpsIabdRoot]](NpsIabdRoot.readsHipListNpsIabdRoot)
+            }
+        }
+      } else {
+        iabdConnector.getIabdsForType(nino, taxYear, iabd)
+      }
+    }
 }
