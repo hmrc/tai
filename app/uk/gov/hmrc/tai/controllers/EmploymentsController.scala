@@ -114,7 +114,9 @@ class EmploymentsController @Inject() (
         .bimap(
           error => customErrorHandler.handleControllerErrorStatuses(error),
           {
-            case Some(employment) => Ok(Json.toJson(ApiResponse(employment, Nil)))
+            case Some(employment) =>
+              println("PPPPPPPPP " + employment)
+              Ok(Json.toJson(ApiResponse(employment, Nil)))
             case None =>
               val message = s"employment id: $id not found in list of employments"
               logger.warn(message)
