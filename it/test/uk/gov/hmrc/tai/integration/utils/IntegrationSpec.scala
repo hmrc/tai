@@ -99,8 +99,8 @@ trait IntegrationSpec
         .willReturn(ok("{\"code\": \"ACCESS_GRANTED\", \"message\": \"Access granted\"}"))
     )
 
-    when(mockFeatureFlagService.get(eqTo[FeatureFlagName](HipToggleIabdsUpdateExpenses))).thenReturn(
-      Future.successful(FeatureFlag(HipToggleIabdsUpdateExpenses, isEnabled = false))
+    when(mockFeatureFlagService.get(eqTo[FeatureFlagName](HipIabdsUpdateExpensesToggle))).thenReturn(
+      Future.successful(FeatureFlag(HipIabdsUpdateExpensesToggle, isEnabled = false))
     )
 
     when(mockFeatureFlagService.getAsEitherT(eqTo[FeatureFlagName](RtiCallToggle))).thenReturn(
