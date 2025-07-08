@@ -14,17 +14,24 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.tai.model.domain
+package uk.gov.hmrc.tai.model.hip.reads
 
-import play.api.libs.functional.syntax.toFunctionalBuilderOps
+import play.api.libs.functional.syntax.*
 import play.api.libs.json.{JsPath, Reads}
+import uk.gov.hmrc.tai.model.domain.IabdSummary
 import uk.gov.hmrc.tai.util.JsonHelper.readsTypeTuple
 
 object IabdSummaryHipReads {
-  implicit val iabdSummaryReads: Reads[IabdSummary] =
-    (
-      (JsPath \ "type").read[(String, Int)](readsTypeTuple) and
-        (JsPath \ "employmentSequenceNumber").readNullable[Int] and
-        (JsPath \ "amount").readNullable[BigDecimal].map(_.getOrElse(BigDecimal(0)))
-    )((typeTuple, empSeqNo, amount) => IabdSummary(typeTuple._2, empSeqNo, amount))
+
+  implicit val iabdSummaryReads: Reads[IabdSummary] = (
+    (JsPath \ "type").read[(String, Int)](readsTypeTuple) and
+      (JsPath \ "employmentSequenceNumber").readNullable[Int] and
+      (JsPath \ "amount").readNullable[BigDecimal].map(_.getOrElse(BigDecimal(0)))
+  ).tupled.map { case ((_, typeKey), empSeqNo, amount) =>
+    IabdSummary(
+      componentType = typeKey,
+      employmentId = empSeqNo,
+      amount = amount
+    )
+  }
 }

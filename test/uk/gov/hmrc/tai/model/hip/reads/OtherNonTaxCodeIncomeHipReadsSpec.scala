@@ -14,12 +14,13 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.tai.model.domain.income
+package uk.gov.hmrc.tai.model.hip.reads
 
 import org.scalatestplus.play.PlaySpec
 import play.api.libs.json.{JsNull, JsObject, Json}
 import uk.gov.hmrc.domain.{Generator, Nino}
 import uk.gov.hmrc.tai.model.domain.*
+import uk.gov.hmrc.tai.model.domain.income.OtherNonTaxCodeIncome
 
 import scala.util.Random
 
