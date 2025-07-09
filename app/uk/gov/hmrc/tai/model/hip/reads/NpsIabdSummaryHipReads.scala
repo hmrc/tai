@@ -22,38 +22,88 @@ import uk.gov.hmrc.tai.util.JsonHelper.readsTypeTuple
 
 object NpsIabdSummaryHipReads {
 
-  val iabdsFromTotalLiabilityReads: Reads[Seq[NpsIabdSummary]] = Reads { json =>
-    val categories =
-      Seq("nonSavings", "untaxedInterest", "bankInterest", "ukDividends", "foreignInterest", "foreignDividends")
+  private val categories =
+    Seq("nonSavings", "untaxedInterest", "bankInterest", "ukDividends", "foreignInterest", "foreignDividends")
 
-    val totalIncomeList = extractIabds(json, "totalIncomeDetails", categories)
-    val allowanceReliefList = extractIabds(json, "allowanceReliefDeductionsDetails", categories)
+  private val listNames = Seq("summaryIABDDetailsList", "summaryIABDEstimatedPayDetailsList")
 
-    JsSuccess(totalIncomeList ++ allowanceReliefList)
-  }
+  private val subPaths = Seq("totalIncomeDetails", "allowanceReliefDeductionsDetails")
+
+  val iabdsFromTotalLiabilityReads: Reads[Seq[NpsIabdSummary]] =
+    Reads { json =>
+      val extracted = categories.flatMap { category =>
+        listNames.flatMap { listName =>
+          (json \ "totalLiabilityDetails" \ category)
+            .asOpt[JsObject]
+            .toSeq
+            .flatMap { categoryJson =>
+              extractIabdsFromCategory(categoryJson, listName)
+            }
+        }
+      }
+      JsSuccess(extracted)
+    }
 
   def totalLiabilityIabds(json: JsValue, subPath: String, categories: Seq[String]): Seq[NpsIabdSummary] =
     extractIabds(json, subPath, categories)
 
-  private def extractIabds(json: JsValue, subPath: String, categories: Seq[String]): Seq[NpsIabdSummary] = {
-    val listNames = Seq("summaryIABDDetailsList", "summaryIABDEstimatedPayDetailsList")
-
+  private def extractIabds(json: JsValue, subPath: String, categories: Seq[String]): Seq[NpsIabdSummary] =
     for {
       category <- categories
       listName <- listNames
       array <- (json \ "totalLiabilityDetails" \ category \ subPath \ listName)
-                 .validateOpt[JsArray]
-                 .getOrElse(None)
+                 .asOpt[Seq[JsValue]]
                  .toSeq
-      element <- array.value
+      element <- array
       iabd    <- parseIabdSummary(element)
     } yield iabd
-  }
+
+  private def extractIabdsFromCategory(categoryJson: JsObject, listName: String): Seq[NpsIabdSummary] =
+    subPaths.flatMap { subPath =>
+      (categoryJson \ subPath \ listName)
+        .asOpt[Seq[JsValue]]
+        .getOrElse(Seq.empty)
+        .flatMap(parseIabdSummary)
+    }
 
   private def parseIabdSummary(json: JsValue): Option[NpsIabdSummary] =
     (json \ "type").validate[(String, Int)](readsTypeTuple).asOpt.map { case (description, componentType) =>
       val employmentId = (json \ "employmentSequenceNumber").asOpt[Int]
       val amount = (json \ "amount").asOpt[BigDecimal].getOrElse(BigDecimal(0))
       NpsIabdSummary(componentType, employmentId, amount, description)
+    }
+
+  def filteredIabdsFromTotalLiabilityReads(predicate: Int => Boolean): Reads[Seq[NpsIabdSummary]] =
+    Reads { json =>
+      val extracted = categories.flatMap { category =>
+        listNames.flatMap { listName =>
+          (json \ "totalLiabilityDetails" \ category)
+            .asOpt[JsObject]
+            .toSeq
+            .flatMap { categoryJson =>
+              extractFilteredIabdsFromCategory(categoryJson, listName, predicate)
+            }
+        }
+      }
+      JsSuccess(extracted)
+    }
+
+  private def extractFilteredIabdsFromCategory(
+    categoryJson: JsObject,
+    listName: String,
+    predicate: Int => Boolean
+  ): Seq[NpsIabdSummary] =
+    subPaths.flatMap { subPath =>
+      (categoryJson \ subPath \ listName)
+        .asOpt[Seq[JsValue]]
+        .getOrElse(Seq.empty)
+        .flatMap { json =>
+          (json \ "type").validate[(String, Int)](readsTypeTuple).asOpt.collect {
+            case (description, componentType) if predicate(componentType) =>
+              val employmentId = (json \ "employmentSequenceNumber").asOpt[Int]
+              val amount = (json \ "amount").asOpt[BigDecimal].getOrElse(BigDecimal(0))
+              NpsIabdSummary(componentType, employmentId, amount, description)
+          }
+        }
     }
 }

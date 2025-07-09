@@ -25,17 +25,16 @@ object OtherNonTaxCodeIncomeHipReads {
   implicit val format: OFormat[OtherNonTaxCodeIncome] = Json.format[OtherNonTaxCodeIncome]
 
   val otherNonTaxCodeIncomeReads: Reads[Seq[OtherNonTaxCodeIncome]] =
-    NpsIabdSummaryHipReads.iabdsFromTotalLiabilityReads.map { iabds =>
-      iabds.collect {
-        case iabd if nonTaxCodeIncomesMap.contains(iabd.componentType) =>
-          OtherNonTaxCodeIncome(
-            incomeComponentType = nonTaxCodeIncomesMap(iabd.componentType),
-            employmentId = iabd.employmentId,
-            amount = iabd.amount,
-            description = iabd.description
-          )
-      }
-    }
+    NpsIabdSummaryHipReads
+      .filteredIabdsFromTotalLiabilityReads(nonTaxCodeIncomesMap.contains)
+      .map(_.map { iabd =>
+        OtherNonTaxCodeIncome(
+          incomeComponentType = nonTaxCodeIncomesMap(iabd.componentType),
+          employmentId = iabd.employmentId,
+          amount = iabd.amount,
+          description = iabd.description
+        )
+      })
 
   private val nonTaxCodeIncomesMap: Map[Int, NonTaxCodeIncomeComponentType] = Map(
     19  -> NonCodedIncome,

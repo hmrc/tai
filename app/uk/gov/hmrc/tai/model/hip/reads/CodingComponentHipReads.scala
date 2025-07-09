@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 HM Revenue & Customs
+ * Copyright 2025 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,21 +16,34 @@
 
 package uk.gov.hmrc.tai.model.hip.reads
 
-import play.api.libs.json.*
-import uk.gov.hmrc.tai.model.domain.*
+import play.api.libs.json._
+import uk.gov.hmrc.tai.model.domain._
 import uk.gov.hmrc.tai.model.domain.calculation.CodingComponent
 import uk.gov.hmrc.tai.model.hip.reads.NpsIabdSummaryHipReads.iabdsFromTotalLiabilityReads
 import uk.gov.hmrc.tai.util.JsonHelper.parseTypeOrException
 
 object CodingComponentHipReads {
 
-  private type CodingComponentFactory = (Int, BigDecimal, String, Option[BigDecimal]) => Option[CodingComponent]
-
   private val incomeSourceReads: Reads[Seq[CodingComponent]] =
     (__ \ "employmentDetailsList").readNullable[Seq[JsValue]].map { incomeDetailsOpt =>
-      incomeDetailsOpt
-        .getOrElse(Seq.empty)
-        .flatMap(buildCodingComponentsFromIncomeJson)
+      incomeDetailsOpt.getOrElse(Seq.empty).flatMap { incomeJson =>
+        val deductions = extractComponentsFromPath(
+          incomeJson,
+          "deductionsDetails",
+          hipComponentDeductionMap
+        )
+        val allowances = extractComponentsFromPath(
+          incomeJson,
+          "allowancesDetails",
+          hipComponentAllowanceMap
+        )
+        val nonTaxCodeIncomes = extractComponentsFromPath(
+          incomeJson,
+          "deductionsDetails",
+          hipComponentNonTaxCodeIncomeMap
+        )
+        deductions ++ allowances ++ nonTaxCodeIncomes
+      }
     }
 
   val codingComponentReads: Reads[Seq[CodingComponent]] =
@@ -40,47 +53,31 @@ object CodingComponentHipReads {
       }
     }
 
-  private def buildCodingComponentsFromIncomeJson(incomeJson: JsValue): Seq[CodingComponent] =
-    Seq(
-      extractComponents(incomeJson, "deductionsDetails", deductionFactory),
-      extractComponents(incomeJson, "allowancesDetails", allowanceFactory),
-      extractComponents(incomeJson, "deductionsDetails", nonTaxCodeIncomeFactory)
-    ).flatten
-
-  private def extractComponents(
+  private def extractComponentsFromPath(
     json: JsValue,
     path: String,
-    factory: CodingComponentFactory
+    typeMap: Map[Int, TaxComponentType]
   ): Seq[CodingComponent] =
-    (json \ path).asOpt[Seq[JsValue]].getOrElse(Seq.empty).flatMap(extractCodingComponent(_, factory))
-
-  private def extractCodingComponent(
-    json: JsValue,
-    factory: CodingComponentFactory
-  ): Option[CodingComponent] = {
-    val (description, typeKey) = parseTypeOrException((json \ "type").as[String])
-    val amount = (json \ "adjustedAmount").as[BigDecimal]
-    val sourceAmount = (json \ "sourceAmount").asOpt[BigDecimal]
-    factory(typeKey, amount, description, sourceAmount)
-  }
-
-  private val deductionFactory: CodingComponentFactory =
-    (typeKey, amount, desc, sourceAmt) =>
-      hipComponentDeductionMap.get(typeKey).map(CodingComponent(_, None, amount, desc, sourceAmt))
-
-  private val allowanceFactory: CodingComponentFactory =
-    (typeKey, amount, desc, sourceAmt) =>
-      hipComponentAllowanceMap.get(typeKey).map(CodingComponent(_, None, amount, desc, sourceAmt))
-
-  private val nonTaxCodeIncomeFactory: CodingComponentFactory =
-    (typeKey, amount, desc, sourceAmt) =>
-      hipComponentNonTaxCodeIncomeMap.get(typeKey).map(CodingComponent(_, None, amount, desc, sourceAmt))
+    (json \ path).asOpt[Seq[JsValue]].getOrElse(Seq.empty).flatMap { componentJson =>
+      val (descRaw, typeKey) = parseTypeOrException((componentJson \ "type").as[String])
+      val desc = Option(descRaw).getOrElse("")
+      val amount = (componentJson \ "adjustedAmount").as[BigDecimal]
+      val sourceAmount = (componentJson \ "sourceAmount").asOpt[BigDecimal]
+      typeMap.get(typeKey).map { componentType =>
+        CodingComponent(componentType, None, amount, desc, sourceAmount)
+      }
+    }
 
   private val totalLiabilityReads: Reads[Seq[CodingComponent]] =
     __.read[Seq[NpsIabdSummary]](iabdsFromTotalLiabilityReads).map { iabds =>
       val components = iabds.collect {
         case iabd if hipIabdSummariesLookup.contains(iabd.componentType) =>
-          CodingComponent(hipIabdSummariesLookup(iabd.componentType), iabd.employmentId, iabd.amount, iabd.description)
+          CodingComponent(
+            hipIabdSummariesLookup(iabd.componentType),
+            iabd.employmentId,
+            iabd.amount,
+            iabd.description
+          )
       }
       val (benefits, others) = components.partition(_.componentType.isInstanceOf[BenefitComponentType])
       others ++ reconcileBenefits(benefits)
@@ -93,18 +90,15 @@ object CodingComponentHipReads {
   }
 
   private def reconcileInKind(benefits: Seq[CodingComponent]): Seq[CodingComponent] =
-    benefits
-      .flatMap(_.employmentId)
-      .distinct
-      .flatMap { empId =>
-        val byEmp = benefits.filter(_.employmentId.contains(empId))
-        val inKind = byEmp.find(_.componentType == BenefitInKind)
-        val others = byEmp.filterNot(_.componentType == BenefitInKind)
-        inKind match {
-          case Some(bik) if bik.amount > 0 && bik.amount != others.map(_.amount).sum => Seq(bik)
-          case _                                                                     => others
-        }
+    benefits.flatMap(_.employmentId).distinct.flatMap { empId =>
+      val byEmp = benefits.filter(_.employmentId.contains(empId))
+      val inKind = byEmp.find(_.componentType == BenefitInKind)
+      val others = byEmp.filterNot(_.componentType == BenefitInKind)
+      inKind match {
+        case Some(bik) if bik.amount > 0 && bik.amount != others.map(_.amount).sum => Seq(bik)
+        case _                                                                     => others
       }
+    }
 
   private val hipComponentDeductionMap: Map[Int, DeductionComponentType] = Map(
     6  -> MarriedCouplesAllowanceToWifeMAW,
