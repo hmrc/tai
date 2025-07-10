@@ -14,11 +14,12 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.tai.model.domain.calculation
+package uk.gov.hmrc.tai.model.hip.reads
 
 import org.scalatestplus.play.PlaySpec
 import play.api.libs.json.{JsNull, JsResultException, JsValue, Json}
-import uk.gov.hmrc.tai.model.domain.calculation.TotalTaxHipReads.{incomeCategorySeqReads, taxFreeAllowanceReads}
+import uk.gov.hmrc.tai.model.domain.calculation.*
+import uk.gov.hmrc.tai.model.hip.reads.TotalTaxHipReads.{incomeCategorySeqReads, taxFreeAllowanceReads}
 
 import scala.io.Source
 

@@ -14,22 +14,27 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.tai.model.domain
+package uk.gov.hmrc.tai.model.hip.reads
 
-import play.api.libs.json.{JsArray, JsValue}
+import play.api.libs.json.*
+import uk.gov.hmrc.tai.model.domain.RateBand
 
 object RateBandHipReads {
+
   def incomeAndRateBands(json: JsValue): Seq[RateBand] = {
+    val taxBandPath = __ \ "totalLiabilityDetails" \ "nonSavings" \ "taxBandDetails"
 
-    val bands = (json \ "totalLiabilityDetails" \ "nonSavings" \ "taxBandDetails").asOpt[JsArray]
-    val details = bands.map(_.value.collect {
-      case js if (js \ "income").asOpt[BigDecimal].isDefined =>
-        RateBand((js \ "income").as[BigDecimal], (js \ "rate").as[BigDecimal])
-    })
-
-    details match {
-      case Some(rateBands) => rateBands.toSeq.sortBy(-_.rate)
-      case None            => Seq.empty[RateBand]
-    }
+    taxBandPath
+      .readNullable[Seq[JsValue]]
+      .reads(json)
+      .getOrElse(None)
+      .getOrElse(Seq.empty)
+      .flatMap { js =>
+        for {
+          income <- (js \ "income").asOpt[BigDecimal]
+          rate   <- (js \ "rate").asOpt[BigDecimal]
+        } yield RateBand(income, rate)
+      }
+      .sortBy(-_.rate)
   }
 }
