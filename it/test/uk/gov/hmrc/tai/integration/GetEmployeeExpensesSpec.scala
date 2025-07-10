@@ -54,6 +54,9 @@ class GetEmployeeExpensesSpec extends IntegrationSpec {
 
       val result = route(fakeApplication(), request)
       result.map(getStatus) mustBe Some(OK)
+      result.map(contentAsString) mustBe Some(
+        s"""[{"nino":"EE100000","type":59,"grossAmount":0,"source":51,"receiptDate":"26/12/2013","captureDate":"26/12/2013"}]"""
+      )
     }
 
     "return a BAD_REQUEST when iabds from DES returns a BAD_REQUEST" in {
@@ -125,6 +128,9 @@ class GetEmployeeExpensesSpec extends IntegrationSpec {
 
       val result = route(fakeApplication(), request)
       result.map(getStatus) mustBe Some(OK)
+      result.map(contentAsString) mustBe Some(
+        s"""[{"nino":"EE100000","type":59,"grossAmount":0,"source":51,"receiptDate":"26/12/2013","captureDate":"26/12/2013"}]"""
+      )
     }
 
     "return a BAD_REQUEST when iabds from DES returns a BAD_REQUEST" in {
