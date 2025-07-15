@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 HM Revenue & Customs
+ * Copyright 2025 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,20 +21,12 @@ import uk.gov.hmrc.tai.model.domain.RateBand
 
 object RateBandHipReads {
 
-  def incomeAndRateBands(json: JsValue): Seq[RateBand] = {
-    val taxBandPath = __ \ "totalLiabilityDetails" \ "nonSavings" \ "taxBandDetails"
+  implicit val rateBandReads: Reads[RateBand] = Json.reads[RateBand]
 
-    taxBandPath
-      .readNullable[Seq[JsValue]]
-      .reads(json)
+  def incomeAndRateBands(json: JsValue): Seq[RateBand] =
+    (json \ "totalLiabilityDetails" \ "nonSavings" \ "taxBandDetails")
+      .validateOpt[List[RateBand]]
       .getOrElse(None)
-      .getOrElse(Seq.empty)
-      .flatMap { js =>
-        for {
-          income <- (js \ "income").asOpt[BigDecimal]
-          rate   <- (js \ "rate").asOpt[BigDecimal]
-        } yield RateBand(income, rate)
-      }
+      .getOrElse(Nil)
       .sortBy(-_.rate)
-  }
 }

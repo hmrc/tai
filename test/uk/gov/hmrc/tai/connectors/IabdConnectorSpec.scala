@@ -31,7 +31,6 @@ import uk.gov.hmrc.tai.model.admin.HipIabdsUpdateExpensesToggle
 import uk.gov.hmrc.tai.model.domain.IabdDetails
 import uk.gov.hmrc.tai.model.domain.response.{HodUpdateFailure, HodUpdateSuccess}
 import uk.gov.hmrc.tai.model.enums.APITypes
-import uk.gov.hmrc.tai.model.nps.NpsIabdRoot
 import uk.gov.hmrc.tai.model.nps2.IabdType.{NewEstimatedPay, hipMapping}
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.model.{IabdUpdateAmount, UpdateIabdEmployeeExpense}
@@ -272,7 +271,7 @@ class IabdConnectorSpec extends ConnectorBaseSpec {
     "get IABD's from DES api" when {
       "supplied with a valid nino, year and IABD type" in {
 
-        val iabdList = List(NpsIabdRoot(nino = nino.nino, `type` = iabdType))
+        val iabdList = List(IabdDetails(nino = Some(nino.nino), `type` = Some(iabdType)))
         val jsonData = Json.toJson(iabdList).toString()
 
         server.stubFor(

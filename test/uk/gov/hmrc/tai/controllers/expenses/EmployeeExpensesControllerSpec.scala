@@ -23,7 +23,7 @@ import play.api.test.Helpers.*
 import play.api.test.{FakeHeaders, FakeRequest}
 import uk.gov.hmrc.http.HttpResponse
 import uk.gov.hmrc.tai.controllers.auth.AuthJourney
-import uk.gov.hmrc.tai.model.nps.NpsIabdRoot
+import uk.gov.hmrc.tai.model.domain.IabdDetails
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.model.{IabdUpdateExpensesRequest, UpdateIabdEmployeeExpense}
 import uk.gov.hmrc.tai.service.expenses.EmployeeExpensesService
@@ -44,9 +44,9 @@ class EmployeeExpensesControllerSpec extends BaseSpec {
   private val taxYear = 2017
 
   private val validNpsIabd = List(
-    NpsIabdRoot(
-      nino = nino.withoutSuffix,
-      `type` = 56,
+    IabdDetails(
+      nino = Some(nino.withoutSuffix),
+      `type` = Some(56),
       grossAmount = Some(100)
     )
   )
