@@ -101,7 +101,7 @@ class CodingComponentHipReadsSpec extends PlaySpec {
 
       }
     }
-//
+
     "return all allowances received" when {
       "multiple allowances are present" in {
         val payload = readFile("tc06.json")
@@ -127,7 +127,6 @@ class CodingComponentHipReadsSpec extends PlaySpec {
       }
 
     }
-//
     "return all deductions" when {
       "multiple deductions are present" in {
         val payload = readFile("tc07.json")
