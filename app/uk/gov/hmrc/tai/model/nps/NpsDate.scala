@@ -32,12 +32,14 @@ case class NpsDate(localDate: LocalDate) {
 object NpsDate {
   implicit val reads: Reads[NpsDate] = {
     case JsString(npsDateRegex(d, m, y)) => JsSuccess(NpsDate(LocalDate.of(y.toInt, m.toInt, d.toInt)))
+    case JsString(hipDateRegex(y, m, d)) => JsSuccess(NpsDate(LocalDate.of(y.toInt, m.toInt, d.toInt)))
     case JsNull                          => JsError(JsonValidationError("Cannot convert null to NpsDate"))
     case invalid => JsError(JsonValidationError(s"The date was not of the expected format [dd/MM/yyyy]: $invalid"))
   }
   implicit val writes: Writes[NpsDate] = (date: NpsDate) => JsString(date.toNpsString)
 
   private val taxPlatformDateFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd")
+  private val hipDateRegex = """^(\d\d\d\d)-(\d\d)-(\d\d)$""".r
   private val npsDateRegex = """^(\d\d)/(\d\d)/(\d\d\d\d)$""".r
   private val npsDateFormat = DateTimeFormatter.ofPattern("dd/MM/yyyy")
 }

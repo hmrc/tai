@@ -625,7 +625,7 @@ class IabdConnectorSpec extends ConnectorBaseSpec {
     "using HIP" must {
       "return a status of 200 OK" when {
 
-        "updating expenses data in DES using a valid update amount" in {
+        "updating expenses data in HIP using a valid update amount" in {
           when(mockFeatureFlagService.get(eqTo[FeatureFlagName](HipIabdsUpdateExpensesToggle))).thenReturn(
             Future.successful(FeatureFlag(HipIabdsUpdateExpensesToggle, isEnabled = true))
           )
@@ -653,10 +653,9 @@ class IabdConnectorSpec extends ConnectorBaseSpec {
 
           server.verify(
             putRequestedFor(urlEqualTo(updateExpenseshipIabdsUrl))
-              .withHeader("Environment", equalTo(""))
-              .withHeader("Authorization", equalTo(""))
+              .withHeader("Authorization", equalTo("Basic Y2xpZW50SWQ6Y2xpZW50U2VjcmV0"))
               .withHeader("Content-Type", equalTo(TaiConstants.contentType))
-              .withHeader("Originator-Id", equalTo(hipOriginatorId))
+              .withHeader("Gov-Uk-Originator-Id", equalTo(hipOriginatorId))
               .withHeader(HeaderNames.xSessionId, equalTo(sessionId))
               .withHeader(HeaderNames.xRequestId, equalTo(requestId))
               .withHeader(

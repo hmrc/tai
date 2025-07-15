@@ -1,14 +1,14 @@
 {
   "iabdDetails": [
     {
-      "nationalInsuranceNumber": "",
+      "nationalInsuranceNumber": "EE100000",
       "iabdSequenceNumber": 201600003,
       "taxYear": 2021,
       "type": "Other Expenses (059)",
       "source": "Home Working Expenses",
       "grossAmount": 0,
-      "receiptDate": null,
-      "captureDate": null,
+      "receiptDate": "2013-12-26",
+      "captureDate": "2013-12-26",
       "typeDescription": "Other expenses Expenses",
       "netAmount": null
     }

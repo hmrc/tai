@@ -6,8 +6,8 @@
     "type": 59,
     "source": 51,
     "grossAmount": 0,
-    "receiptDate": null,
-    "captureDate": null,
+    "receiptDate": "26/12/2013",
+    "captureDate": "26/12/2013",
     "typeDescription": "Other expenses Expenses",
     "netAmount": null
   }

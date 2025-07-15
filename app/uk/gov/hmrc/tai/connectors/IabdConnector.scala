@@ -211,18 +211,6 @@ class DefaultIabdConnector @Inject() (
       "ETag"                 -> version.toString
     )
 
-  private def headersForHipUpdateExpensesData(version: Int)(implicit hc: HeaderCarrier): Seq[(String, String)] =
-    Seq(
-      "Environment"          -> hipConfig.environment,
-      "Authorization"        -> hipConfig.authorization,
-      "Content-Type"         -> TaiConstants.contentType,
-      HeaderNames.xSessionId -> hc.sessionId.fold("-")(_.value),
-      HeaderNames.xRequestId -> hc.requestId.fold("-")(_.value),
-      "CorrelationId"        -> UUID.randomUUID().toString,
-      "Originator-Id"        -> hipConfig.originatorId,
-      "ETag"                 -> version.toString
-    )
-
   override def updateExpensesData(
     nino: Nino,
     year: Int,
@@ -233,11 +221,14 @@ class DefaultIabdConnector @Inject() (
   )(implicit hc: HeaderCarrier, request: AuthenticatedRequest[_]): Future[HttpResponse] =
     featureFlagService.get(HipIabdsUpdateExpensesToggle).flatMap { toggle =>
       if (toggle.isEnabled) {
+        val (baseUrl, originatorId, extraInfo) =
+          (hipConfig.baseURL, hipConfig.originatorId, Some(Tuple2(hipConfig.clientId, hipConfig.clientSecret)))
+
         httpHandler.putToApiHttpClientV2[UpdateHipIabdEmployeeExpense](
-          s"${hipConfig.baseURL}/iabd/taxpayer/$nino/tax-year/$year/type/${IabdType.hipMapping(iabdType)}",
+          s"$baseUrl/iabd/taxpayer/$nino/tax-year/$year/type/${IabdType.hipMapping(iabdType)}",
           UpdateHipIabdEmployeeExpense(version, expensesData.grossAmount),
           HipIabdUpdateEmployeeExpensesAPI,
-          headersForHipUpdateExpensesData(version)
+          HipHeaders.get(originatorId, hc, extraInfo) ++ Seq("ETag" -> version.toString)
         )
       } else {
         httpHandler.postToApi[List[UpdateIabdEmployeeExpense]](
