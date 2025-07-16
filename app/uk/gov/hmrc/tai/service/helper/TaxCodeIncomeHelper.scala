@@ -20,40 +20,19 @@ import com.google.inject.{Inject, Singleton}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.{HeaderCarrier, NotFoundException}
 import uk.gov.hmrc.tai.connectors.TaxAccountConnector
-import uk.gov.hmrc.tai.model.domain.IabdDetails
 import uk.gov.hmrc.tai.model.domain.income.*
 import uk.gov.hmrc.tai.model.tai.TaxYear
-import uk.gov.hmrc.tai.service.IabdService
 
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class TaxCodeIncomeHelper @Inject() (
-  taxAccountConnector: TaxAccountConnector,
-  iabdService: IabdService
+  taxAccountConnector: TaxAccountConnector
 )(implicit ec: ExecutionContext) {
-  def fetchTaxCodeIncomes(nino: Nino, year: TaxYear)(implicit hc: HeaderCarrier): Future[Seq[TaxCodeIncome]] = {
-    lazy val iabdDetailsFuture = iabdService.retrieveIabdDetails(nino, year)
-
-    for {
-
-      taxCodeIncomes <- taxAccountConnector
-                          .taxAccount(nino, year)
-                          .map(_.as[Seq[TaxCodeIncome]](TaxCodeIncomeHipReads.taxCodeIncomeSourcesReads))
-      iabdDetails <- iabdDetailsFuture
-    } yield taxCodeIncomes.map { taxCodeIncome =>
-      addIabdDetailsToTaxCodeIncome(iabdDetails, taxCodeIncome)
-    }
-  }
-
-  private def addIabdDetailsToTaxCodeIncome(iabdDetails: Seq[IabdDetails], taxCodeIncome: TaxCodeIncome) = {
-    val iabdDetail = iabdDetails.find(_.employmentSequenceNumber == taxCodeIncome.employmentId)
-    taxCodeIncome.copy(
-      iabdUpdateSource = iabdDetail.flatMap(_.source).flatMap(code => IabdUpdateSource.fromCode(code)),
-      updateNotificationDate = iabdDetail.flatMap(_.receiptDate),
-      updateActionDate = iabdDetail.flatMap(_.captureDate)
-    )
-  }
+  def fetchTaxCodeIncomes(nino: Nino, year: TaxYear)(implicit hc: HeaderCarrier): Future[Seq[TaxCodeIncome]] =
+    taxAccountConnector
+      .taxAccount(nino, year)
+      .map(_.as[Seq[TaxCodeIncome]](TaxCodeIncomeHipReads.taxCodeIncomeSourcesReads))
 
   def incomeAmountForEmploymentId(nino: Nino, year: TaxYear, employmentId: Int)(implicit
     hc: HeaderCarrier
