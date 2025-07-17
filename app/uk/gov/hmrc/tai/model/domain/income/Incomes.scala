@@ -16,8 +16,8 @@
 
 package uk.gov.hmrc.tai.model.domain.income
 
-import play.api.libs.json._
-import uk.gov.hmrc.tai.model.domain._
+import play.api.libs.json.*
+import uk.gov.hmrc.tai.model.domain.*
 
 case class UntaxedInterest(
   incomeComponentType: NonTaxCodeIncomeComponentType,
@@ -54,7 +54,7 @@ case class Incomes(taxCodeIncomes: Seq[TaxCodeIncome], nonTaxCodeIncomes: NonTax
 
 object Incomes {
   implicit val format: Format[Incomes] = {
-    import TaxCodeIncomeHipReads.reads
+    import uk.gov.hmrc.tai.model.hip.reads.TaxCodeIncomeHipReads.reads
     Json.format[Incomes]
   }
 }

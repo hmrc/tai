@@ -14,12 +14,13 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.tai.model.domain.calculation
+package uk.gov.hmrc.tai.model.hip.reads
 
 import org.scalatestplus.play.PlaySpec
 import play.api.libs.json.*
 import uk.gov.hmrc.domain.{Generator, Nino}
 import uk.gov.hmrc.tai.model.domain.*
+import uk.gov.hmrc.tai.model.domain.calculation.CodingComponent
 import uk.gov.hmrc.tai.model.domain.calculation.CodingComponent.codingComponentWrites
 
 import scala.io.Source
@@ -100,7 +101,7 @@ class CodingComponentHipReadsSpec extends PlaySpec {
 
       }
     }
-//
+
     "return all allowances received" when {
       "multiple allowances are present" in {
         val payload = readFile("tc06.json")
@@ -126,7 +127,6 @@ class CodingComponentHipReadsSpec extends PlaySpec {
       }
 
     }
-//
     "return all deductions" when {
       "multiple deductions are present" in {
         val payload = readFile("tc07.json")

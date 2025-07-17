@@ -19,6 +19,7 @@ package uk.gov.hmrc.tai.model.domain
 import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
 import play.api.libs.json.{JsArray, JsNull, Json}
+import uk.gov.hmrc.tai.model.hip.reads.TaxOnOtherIncomeHipReads
 
 class TaxOnOtherIncomeSpec extends PlaySpec with MockitoSugar {
 

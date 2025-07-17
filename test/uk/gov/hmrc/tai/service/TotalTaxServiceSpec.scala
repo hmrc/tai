@@ -20,11 +20,12 @@ import org.mockito.ArgumentMatchers.{any, eq as meq}
 import org.mockito.Mockito.{reset, when}
 import play.api.libs.json.{JsObject, Json}
 import uk.gov.hmrc.tai.connectors.TaxAccountConnector
-import uk.gov.hmrc.tai.model.domain.calculation.{IncomeCategory, TotalTaxHipReads}
+import uk.gov.hmrc.tai.model.domain.calculation.IncomeCategory
 import uk.gov.hmrc.tai.model.domain.taxAdjustments.*
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.service.helper.TaxAccountHelper
 import uk.gov.hmrc.tai.util.BaseSpec
+import uk.gov.hmrc.tai.model.hip.reads.TotalTaxHipReads
 
 import scala.concurrent.Future
 

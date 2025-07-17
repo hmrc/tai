@@ -20,7 +20,8 @@ import com.google.inject.{Inject, Singleton}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.tai.connectors.TaxAccountConnector
-import uk.gov.hmrc.tai.model.domain.calculation.{IncomeCategory, TotalTax, TotalTaxHipReads}
+import uk.gov.hmrc.tai.model.domain.calculation.{IncomeCategory, TotalTax}
+import uk.gov.hmrc.tai.model.hip.reads.TotalTaxHipReads
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.service.helper.TaxAccountHelper
 
