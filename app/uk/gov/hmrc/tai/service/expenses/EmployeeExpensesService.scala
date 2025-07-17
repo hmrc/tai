@@ -17,7 +17,7 @@
 package uk.gov.hmrc.tai.service.expenses
 
 import com.google.inject.{Inject, Singleton}
-import play.api.libs.json.{JsArray, Json, Reads}
+import play.api.libs.json.{JsArray, Reads}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
 import uk.gov.hmrc.mongoFeatureToggles.services.FeatureFlagService
@@ -63,7 +63,6 @@ class EmployeeExpensesService @Inject() (
           case Some(sourceTypeString) =>
             iabdConnector.iabds(nino, TaxYear(taxYear), Some(sourceTypeString)).map { response =>
               val jsonArray = (response \ "iabdDetails").as[JsArray]
-              println(Json.prettyPrint(jsonArray))
               jsonArray.as[List[IabdDetails]](Reads.list(readsHip))
             }
         }

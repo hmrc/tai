@@ -21,8 +21,8 @@ import play.api.libs.functional.syntax.toFunctionalBuilderOps
 import play.api.libs.json.*
 import play.api.libs.json.Reads.localDateReads
 import uk.gov.hmrc.tai.model.nps.NpsDate
-import uk.gov.hmrc.tai.util.{IabdTypeConstants, JsonHelper}
 import uk.gov.hmrc.tai.util.JsonHelper.readsTypeTuple
+import uk.gov.hmrc.tai.util.{IabdTypeConstants, JsonHelper}
 
 import java.time.LocalDate
 
@@ -142,7 +142,7 @@ object IabdDetails extends IabdTypeConstants with Logging {
       (JsPath \ "grossAmount").readNullable[BigDecimal])(
       (nino, employmentSequenceNumber, source, iabdType, receiptDate, captureDate, grossAmount) =>
         IabdDetails(
-          Some(nino),
+          Some(nino.take(8)),
           employmentSequenceNumber,
           source.flatten,
           Some(iabdType._2),
