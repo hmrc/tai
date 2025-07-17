@@ -16,17 +16,17 @@
 
 package uk.gov.hmrc.tai.model.hip.reads
 
-import play.api.libs.json.*
+import play.api.libs.functional.syntax.*
+import play.api.libs.json.{JsArray, JsValue, Reads, __}
 import uk.gov.hmrc.tai.model.domain.RateBand
 
 object RateBandHipReads {
-
-  implicit val rateBandReads: Reads[RateBand] = Json.reads[RateBand]
+  implicit val rateBandReads: Reads[RateBand] =
+    ((__ \ "income").read[BigDecimal] and (__ \ "rate").read[BigDecimal])(RateBand.apply _)
 
   def incomeAndRateBands(json: JsValue): Seq[RateBand] =
     (json \ "totalLiabilityDetails" \ "nonSavings" \ "taxBandDetails")
-      .validateOpt[List[RateBand]]
-      .getOrElse(None)
-      .getOrElse(Nil)
-      .sortBy(-_.rate)
+      .asOpt[JsArray]
+      .map(_.value.flatMap(_.asOpt[RateBand](rateBandReads)).toSeq.sortBy(-_.rate))
+      .getOrElse(Seq.empty)
 }

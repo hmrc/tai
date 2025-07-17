@@ -38,6 +38,8 @@ case class IabdDetails(
 
 object IabdDetails extends IabdTypeConstants with Logging {
 
+  implicit val format: OFormat[IabdDetails] = Json.format[IabdDetails]
+
   private val dateReads: Reads[LocalDate] = localDateReads("yyyy-MM-dd")
 
   def sourceReads: Reads[Option[Int]] = {
@@ -287,17 +289,12 @@ object IabdDetails extends IabdTypeConstants with Logging {
       "HICBC PAYE (131)"
     )
 
-    val iabdMap = iabdList.flatMap { iabdString =>
-      JsonHelper.parseType(iabdString) match {
-        case Some((_, iabdCode)) => Some(iabdCode -> iabdString)
-        case None =>
-          val ex = new RuntimeException(s"Failed to parse IABD type from string: $iabdString")
-          logger.error(ex.getMessage, ex)
-          None
+    iabdList
+      .flatMap { str =>
+        uk.gov.hmrc.tai.util.JsonHelper.parseType(str).map(_._2 -> str)
       }
-    }.toMap
-
-    iabdMap.get(sourceType)
+      .toMap
+      .get(sourceType)
   }
 
   implicit val writes: Writes[IabdDetails] = Json.writes[IabdDetails]
