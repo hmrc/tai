@@ -17,7 +17,7 @@
 package uk.gov.hmrc.tai.service.expenses
 
 import com.google.inject.{Inject, Singleton}
-import play.api.libs.json.{JsArray, Reads}
+import play.api.libs.json.{JsArray, JsError, JsSuccess, Reads}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
 import uk.gov.hmrc.mongoFeatureToggles.services.FeatureFlagService
@@ -62,8 +62,10 @@ class EmployeeExpensesService @Inject() (
             Future.failed(new RuntimeException(s"Could not find IABD type for sourceType: $iabd"))
           case Some(sourceTypeString) =>
             iabdConnector.iabds(nino, TaxYear(taxYear), Some(sourceTypeString)).map { response =>
-              val jsonArray = (response \ "iabdDetails").as[JsArray]
-              jsonArray.as[List[IabdDetails]](Reads.list(readsHip))
+              (response \ "iabdDetails").validate[JsArray] match {
+                case JsSuccess(array, _) => array.as[List[IabdDetails]](Reads.list(readsHip))
+                case JsError(_)          => List.empty[IabdDetails]
+              }
             }
         }
       } else {
