@@ -151,7 +151,7 @@ class EmployeeExpensesServiceSpec extends BaseSpec {
 
     "return a list of NpsIabds" when {
 
-      "success response from des connector when desEnabled is true" in {
+      "success response from hip connector when HipGetIabdsExpensesToggle is true" in {
         val mockIabdConnector = mock[IabdConnector]
         when(mockIabdConnector.iabds(any(), any(), any())(any()))
           .thenReturn(Future.successful(Json.parse(validNpsIabdJson)))
@@ -165,6 +165,44 @@ class EmployeeExpensesServiceSpec extends BaseSpec {
         val result: Future[List[NpsIabdRoot]] = service.getEmployeeExpenses(nino, taxYear, iabd)
 
         result.futureValue mustBe validNpsIabd
+
+        verify(mockIabdConnector, times(1))
+          .iabds(nino, TaxYear(taxYear), Some(s"Flat Rate Job Expenses (0$iabd)"))
+      }
+
+      "success response from hip connector when iabdDetails is missing" in {
+        val mockIabdConnector = mock[IabdConnector]
+        when(mockIabdConnector.iabds(any(), any(), any())(any()))
+          .thenReturn(Future.successful(Json.parse("{}")))
+        when(mockFeatureFlagService.get(eqTo[FeatureFlagName](HipGetIabdsExpensesToggle))).thenReturn(
+          Future.successful(FeatureFlag(HipGetIabdsExpensesToggle, isEnabled = true))
+        )
+
+        val service =
+          new EmployeeExpensesService(iabdConnector = mockIabdConnector, featureFlagService = mockFeatureFlagService)
+
+        val result: Future[List[NpsIabdRoot]] = service.getEmployeeExpenses(nino, taxYear, iabd)
+
+        result.futureValue mustBe List.empty
+
+        verify(mockIabdConnector, times(1))
+          .iabds(nino, TaxYear(taxYear), Some(s"Flat Rate Job Expenses (0$iabd)"))
+      }
+
+      "success response from hip connector when iabdDetails is empty" in {
+        val mockIabdConnector = mock[IabdConnector]
+        when(mockIabdConnector.iabds(any(), any(), any())(any()))
+          .thenReturn(Future.successful(Json.parse("""{"iabdDetails": []}""")))
+        when(mockFeatureFlagService.get(eqTo[FeatureFlagName](HipGetIabdsExpensesToggle))).thenReturn(
+          Future.successful(FeatureFlag(HipGetIabdsExpensesToggle, isEnabled = true))
+        )
+
+        val service =
+          new EmployeeExpensesService(iabdConnector = mockIabdConnector, featureFlagService = mockFeatureFlagService)
+
+        val result: Future[List[NpsIabdRoot]] = service.getEmployeeExpenses(nino, taxYear, iabd)
+
+        result.futureValue mustBe List.empty
 
         verify(mockIabdConnector, times(1))
           .iabds(nino, TaxYear(taxYear), Some(s"Flat Rate Job Expenses (0$iabd)"))

@@ -54,7 +54,9 @@ object NpsIabdRoot {
   )
 
   val readsHipListNpsIabdRoot: Reads[List[NpsIabdRoot]] =
-    (JsPath \ "iabdDetails").read[List[NpsIabdRoot]](Reads.list(readsHipNpsIabdRoot))
+    (JsPath \ "iabdDetails")
+      .readNullable[List[NpsIabdRoot]](Reads.list(readsHipNpsIabdRoot))
+      .map(_.getOrElse(List.empty))
 
   def iabdTypeToString(sourceType: Int): Option[String] = {
     val iabdList = List(
