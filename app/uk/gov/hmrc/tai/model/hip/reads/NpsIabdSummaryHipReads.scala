@@ -30,16 +30,12 @@ object NpsIabdSummaryHipReads {
   val iabdsFromTotalLiabilityReads: Reads[Seq[NpsIabdSummary]] =
     Reads { json =>
       JsSuccess {
-        categories.flatMap { category =>
-          listNames.flatMap { listName =>
-            subPaths.flatMap { subPath =>
-              (json \ "totalLiabilityDetails" \ category \ subPath \ listName)
-                .asOpt[Seq[JsValue]]
-                .getOrElse(Seq.empty)
-                .flatMap(parseIabdSummary)
-            }
-          }
-        }
+        (for {
+          category <- categories
+          listName <- listNames
+          subPath  <- subPaths
+          jsValues <- (json \ "totalLiabilityDetails" \ category \ subPath \ listName).asOpt[Seq[JsValue]].toSeq
+        } yield jsValues.flatMap(parseIabdSummary)).flatten
       }
     }
 

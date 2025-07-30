@@ -42,7 +42,7 @@ object IabdDetails extends IabdTypeConstants with Logging {
 
   private val dateReads: Reads[LocalDate] = localDateReads("yyyy-MM-dd")
 
-  def sourceReads: Reads[Option[Int]] = {
+  private def sourceReads: Reads[Option[Int]] = {
     case JsString(n) =>
       mapIabdSource.get(n) match {
         case Some(iabdSource) => JsSuccess(Some(iabdSource))
@@ -155,8 +155,8 @@ object IabdDetails extends IabdTypeConstants with Logging {
   val reads: Reads[Seq[IabdDetails]] =
     (JsPath \ "iabdDetails").readNullable(Reads.seq(iabdReads)).map(_.getOrElse(Seq.empty))
 
-  def iabdTypeToString(sourceType: Int): Option[String] = {
-    val iabdList = List(
+  private lazy val iabdList =
+    List(
       "Gift Aid Payments (001)",
       "Gift Aid treated as paid in previous tax year (002)",
       "One off Gift Aid Payments (003)",
@@ -289,13 +289,13 @@ object IabdDetails extends IabdTypeConstants with Logging {
       "HICBC PAYE (131)"
     )
 
+  def iabdTypeToString(sourceType: Int): Option[String] =
     iabdList
       .flatMap { str =>
         uk.gov.hmrc.tai.util.JsonHelper.parseType(str).map(_._2 -> str)
       }
       .toMap
       .get(sourceType)
-  }
 
   implicit val writes: Writes[IabdDetails] = Json.writes[IabdDetails]
 
