@@ -18,7 +18,7 @@ import uk.gov.hmrc.DefaultBuildSettings
 val appName: String = "tai"
 
 ThisBuild / majorVersion := 3
-ThisBuild / scalaVersion := "3.3.4"
+ThisBuild / scalaVersion := "3.3.6"
 ThisBuild / scalafmtOnCompile := true
 ThisBuild / scalacOptions ++= Seq(
   "-unchecked",
