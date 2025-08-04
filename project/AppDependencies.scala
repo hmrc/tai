@@ -4,7 +4,7 @@ import sbt.*
 object AppDependencies {
 
   private val playVersion = "play-30"
-  private val bootstrapVersion = "9.16.0"
+  private val bootstrapVersion = "9.17.0"
 
   val compile: Seq[ModuleID] = Seq(
     filters,

@@ -30,7 +30,6 @@ import uk.gov.hmrc.tai.util.JsonHelper
 import java.time.format.DateTimeFormatter
 
 case class IabdDetails(
-  nino: Option[String],
   employmentSequenceNumber: Option[Int],
   source: Option[Int], // iabdUpdateSource source.flatMap(code => IabdUpdateSource.fromCode(code)
   `type`: Option[Int],
@@ -59,7 +58,6 @@ object IabdDetails extends IabdTypeConstants with Logging {
     def writes(iabd: IabdDetails): JsObject =
       removeNulls(
         Json.obj(
-          "nino"                     -> iabd.nino,
           "employmentSequenceNumber" -> iabd.employmentSequenceNumber,
           "source"                   -> iabd.source.map(source => IabdUpdateSource.fromCode(source)),
           "type"                     -> iabd.`type`,
@@ -142,17 +140,15 @@ object IabdDetails extends IabdTypeConstants with Logging {
   )
 
   private val iabdReads: Reads[IabdDetails] =
-    ((JsPath \ "nationalInsuranceNumber").read[String] and
-      (JsPath \ "employmentSequenceNumber").readNullable[Int] and
+    ((JsPath \ "employmentSequenceNumber").readNullable[Int] and
       (JsPath \ "source").readNullable[Option[Int]](sourceReads) and
       (JsPath \ "type").read[(String, Int)](readsTypeTuple) and
       (JsPath \ "receiptDate").readNullable[LocalDate](dateReads) and
       (JsPath \ "captureDate").readNullable[LocalDate](dateReads) and
       (JsPath \ "grossAmount").readNullable[BigDecimal])(
-      (nino, employmentSequenceNumber, source, iabdType, receiptDate, captureDate, grossAmount) =>
+      (employmentSequenceNumber, source, iabdType, receiptDate, captureDate, grossAmount) =>
         IabdDetails
           .apply(
-            Some(nino),
             employmentSequenceNumber,
             source.flatten,
             Some(iabdType._2),
