@@ -28,6 +28,7 @@ import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.service.IabdService
 
 import scala.concurrent.ExecutionContext
+import play.api.libs.json.JsObject
 
 @Singleton
 class IabdController @Inject() (
@@ -41,7 +42,14 @@ class IabdController @Inject() (
   def getIabds(nino: Nino, year: TaxYear): Action[AnyContent] = authentication.authWithUserDetails.async {
     implicit request =>
       iabdService.retrieveIabdDetails(nino, year).map { iabdDetails =>
-        Ok(Json.toJson(ApiResponse(Json.toJson(iabdDetails)(Writes.seq(IabdDetails.writesIabds)), Nil)))
+        Ok(
+          Json.toJson(
+            ApiResponse[JsObject](
+              Json.obj("iabdDetails" -> Json.toJson(iabdDetails)(Writes.seq(IabdDetails.writesIabds))),
+              Nil
+            )
+          )
+        )
       }
   }
 }

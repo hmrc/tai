@@ -56,6 +56,14 @@ class IabdControllerSpec extends BaseSpec {
               Some(LocalDate.parse("2025-01-01")),
               Some(LocalDate.parse("2025-01-01")),
               Some(BigDecimal(1234.5))
+            ),
+            IabdDetails(
+              Some(1),
+              Some(10),
+              Some(11),
+              Some(LocalDate.parse("2025-01-01")),
+              Some(LocalDate.parse("2025-01-01")),
+              Some(BigDecimal(1234.5))
             )
           )
         )
@@ -65,7 +73,10 @@ class IabdControllerSpec extends BaseSpec {
 
       status(result) mustBe OK
       contentAsJson(result) mustBe Json.parse(
-        """{"data":[{"employmentSequenceNumber":1,"type":11,"receiptDate":"2025-01-01","captureDate":"2025-01-01","grossAmount":1234.5}],"links":[]}"""
+        """{"data":{"iabdDetails": [
+          |{"employmentSequenceNumber":1,"type":11,"receiptDate":"2025-01-01","captureDate":"2025-01-01","grossAmount":1234.5},
+          |{"employmentSequenceNumber":1,"type":11,"receiptDate":"2025-01-01","captureDate":"2025-01-01","grossAmount":1234.5}
+          |]},"links":[]}""".stripMargin
       )
     }
   }

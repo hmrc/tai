@@ -57,15 +57,13 @@ object IabdDetails extends IabdTypeConstants with Logging {
   val writesIabds: OWrites[IabdDetails] = new OWrites[IabdDetails] {
     def writes(iabd: IabdDetails): JsObject =
       removeNulls(
-        Json.obj("iabdDetails" ->
-          Json.obj(
-            "employmentSequenceNumber" -> iabd.employmentSequenceNumber,
-            "source"                   -> iabd.source.map(source => IabdUpdateSource.fromCode(source)),
-            "type"                     -> iabd.`type`,
-            "receiptDate"              -> iabd.receiptDate.map(receiptDate => Json.toJson(receiptDate)(dateWrites)),
-            "captureDate"              -> iabd.captureDate.map(captureDate => Json.toJson(captureDate)(dateWrites)),
-            "grossAmount"              -> iabd.grossAmount
-          )
+        Json.obj(
+          "employmentSequenceNumber" -> iabd.employmentSequenceNumber,
+          "source"                   -> iabd.source.map(source => IabdUpdateSource.fromCode(source)),
+          "type"                     -> iabd.`type`,
+          "receiptDate"              -> iabd.receiptDate.map(receiptDate => Json.toJson(receiptDate)(dateWrites)),
+          "captureDate"              -> iabd.captureDate.map(captureDate => Json.toJson(captureDate)(dateWrites)),
+          "grossAmount"              -> iabd.grossAmount
         )
       )
   }
