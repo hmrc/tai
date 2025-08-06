@@ -6,14 +6,13 @@ Allows users to view and edit their paye tax information
 Requirements
 ------------
 
-This service is written in [Scala 2.13](http://www.scala-lang.org/) and [Play 3.0](http://playframework.com/), so needs at least a [JRE 21](http://www.oracle.com/technetwork/java/javase/downloads/index.html) to run.
+This service is written in [Scala 3.x](http://www.scala-lang.org/) and [Play 3.x](http://playframework.com/), so needs at least a [JRE 21](http://www.oracle.com/technetwork/java/javase/downloads/index.html) to run.
 
 API
 ---
 
 | *Task*                                                                                                   | *Supported Methods* | *Description*                                                                                                                                                                              | Status |
 |----------------------------------------------------------------------------------------------------------|---------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|--------|
-| ```/tai/:nino/person ```                                                                                 | GET                 | The end point retrieves designatory details for the given nino.                                                                                                                            | Marked for deletion |
 | ```/tai/:nino/employments/years/:year ```                                                                | GET                 | The end point retrieves all employments for a given year with Annual Account information [More...](docs/employments/annual-account-employments.md)                                         | Deprecated |
 | ```/tai/:nino/employments/years/:year/update ```                                                         | POST                | The end point updates the incorrect employment details [More...](docs/employments/update-employments.md)                                                                                   | Live |
 | ```/tai/:nino/employments/:id ```                                                                        | GET                 | The end point retrieves employments by provided id [More...](docs/employments/id-employments.md)                                                                                           | Deprecated |
