@@ -35,7 +35,6 @@ class IabdDetailsSpec extends PlaySpec {
         )
       )
       val expectedModel: IabdDetails = IabdDetails(
-        nino = Some("AB123456C"),
         employmentSequenceNumber = Some(12345),
         source = None,
         `type` = Some(19),
@@ -60,7 +59,6 @@ class IabdDetailsSpec extends PlaySpec {
         )
       )
       val expectedModel: IabdDetails = IabdDetails(
-        nino = Some("AB123456C"),
         employmentSequenceNumber = Some(12345),
         source = Some(53),
         `type` = Some(19),
@@ -84,7 +82,6 @@ class IabdDetailsSpec extends PlaySpec {
         )
       )
       val expectedModel: IabdDetails = IabdDetails(
-        nino = Some("AB123456C"),
         employmentSequenceNumber = Some(12345),
         source = None,
         `type` = Some(19),

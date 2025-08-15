@@ -20,24 +20,53 @@ import play.api.Logging
 import play.api.libs.functional.syntax.toFunctionalBuilderOps
 import play.api.libs.json.*
 import play.api.libs.json.Reads.localDateReads
+import uk.gov.hmrc.tai.model.domain.income.IabdUpdateSource
 import uk.gov.hmrc.tai.util.IabdTypeConstants
 import uk.gov.hmrc.tai.util.JsonHelper.readsTypeTuple
 
 import java.time.LocalDate
 import uk.gov.hmrc.tai.util.JsonHelper
 
+import java.time.format.DateTimeFormatter
+
 case class IabdDetails(
-  nino: Option[String],
   employmentSequenceNumber: Option[Int],
-  source: Option[Int],
+  source: Option[Int], // iabdUpdateSource source.flatMap(code => IabdUpdateSource.fromCode(code)
   `type`: Option[Int],
-  receiptDate: Option[LocalDate],
-  captureDate: Option[LocalDate],
+  receiptDate: Option[LocalDate], // updateNotificationDate
+  captureDate: Option[LocalDate], // updateActionDate
   grossAmount: Option[BigDecimal] = None
 )
 
 object IabdDetails extends IabdTypeConstants with Logging {
   private val dateReads: Reads[LocalDate] = localDateReads("yyyy-MM-dd")
+  private val dateWrites: Writes[LocalDate] = new Writes[LocalDate] {
+    val dateFormat: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
+    override def writes(date: LocalDate): JsValue =
+      JsString(date.format(dateFormat))
+  }
+
+  private def removeNulls(jsObject: JsObject): JsObject =
+    JsObject(jsObject.fields.collect {
+      case (s, j: JsObject) =>
+        (s, removeNulls(j))
+      case other if other._2 != JsNull =>
+        other
+    })
+
+  val writesIabds: OWrites[IabdDetails] = new OWrites[IabdDetails] {
+    def writes(iabd: IabdDetails): JsObject =
+      removeNulls(
+        Json.obj(
+          "employmentSequenceNumber" -> iabd.employmentSequenceNumber,
+          "source"                   -> iabd.source.map(source => IabdUpdateSource.fromCode(source)),
+          "type"                     -> iabd.`type`,
+          "receiptDate"              -> iabd.receiptDate.map(receiptDate => Json.toJson(receiptDate)(dateWrites)),
+          "captureDate"              -> iabd.captureDate.map(captureDate => Json.toJson(captureDate)(dateWrites)),
+          "grossAmount"              -> iabd.grossAmount
+        )
+      )
+  }
 
   def sourceReads: Reads[Option[Int]] = {
     case JsString(n) =>
@@ -111,17 +140,15 @@ object IabdDetails extends IabdTypeConstants with Logging {
   )
 
   private val iabdReads: Reads[IabdDetails] =
-    ((JsPath \ "nationalInsuranceNumber").read[String] and
-      (JsPath \ "employmentSequenceNumber").readNullable[Int] and
+    ((JsPath \ "employmentSequenceNumber").readNullable[Int] and
       (JsPath \ "source").readNullable[Option[Int]](sourceReads) and
       (JsPath \ "type").read[(String, Int)](readsTypeTuple) and
       (JsPath \ "receiptDate").readNullable[LocalDate](dateReads) and
       (JsPath \ "captureDate").readNullable[LocalDate](dateReads) and
       (JsPath \ "grossAmount").readNullable[BigDecimal])(
-      (nino, employmentSequenceNumber, source, iabdType, receiptDate, captureDate, grossAmount) =>
+      (employmentSequenceNumber, source, iabdType, receiptDate, captureDate, grossAmount) =>
         IabdDetails
           .apply(
-            Some(nino),
             employmentSequenceNumber,
             source.flatten,
             Some(iabdType._2),

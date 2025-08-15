@@ -81,7 +81,6 @@ class IabdServiceSpec extends BaseSpec {
 
         result mustBe Seq(
           IabdDetails(
-            Some("BR5600244"),
             None,
             Some(26),
             Some(27),
@@ -89,7 +88,6 @@ class IabdServiceSpec extends BaseSpec {
             Some(LocalDate.parse("2017-04-10"))
           ),
           IabdDetails(
-            Some("KX8600231"),
             Some(2),
             Some(17),
             Some(27),

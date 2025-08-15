@@ -4,8 +4,8 @@ import sbt.*
 object AppDependencies {
 
   private val playVersion = "play-30"
-  private val bootstrapVersion = "9.16.0"
-  private val mongoClientVersion = "1.10.0"
+  private val bootstrapVersion = "9.18.0"
+  private val mongoClientVersion = "2.2.0"
 
   val compile: Seq[ModuleID] = Seq(
     filters,
