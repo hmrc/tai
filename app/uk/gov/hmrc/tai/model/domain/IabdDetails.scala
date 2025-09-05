@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 HM Revenue & Customs
+ * Copyright 2025 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,69 +17,63 @@
 package uk.gov.hmrc.tai.model.domain
 
 import play.api.Logging
-import play.api.libs.functional.syntax.toFunctionalBuilderOps
-import play.api.libs.json.*
-import play.api.libs.json.Reads.localDateReads
+import play.api.libs.functional.syntax._
+import play.api.libs.json._
 import uk.gov.hmrc.tai.model.domain.income.IabdUpdateSource
-import uk.gov.hmrc.tai.util.IabdTypeConstants
+import uk.gov.hmrc.tai.util.JsonHelper
 import uk.gov.hmrc.tai.util.JsonHelper.readsTypeTuple
 
 import java.time.LocalDate
-import uk.gov.hmrc.tai.util.JsonHelper
-
 import java.time.format.DateTimeFormatter
 
 case class IabdDetails(
-  employmentSequenceNumber: Option[Int],
-  source: Option[Int], // iabdUpdateSource source.flatMap(code => IabdUpdateSource.fromCode(code)
-  `type`: Option[Int],
-  receiptDate: Option[LocalDate], // updateNotificationDate
-  captureDate: Option[LocalDate], // updateActionDate
-  grossAmount: Option[BigDecimal] = None
+  nino: Option[String] = None,
+  employmentSequenceNumber: Option[Int] = None,
+
+  source: Option[Int] = None,
+  `type`: Option[Int] = None,
+
+  receiptDate: Option[LocalDate] = None,
+  captureDate: Option[LocalDate] = None,
+
+  grossAmount: Option[BigDecimal] = None,
+  netAmount: Option[BigDecimal] = None
 )
 
-object IabdDetails extends IabdTypeConstants with Logging {
-  private val dateReads: Reads[LocalDate] = localDateReads("yyyy-MM-dd")
-  private val dateWrites: Writes[LocalDate] = new Writes[LocalDate] {
-    val dateFormat: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
-    override def writes(date: LocalDate): JsValue =
-      JsString(date.format(dateFormat))
+object IabdDetails extends Logging {
+
+  private val isoFmt: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
+  private val npsFmt: DateTimeFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy")
+
+  private val lenientLocalDateReads: Reads[LocalDate] = Reads {
+    case JsString(s) =>
+      def parse(fmt: DateTimeFormatter): Option[LocalDate] =
+        scala.util.Try(LocalDate.parse(s, fmt)).toOption
+
+      parse(isoFmt)
+        .orElse(parse(npsFmt))
+        .map(JsSuccess(_))
+        .getOrElse(JsError(s"Invalid date format: $s (expected yyyy-MM-dd or dd/MM/yyyy)"))
+
+    case other => JsError(s"Invalid JSON for LocalDate: $other")
   }
 
-  private def removeNulls(jsObject: JsObject): JsObject =
-    JsObject(jsObject.fields.collect {
-      case (s, j: JsObject) =>
-        (s, removeNulls(j))
-      case other if other._2 != JsNull =>
-        other
-    })
+  private val localDateWrites: Writes[LocalDate] = Writes(date => JsString(date.format(isoFmt)))
 
-  val writesIabds: OWrites[IabdDetails] = new OWrites[IabdDetails] {
-    def writes(iabd: IabdDetails): JsObject =
-      removeNulls(
-        Json.obj(
-          "employmentSequenceNumber" -> iabd.employmentSequenceNumber,
-          "source"                   -> iabd.source.map(source => IabdUpdateSource.fromCode(source)),
-          "type"                     -> iabd.`type`,
-          "receiptDate"              -> iabd.receiptDate.map(receiptDate => Json.toJson(receiptDate)(dateWrites)),
-          "captureDate"              -> iabd.captureDate.map(captureDate => Json.toJson(captureDate)(dateWrites)),
-          "grossAmount"              -> iabd.grossAmount
-        )
-      )
-  }
-
-  def sourceReads: Reads[Option[Int]] = {
-    case JsString(n) =>
-      mapIabdSource.get(n) match {
-        case Some(iabdSource) => JsSuccess(Some(iabdSource))
-        case _ =>
-          val errorMessage = s"Unknown iabd source: $n"
-          logger.warn(errorMessage, new RuntimeException(errorMessage))
-          JsSuccess(None)
-
-      }
-    case e =>
-      JsError(s"Invalid iabd source: $e")
+  def sourceReads: Reads[Option[Int]] = new Reads[Option[Int]] {
+    override def reads(json: JsValue): JsResult[Option[Int]] = json match {
+      case JsString(n) =>
+        mapIabdSource.get(n) match {
+          case Some(code) => JsSuccess(Some(code))
+          case None =>
+            val msg = s"Unknown iabd source: $n"
+            logger.warn(msg, new RuntimeException(msg))
+            JsSuccess(None)
+        }
+      case JsNumber(n) if n.isValidInt => JsSuccess(Some(n.toInt))
+      case JsNull                      => JsSuccess(None)
+      case other                       => JsError(s"Invalid iabd source: $other")
+    }
   }
 
   private lazy val mapIabdSource: Map[String, Int] = Map(
@@ -139,26 +133,61 @@ object IabdDetails extends IabdTypeConstants with Logging {
     "HICBC PAYE"            -> 53
   )
 
-  private val iabdReads: Reads[IabdDetails] =
-    ((JsPath \ "employmentSequenceNumber").readNullable[Int] and
-      (JsPath \ "source").readNullable[Option[Int]](sourceReads) and
-      (JsPath \ "type").read[(String, Int)](readsTypeTuple) and
-      (JsPath \ "receiptDate").readNullable[LocalDate](dateReads) and
-      (JsPath \ "captureDate").readNullable[LocalDate](dateReads) and
-      (JsPath \ "grossAmount").readNullable[BigDecimal])(
-      (employmentSequenceNumber, source, iabdType, receiptDate, captureDate, grossAmount) =>
-        IabdDetails
-          .apply(
-            employmentSequenceNumber,
-            source.flatten,
-            Some(iabdType._2),
-            receiptDate,
-            captureDate,
-            grossAmount
-          )
-    )
+  implicit val writes: OWrites[IabdDetails] = new OWrites[IabdDetails] {
+    private def removeNulls(js: JsObject): JsObject =
+      JsObject(js.fields.collect {
+        case (k, v: JsObject)      => k -> removeNulls(v)
+        case (k, v) if v != JsNull => k -> v
+      })
 
-  val reads: Reads[Seq[IabdDetails]] =
-    (JsPath \ "iabdDetails").readNullable(Reads.seq(iabdReads)).map(_.getOrElse(Seq.empty))
+    override def writes(i: IabdDetails): JsObject =
+      removeNulls(
+        Json.obj(
+          "nationalInsuranceNumber"  -> i.nino,
+          "employmentSequenceNumber" -> i.employmentSequenceNumber,
+          "source"                   -> i.source.map(IabdUpdateSource.fromCode),
+          "type"                     -> i.`type`,
+          "receiptDate"              -> i.receiptDate.map(Json.toJson(_)(localDateWrites)),
+          "captureDate"              -> i.captureDate.map(Json.toJson(_)(localDateWrites)),
+          "grossAmount"              -> i.grossAmount,
+          "netAmount"                -> i.netAmount
+        )
+      )
+  }
 
+  private val singleReads: Reads[IabdDetails] = {
+    val ninoReads: Reads[Option[String]] =
+      (JsPath \ "nationalInsuranceNumber")
+        .readNullable[String]
+        .map(_.map(_.take(8)))
+        .orElse((JsPath \ "nino").readNullable[String].map(_.map(_.take(8))))
+
+    val typeReadsFlexible: Reads[Option[Int]] =
+      (JsPath \ "type")
+        .readNullable[(String, Int)](readsTypeTuple)
+        .map(_.map(_._2))
+        .orElse((JsPath \ "type").readNullable[Int])
+
+    (
+      ninoReads and
+        (JsPath \ "employmentSequenceNumber").readNullable[Int] and
+        (JsPath \ "source").readNullable[Option[Int]](sourceReads).map(_.flatten) and
+        typeReadsFlexible and
+        (JsPath \ "receiptDate").readNullable[LocalDate](lenientLocalDateReads) and
+        (JsPath \ "captureDate").readNullable[LocalDate](lenientLocalDateReads) and
+        (JsPath \ "grossAmount").readNullable[BigDecimal] and
+        (JsPath \ "netAmount").readNullable[BigDecimal]
+    )(IabdDetails.apply _)
+
+  }
+
+  implicit val readsSingle: Reads[IabdDetails] = singleReads
+
+  implicit val listReads: Reads[List[IabdDetails]] =
+    Reads.list(readsSingle)
+
+  implicit val reads: Reads[Seq[IabdDetails]] =
+    (JsPath \ "iabdDetails").readNullable(Reads.seq(singleReads)).map(_.getOrElse(Seq.empty))
+
+  val singleObjectReads: Reads[IabdDetails] = singleReads
 }

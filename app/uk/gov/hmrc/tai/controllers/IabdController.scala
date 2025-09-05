@@ -45,7 +45,7 @@ class IabdController @Inject() (
         Ok(
           Json.toJson(
             ApiResponse[JsObject](
-              Json.obj("iabdDetails" -> Json.toJson(iabdDetails)(Writes.seq(IabdDetails.writesIabds))),
+              Json.obj("iabdDetails" -> Json.toJson(iabdDetails)(Writes.seq(IabdDetails.writes))),
               Nil
             )
           )

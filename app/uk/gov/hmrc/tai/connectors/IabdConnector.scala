@@ -19,9 +19,9 @@ package uk.gov.hmrc.tai.connectors
 import com.google.inject.name.Named
 import com.google.inject.{Inject, Singleton}
 import play.api.http.MimeTypes
-import play.api.libs.json.*
+import play.api.libs.json._
 import uk.gov.hmrc.domain.Nino
-import uk.gov.hmrc.http.*
+import uk.gov.hmrc.http._
 import uk.gov.hmrc.mongoFeatureToggles.services.FeatureFlagService
 import uk.gov.hmrc.tai.config.{DesConfig, HipConfig}
 import uk.gov.hmrc.tai.connectors.cache.CachingConnector
@@ -82,9 +82,7 @@ class CachingIabdConnector @Inject() (
   ): Future[List[IabdDetails]] =
     cachingConnector.cache(s"iabds-$nino-$year-$iabdType") {
       underlying.getIabdsForType(nino, year, iabdType)
-    }(
-      sensitiveFormatService.sensitiveFormatFromReadsWritesJsArray[List[IabdDetails]]
-    )
+    }(sensitiveFormatService.sensitiveFormatFromReadsWritesJsArray[List[IabdDetails]], implicitly)
   override def updateExpensesData(
     nino: Nino,
     year: Int,
@@ -186,10 +184,11 @@ class DefaultIabdConnector @Inject() (
   override def getIabdsForType(nino: Nino, year: Int, iabdType: Int)(implicit
     hc: HeaderCarrier
   ): Future[List[IabdDetails]] = {
-    val urlToRead = s"${desConfig.baseURL}/pay-as-you-earn/individuals/$nino/iabds/tax-year/$year?type=$iabdType"
+    val urlToRead =
+      s"${desConfig.baseURL}/pay-as-you-earn/individuals/$nino/iabds/tax-year/$year?type=$iabdType"
     httpHandler
-      .getFromApi(urlToRead, APITypes.DesIabdSpecificAPI, headersForGetIabdsForType)
-      .map(_.as[List[IabdDetails]])
+      .getFromApi(url = urlToRead, api = APITypes.DesIabdSpecificAPI, headers = headersForGetIabdsForType)
+      .map(_.as[List[IabdDetails]](Reads.list(IabdDetails.singleObjectReads)))
   }
 
   private def headersForUpdateExpensesData(version: Int, originatorId: String)(implicit
