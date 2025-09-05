@@ -21,8 +21,6 @@ import play.api.libs.json._
 import uk.gov.hmrc.tai.model.domain._
 import uk.gov.hmrc.tai.util.{TaiConstants, TaxCodeHistoryConstants}
 
-import java.time.LocalDate
-
 sealed trait BasisOperation
 case object Week1Month1BasisOperation extends BasisOperation
 case object CumulativeOperation extends BasisOperation
@@ -141,10 +139,10 @@ case class TaxCodeIncome(
   status: TaxCodeIncomeStatus,
   inYearAdjustmentIntoCY: BigDecimal,
   totalInYearAdjustment: BigDecimal,
-  inYearAdjustmentIntoCYPlusOne: BigDecimal,
-  iabdUpdateSource: Option[IabdUpdateSource] = None,
-  updateNotificationDate: Option[LocalDate] = None,
-  updateActionDate: Option[LocalDate] = None
+  inYearAdjustmentIntoCYPlusOne: BigDecimal
+  // iabdUpdateSource: Option[IabdUpdateSource] = None,
+  // updateNotificationDate: Option[LocalDate] = None,
+  // updateActionDate: Option[LocalDate] = None
 ) {
 
   lazy val taxCodeWithEmergencySuffix: String = basisOperation match {
@@ -167,10 +165,10 @@ object TaxCodeIncome {
         "status"                        -> Json.toJson(o.status),
         "inYearAdjustmentIntoCY"        -> Json.toJson(o.inYearAdjustmentIntoCY),
         "totalInYearAdjustment"         -> Json.toJson(o.totalInYearAdjustment),
-        "inYearAdjustmentIntoCYPlusOne" -> Json.toJson(o.inYearAdjustmentIntoCYPlusOne),
-        "iabdUpdateSource"              -> Json.toJson(o.iabdUpdateSource),
-        "updateNotificationDate"        -> Json.toJson(o.updateNotificationDate),
-        "updateActionDate"              -> Json.toJson(o.updateActionDate)
+        "inYearAdjustmentIntoCYPlusOne" -> Json.toJson(o.inYearAdjustmentIntoCYPlusOne)
+        // "iabdUpdateSource"              -> Json.toJson(o.iabdUpdateSource),
+        // "updateNotificationDate"        -> Json.toJson(o.updateNotificationDate),
+        // "updateActionDate"              -> Json.toJson(o.updateActionDate)
       ).filter {
         case (_, JsNull) => false
         case _           => true

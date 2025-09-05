@@ -7,16 +7,6 @@ mediaType: [ application/json, application/hal+json ]
 
 /tai:
   /{nino}:
-    /person:
-      get:
-        description: Returns the personal details of the user
-        responses:
-          200:
-            body:
-              application/json:
-                type: !include "schemas/personDetailsSchema.json"
-                example: !include "examples/personDetailsExample.json"
-          404:
     /employments:
       post:
         description: Add a new employment

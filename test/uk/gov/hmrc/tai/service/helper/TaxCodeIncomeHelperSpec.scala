@@ -21,19 +21,16 @@ import org.mockito.Mockito.when
 import play.api.libs.json.*
 import uk.gov.hmrc.tai.connectors.TaxAccountConnector
 import uk.gov.hmrc.tai.model.domain.income.*
-import uk.gov.hmrc.tai.model.domain.{EmploymentIncome, IabdDetails}
+import uk.gov.hmrc.tai.model.domain.EmploymentIncome
 import uk.gov.hmrc.tai.model.tai.TaxYear
-import uk.gov.hmrc.tai.service.IabdService
 import uk.gov.hmrc.tai.util.BaseSpec
 import uk.gov.hmrc.http.NotFoundException
 
-import java.time.LocalDate
 import scala.concurrent.Future
 
 class TaxCodeIncomeHelperSpec extends BaseSpec {
   private val mockTaxAccountConnector = mock[TaxAccountConnector]
-  private val mockIabdService = mock[IabdService]
-  private def createSut() = new TaxCodeIncomeHelper(mockTaxAccountConnector, mockIabdService)
+  private def createSut() = new TaxCodeIncomeHelper(mockTaxAccountConnector)
 
   private val taxAccountJson: JsObject = Json
     .parse("""{
@@ -101,11 +98,8 @@ class TaxCodeIncomeHelperSpec extends BaseSpec {
   "fetchTaxCodeIncomes" must {
     "return a sequence of taxCodeIncomes" when {
       "provided with valid nino" in {
-        val iabdDetailsSeq = Seq.empty[IabdDetails]
         when(mockTaxAccountConnector.taxAccount(meq(nino), meq(TaxYear()))(any()))
           .thenReturn(Future.successful(taxAccountJson))
-        when(mockIabdService.retrieveIabdDetails(any(), any())(any()))
-          .thenReturn(Future.successful(iabdDetailsSeq))
 
         val result = createSut().fetchTaxCodeIncomes(nino, TaxYear()).futureValue
 
@@ -121,10 +115,7 @@ class TaxCodeIncomeHelperSpec extends BaseSpec {
             Live,
             0,
             0,
-            0,
-            None,
-            None,
-            None
+            0
           ),
           TaxCodeIncome(
             EmploymentIncome,
@@ -137,30 +128,15 @@ class TaxCodeIncomeHelperSpec extends BaseSpec {
             Live,
             0,
             0,
-            0,
-            None,
-            None,
-            None
+            0
           )
         )
 
       }
 
       "iabd returns data for different employment" in {
-        val iabdDetailsSeq = Seq(
-          IabdDetails(
-            Some(nino.withoutSuffix),
-            Some(10),
-            Some(15),
-            Some(27),
-            None,
-            None
-          )
-        )
-
         when(mockTaxAccountConnector.taxAccount(meq(nino), meq(TaxYear()))(any()))
           .thenReturn(Future.successful(taxAccountJson))
-        when(mockIabdService.retrieveIabdDetails(any(), any())(any())).thenReturn(Future.successful(iabdDetailsSeq))
 
         val result = createSut().fetchTaxCodeIncomes(nino, TaxYear()).futureValue
 
@@ -176,10 +152,7 @@ class TaxCodeIncomeHelperSpec extends BaseSpec {
             Live,
             0,
             0,
-            0,
-            None,
-            None,
-            None
+            0
           ),
           TaxCodeIncome(
             EmploymentIncome,
@@ -192,30 +165,14 @@ class TaxCodeIncomeHelperSpec extends BaseSpec {
             Live,
             0,
             0,
-            0,
-            None,
-            None,
-            None
+            0
           )
         )
       }
 
       "iabd returns data for same employment" in {
-        val iabdDetailsSeq = Seq(
-          IabdDetails(
-            Some(nino.withoutSuffix),
-            Some(2),
-            Some(18),
-            Some(27),
-            None,
-            None
-          )
-        )
-
         when(mockTaxAccountConnector.taxAccount(meq(nino), meq(TaxYear()))(any()))
           .thenReturn(Future.successful(taxAccountJson))
-
-        when(mockIabdService.retrieveIabdDetails(any(), any())(any())).thenReturn(Future.successful(iabdDetailsSeq))
 
         val result = createSut().fetchTaxCodeIncomes(nino, TaxYear()).futureValue
 
@@ -231,10 +188,7 @@ class TaxCodeIncomeHelperSpec extends BaseSpec {
             Live,
             0,
             0,
-            0,
-            None,
-            None,
-            None
+            0
           ),
           TaxCodeIncome(
             EmploymentIncome,
@@ -247,30 +201,14 @@ class TaxCodeIncomeHelperSpec extends BaseSpec {
             Live,
             0,
             0,
-            0,
-            Some(AgentContact),
-            None,
-            None
+            0
           )
         )
       }
 
       "iabd returns data for same employment but code not present" in {
-        val iabdDetailsSeq = Seq(
-          IabdDetails(
-            Some(nino.withoutSuffix),
-            Some(2),
-            Some(418),
-            Some(27),
-            Some(LocalDate.parse("2017-04-10")),
-            Some(LocalDate.parse("2017-04-10"))
-          )
-        )
-
         when(mockTaxAccountConnector.taxAccount(meq(nino), meq(TaxYear()))(any()))
           .thenReturn(Future.successful(taxAccountJson))
-
-        when(mockIabdService.retrieveIabdDetails(any(), any())(any())).thenReturn(Future.successful(iabdDetailsSeq))
 
         val result = createSut().fetchTaxCodeIncomes(nino, TaxYear()).futureValue
 
@@ -299,10 +237,7 @@ class TaxCodeIncomeHelperSpec extends BaseSpec {
             Live,
             BigDecimal(0),
             BigDecimal(0),
-            BigDecimal(0),
-            None,
-            Some(LocalDate.parse("2017-04-10")),
-            Some(LocalDate.parse("2017-04-10"))
+            BigDecimal(0)
           )
         )
 
@@ -314,11 +249,8 @@ class TaxCodeIncomeHelperSpec extends BaseSpec {
     "return the income amount as a string" when {
       "the employmentId match with income details" in {
         val employmentId = 1
-        val iabdDetailsSeq = Seq.empty[IabdDetails]
         when(mockTaxAccountConnector.taxAccount(meq(nino), meq(TaxYear()))(any()))
           .thenReturn(Future.successful(taxAccountJsonWithTaxableIncome))
-        when(mockIabdService.retrieveIabdDetails(any(), any())(any()))
-          .thenReturn(Future.successful(iabdDetailsSeq))
 
         val result = createSut().incomeAmountForEmploymentId(nino, TaxYear(), employmentId).futureValue
         result mustBe Some("2500")
@@ -328,11 +260,8 @@ class TaxCodeIncomeHelperSpec extends BaseSpec {
     "return None" when {
       "the employmentId does not match with any income details" in {
         val employmentId = 123456
-        val iabdDetailsSeq = Seq.empty[IabdDetails]
         when(mockTaxAccountConnector.taxAccount(meq(nino), meq(TaxYear()))(any()))
           .thenReturn(Future.successful(taxAccountJsonWithTaxableIncome))
-        when(mockIabdService.retrieveIabdDetails(any(), any())(any()))
-          .thenReturn(Future.successful(iabdDetailsSeq))
 
         val result = createSut().incomeAmountForEmploymentId(nino, TaxYear(), employmentId).futureValue
         result mustBe None
@@ -340,11 +269,8 @@ class TaxCodeIncomeHelperSpec extends BaseSpec {
 
       "tax account details returns not found" in {
         val employmentId = 123456
-        val iabdDetailsSeq = Seq.empty[IabdDetails]
         when(mockTaxAccountConnector.taxAccount(meq(nino), meq(TaxYear()))(any()))
           .thenReturn(Future.failed(new NotFoundException("Not found")))
-        when(mockIabdService.retrieveIabdDetails(any(), any())(any()))
-          .thenReturn(Future.successful(iabdDetailsSeq))
 
         val result = createSut().incomeAmountForEmploymentId(nino, TaxYear(), employmentId).futureValue
         result mustBe None

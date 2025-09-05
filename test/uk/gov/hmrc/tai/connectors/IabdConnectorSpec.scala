@@ -70,11 +70,10 @@ class IabdConnectorSpec extends ConnectorBaseSpec {
   val updateExpenseshipIabdsUrl: String = s"/v1/api/iabd/taxpayer/$nino/tax-year/${taxYear.year}/type/$iabdHipType"
 
   val iabdDetails: IabdDetails =
-    IabdDetails(Some(nino.withoutSuffix), None, Some(15), Some(10), None, Some(LocalDate.of(2017, 4, 10)))
+    IabdDetails(None, Some(15), Some(10), None, Some(LocalDate.of(2017, 4, 10)))
 
   private val json = Json.arr(
     Json.obj(
-      "nino"            -> nino.withoutSuffix,
       "taxYear"         -> 2017,
       "type"            -> 10,
       "source"          -> 15,
@@ -88,12 +87,11 @@ class IabdConnectorSpec extends ConnectorBaseSpec {
 
   private val hipJson = Json.arr(
     Json.obj(
-      "nationalInsuranceNumber" -> nino.withoutSuffix,
-      "taxYear"                 -> 2017,
-      "type"                    -> "Balancing Charge (010)",
-      "source"                  -> "TELEPHONE CALL",
-      "receiptDate"             -> "2017-04-09",
-      "captureDate"             -> "2017-04-10"
+      "taxYear"     -> 2017,
+      "type"        -> "Balancing Charge (010)",
+      "source"      -> "TELEPHONE CALL",
+      "receiptDate" -> "2017-04-09",
+      "captureDate" -> "2017-04-10"
     )
   )
 

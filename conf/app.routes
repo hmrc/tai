@@ -5,8 +5,6 @@ POST          /calculator/calculate-estimated-pay                               
 
 #New endpoints**************************************************************
 
-GET           /:nino/person                                                                                           @uk.gov.hmrc.tai.controllers.PersonController.person(nino: Nino)
-
 # Employments
 GET           /:nino/employments/years/:year                                                                          @uk.gov.hmrc.tai.controllers.EmploymentsController.employments(nino: Nino, year: uk.gov.hmrc.tai.model.tai.TaxYear)
 POST          /:nino/employments/years/:year/update                                                                   @uk.gov.hmrc.tai.controllers.EmploymentsController.updatePreviousYearIncome(nino: Nino, year: uk.gov.hmrc.tai.model.tai.TaxYear)
@@ -63,3 +61,5 @@ GET           /:nino/tax-account/tax-code-change                                
 GET           /:nino/tax-account/tax-code-mismatch                                                                    @uk.gov.hmrc.tai.controllers.taxCodeChange.TaxCodeChangeController.taxCodeMismatch(nino: Nino)
 GET           /:nino/tax-account/:year/tax-code/latest                                                                @uk.gov.hmrc.tai.controllers.taxCodeChange.TaxCodeChangeController.mostRecentTaxCodeRecords(nino: Nino, year: uk.gov.hmrc.tai.model.tai.TaxYear)
 GET           /:nino/tax-account/tax-free-amount-comparison                                                           @uk.gov.hmrc.tai.controllers.taxCodeChange.TaxCodeChangeIabdComparisonController.taxCodeChangeIabdComparison(nino: Nino)
+
+GET           /:nino/iabds/years/:year                                                                                @uk.gov.hmrc.tai.controllers.IabdController.getIabds(nino: Nino, year: uk.gov.hmrc.tai.model.tai.TaxYear)

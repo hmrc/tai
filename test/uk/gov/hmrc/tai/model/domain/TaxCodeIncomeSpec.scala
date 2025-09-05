@@ -21,8 +21,6 @@ import play.api.libs.json.{JsObject, Json}
 import uk.gov.hmrc.tai.factory.TaxCodeIncomeFactory
 import uk.gov.hmrc.tai.model.domain.income.{BasisOperation, OtherBasisOperation, TaxCodeIncome}
 
-import java.time.LocalDate
-
 class TaxCodeIncomeSpec extends PlaySpec {
 
   val taxCodeIncome: TaxCodeIncome = TaxCodeIncomeFactory.create
@@ -62,21 +60,5 @@ class TaxCodeIncomeSpec extends PlaySpec {
       }
     }
 
-    "Handle nulls correctly" when {
-      "updateNotificationDate is not null" in {
-        val date: Option[LocalDate] = Some(LocalDate.now())
-
-        val model = taxCodeIncome.copy(basisOperation = OtherBasisOperation, updateNotificationDate = date)
-
-        val expectedJson = TaxCodeIncomeFactory.createJson
-        val updatedJson = expectedJson
-          .as[JsObject] + ("taxCode" -> Json.toJson("K100")) + ("basisOperation" -> Json.toJson(OtherBasisOperation)(
-          BasisOperation.formatBasisOperationType.writes(_)
-        )) + ("updateNotificationDate" -> Json
-          .toJson(date))
-
-        Json.toJson(model) mustEqual updatedJson
-      }
-    }
   }
 }

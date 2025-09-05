@@ -58,22 +58,6 @@ class TaxCodeMismatchSpec extends IntegrationSpec {
       result.map(getStatus) mustBe Some(OK)
     }
 
-    "for nps iabds failures" must {
-      behave like callWithErrorHandling(request, hipIabdsUrl, 500, internalServerException, BAD_GATEWAY)
-      behave like callWithErrorHandling(request, hipIabdsUrl, 501, new HttpException("", 501), BAD_GATEWAY)
-      behave like callWithErrorHandling(request, hipIabdsUrl, 502, new HttpException("", 502), BAD_GATEWAY)
-      behave like callWithErrorHandling(request, hipIabdsUrl, 503, new HttpException("", 503), BAD_GATEWAY)
-      behave like callWithErrorHandling(request, hipIabdsUrl, 504, new HttpException("", 503), BAD_GATEWAY)
-
-      behave like callWithErrorHandling(request, hipIabdsUrl, 400, badRequestException, BAD_REQUEST)
-      behave like callWithErrorHandling(request, hipIabdsUrl, 401, new HttpException("", 401), BAD_GATEWAY)
-      behave like callWithErrorHandling(request, hipIabdsUrl, 403, new HttpException("", 403), BAD_GATEWAY)
-      behave like callWithErrorHandling(request, hipIabdsUrl, 409, new HttpException("", 409), BAD_GATEWAY)
-      behave like callWithErrorHandling(request, hipIabdsUrl, 412, new HttpException("", 412), BAD_GATEWAY)
-      behave like callWithErrorHandling(request, hipIabdsUrl, 404, notFoundException, NOT_FOUND)
-
-    }
-
     "for nps tax account failures" must {
       behave like callWithErrorHandling(request, hipTaxAccountUrl, 500, internalServerException, BAD_GATEWAY)
       behave like callWithErrorHandling(request, hipTaxAccountUrl, 501, new HttpException("", 501), BAD_GATEWAY)
