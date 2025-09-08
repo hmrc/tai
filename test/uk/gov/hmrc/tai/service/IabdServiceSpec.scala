@@ -44,7 +44,7 @@ class IabdServiceSpec extends BaseSpec {
       "provided with valid nino and tax year from HIP" in {
         val iabdJson = Json.arr(
           Json.obj(
-            "nationalInsuranceNumber" -> "BR5600244",
+            "nationalInsuranceNumber" -> nino.value,
             "taxYear"                 -> 2017,
             "type"                    -> "Balancing Charge (027)",
             "source"                  -> "Annual Coding",
@@ -55,7 +55,7 @@ class IabdServiceSpec extends BaseSpec {
             "netAmount"               -> 100
           ),
           Json.obj(
-            "nationalInsuranceNumber"  -> "KX8600231",
+            "nationalInsuranceNumber"  -> nino.value,
             "employmentSequenceNumber" -> 2,
             "taxYear"                  -> 2017,
             "type"                     -> "New Estimated Pay (027)",
@@ -81,18 +81,24 @@ class IabdServiceSpec extends BaseSpec {
 
         result mustBe Seq(
           IabdDetails(
-            None,
-            Some(26),
-            Some(27),
-            None,
-            Some(LocalDate.parse("2017-04-10"))
+            nino = Some(nino.value.take(8)),
+            employmentSequenceNumber = None,
+            source = Some(26),
+            `type` = Some(27),
+            receiptDate = None,
+            captureDate = Some(LocalDate.parse("2017-04-10")),
+            grossAmount = None,
+            netAmount = Some(100)
           ),
           IabdDetails(
-            Some(2),
-            Some(17),
-            Some(27),
-            Some(LocalDate.parse("2017-04-10")),
-            Some(LocalDate.parse("2017-04-10"))
+            nino = Some(nino.value.take(8)),
+            employmentSequenceNumber = Some(2),
+            source = Some(17),
+            `type` = Some(27),
+            receiptDate = Some(LocalDate.parse("2017-04-10")),
+            captureDate = Some(LocalDate.parse("2017-04-10")),
+            grossAmount = None,
+            netAmount = Some(100)
           )
         )
       }

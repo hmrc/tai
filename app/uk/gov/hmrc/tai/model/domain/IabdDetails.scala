@@ -17,25 +17,22 @@
 package uk.gov.hmrc.tai.model.domain
 
 import play.api.Logging
-import play.api.libs.functional.syntax._
-import play.api.libs.json._
+import play.api.libs.functional.syntax.*
+import play.api.libs.json.*
 import uk.gov.hmrc.tai.model.domain.income.IabdUpdateSource
-import uk.gov.hmrc.tai.util.JsonHelper
 import uk.gov.hmrc.tai.util.JsonHelper.readsTypeTuple
 
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
+import scala.util.Try
 
 case class IabdDetails(
   nino: Option[String] = None,
   employmentSequenceNumber: Option[Int] = None,
-
   source: Option[Int] = None,
   `type`: Option[Int] = None,
-
   receiptDate: Option[LocalDate] = None,
   captureDate: Option[LocalDate] = None,
-
   grossAmount: Option[BigDecimal] = None,
   netAmount: Option[BigDecimal] = None
 )
@@ -48,7 +45,7 @@ object IabdDetails extends Logging {
   private val lenientLocalDateReads: Reads[LocalDate] = Reads {
     case JsString(s) =>
       def parse(fmt: DateTimeFormatter): Option[LocalDate] =
-        scala.util.Try(LocalDate.parse(s, fmt)).toOption
+        Try(LocalDate.parse(s, fmt)).toOption
 
       parse(isoFmt)
         .orElse(parse(npsFmt))
@@ -58,22 +55,21 @@ object IabdDetails extends Logging {
     case other => JsError(s"Invalid JSON for LocalDate: $other")
   }
 
-  private val localDateWrites: Writes[LocalDate] = Writes(date => JsString(date.format(isoFmt)))
+  private val localDateWrites: Writes[LocalDate] =
+    Writes(date => JsString(date.format(isoFmt)))
 
-  def sourceReads: Reads[Option[Int]] = new Reads[Option[Int]] {
-    override def reads(json: JsValue): JsResult[Option[Int]] = json match {
-      case JsString(n) =>
-        mapIabdSource.get(n) match {
-          case Some(code) => JsSuccess(Some(code))
-          case None =>
-            val msg = s"Unknown iabd source: $n"
-            logger.warn(msg, new RuntimeException(msg))
-            JsSuccess(None)
-        }
-      case JsNumber(n) if n.isValidInt => JsSuccess(Some(n.toInt))
-      case JsNull                      => JsSuccess(None)
-      case other                       => JsError(s"Invalid iabd source: $other")
-    }
+  def sourceReads: Reads[Option[Int]] = Reads {
+    case JsString(n) =>
+      mapIabdSource.get(n) match {
+        case Some(code) => JsSuccess(Some(code))
+        case None =>
+          val msg = s"Unknown iabd source: $n"
+          logger.warn(msg, new RuntimeException(msg))
+          JsSuccess(None)
+      }
+    case JsNumber(n) if n.isValidInt => JsSuccess(Some(n.toInt))
+    case JsNull                      => JsSuccess(None)
+    case _                           => JsError("Invalid iabd source")
   }
 
   private lazy val mapIabdSource: Map[String, Int] = Map(
@@ -155,18 +151,31 @@ object IabdDetails extends Logging {
       )
   }
 
+  private val typeReadsFlexible: Reads[Option[Int]] = Reads { json =>
+    (json \ "type") match {
+      case JsDefined(JsString(s)) =>
+        readsTypeTuple.reads(JsString(s)).map { case (_, code) => Some(code) }
+
+      case JsDefined(JsNumber(n)) if n.isValidInt =>
+        JsSuccess(Some(n.toInt))
+
+      case JsDefined(JsNull) =>
+        JsSuccess(None)
+
+      case _: JsUndefined =>
+        JsSuccess(None)
+
+      case JsDefined(other) =>
+        JsError(s"Invalid type format: $other")
+    }
+  }
+
   private val singleReads: Reads[IabdDetails] = {
     val ninoReads: Reads[Option[String]] =
       (JsPath \ "nationalInsuranceNumber")
         .readNullable[String]
         .map(_.map(_.take(8)))
         .orElse((JsPath \ "nino").readNullable[String].map(_.map(_.take(8))))
-
-    val typeReadsFlexible: Reads[Option[Int]] =
-      (JsPath \ "type")
-        .readNullable[(String, Int)](readsTypeTuple)
-        .map(_.map(_._2))
-        .orElse((JsPath \ "type").readNullable[Int])
 
     (
       ninoReads and
@@ -178,7 +187,6 @@ object IabdDetails extends Logging {
         (JsPath \ "grossAmount").readNullable[BigDecimal] and
         (JsPath \ "netAmount").readNullable[BigDecimal]
     )(IabdDetails.apply _)
-
   }
 
   implicit val readsSingle: Reads[IabdDetails] = singleReads

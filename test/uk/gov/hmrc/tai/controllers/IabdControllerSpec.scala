@@ -50,20 +50,20 @@ class IabdControllerSpec extends BaseSpec {
         Future.successful(
           Seq(
             IabdDetails(
-              Some(1),
-              Some(10),
-              Some(11),
-              Some(LocalDate.parse("2025-01-01")),
-              Some(LocalDate.parse("2025-01-01")),
-              Some(BigDecimal(1234.5))
+              employmentSequenceNumber = Some(1),
+              source = Some(10),
+              `type` = Some(11),
+              receiptDate = Some(LocalDate.parse("2025-01-01")),
+              captureDate = Some(LocalDate.parse("2025-01-01")),
+              grossAmount = Some(BigDecimal(1234.5))
             ),
             IabdDetails(
-              Some(1),
-              Some(10),
-              Some(11),
-              Some(LocalDate.parse("2025-01-01")),
-              Some(LocalDate.parse("2025-01-01")),
-              Some(BigDecimal(1234.5))
+              employmentSequenceNumber = Some(1),
+              source = Some(10),
+              `type` = Some(11),
+              receiptDate = Some(LocalDate.parse("2025-01-01")),
+              captureDate = Some(LocalDate.parse("2025-01-01")),
+              grossAmount = Some(BigDecimal(1234.5))
             )
           )
         )
