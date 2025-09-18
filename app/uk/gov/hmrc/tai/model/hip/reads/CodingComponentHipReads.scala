@@ -16,9 +16,9 @@
 
 package uk.gov.hmrc.tai.model.hip.reads
 
-import play.api.libs.functional.syntax.*
-import play.api.libs.json.*
-import uk.gov.hmrc.tai.model.domain.*
+import play.api.libs.functional.syntax._
+import play.api.libs.json._
+import uk.gov.hmrc.tai.model.domain._
 import uk.gov.hmrc.tai.model.domain.calculation.CodingComponent
 import uk.gov.hmrc.tai.model.hip.reads.NpsIabdSummaryHipReads.iabdsFromTotalLiabilityReads
 import uk.gov.hmrc.tai.util.JsonHelper.parseTypeOrException
@@ -27,7 +27,7 @@ import scala.util.Try
 
 object CodingComponentHipReads {
 
-  import ComponentMaps.*
+  import ComponentMaps._
 
   private def parseTypeSafe(json: JsValue, typeMap: Map[Int, TaxComponentType]): Option[CodingComponent] =
     for {

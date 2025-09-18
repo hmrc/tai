@@ -16,10 +16,10 @@
 
 package uk.gov.hmrc.tai.controllers.expenses
 
-import org.mockito.ArgumentMatchers.{any, eq as meq}
+import org.mockito.ArgumentMatchers.{any, eq => meq}
 import org.mockito.Mockito.when
-import play.api.libs.json.Json
-import play.api.test.Helpers.*
+import play.api.libs.json.{Json, Writes}
+import play.api.test.Helpers._
 import play.api.test.{FakeHeaders, FakeRequest}
 import uk.gov.hmrc.http.HttpResponse
 import uk.gov.hmrc.tai.controllers.auth.AuthJourney
@@ -43,15 +43,8 @@ class EmployeeExpensesControllerSpec extends BaseSpec {
   private val iabdUpdateExpensesRequest = IabdUpdateExpensesRequest(1, grossAmount)
   private val taxYear = 2017
 
-  private val validNpsIabd = List(
-    IabdDetails(
-      nino = Some(nino.withoutSuffix),
-      `type` = Some(56),
-      grossAmount = Some(100)
-    )
-  )
-
-  private val validJson = Json.toJson(validNpsIabd)
+  private val validIabds: List[IabdDetails] = List.empty[IabdDetails]
+  private val validJson = Json.toJson(validIabds)(Writes.list(IabdDetails.hipWrites))
 
   "updateEmployeeExpensesData" must {
 
@@ -248,12 +241,11 @@ class EmployeeExpensesControllerSpec extends BaseSpec {
       val fakeRequest = FakeRequest("GET", "/", FakeHeaders(), any())
 
       when(mockEmployeeExpensesService.getEmployeeExpenses(any(), any(), any()))
-        .thenReturn(Future.successful(validNpsIabd))
+        .thenReturn(Future.successful(validIabds))
 
       val result = controller().getEmployeeExpensesData(nino, taxYear, iabd)(fakeRequest)
 
       status(result) mustBe OK
-
       contentAsJson(result) mustBe validJson
     }
 

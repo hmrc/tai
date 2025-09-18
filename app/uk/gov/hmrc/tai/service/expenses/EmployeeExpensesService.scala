@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 HM Revenue & Customs
+ * Copyright 2023 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,25 +19,23 @@ package uk.gov.hmrc.tai.service.expenses
 import com.google.inject.{Inject, Singleton}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
-import uk.gov.hmrc.mongoFeatureToggles.services.FeatureFlagService
 import uk.gov.hmrc.tai.connectors.IabdConnector
 import uk.gov.hmrc.tai.controllers.auth.AuthenticatedRequest
 import uk.gov.hmrc.tai.model.UpdateIabdEmployeeExpense
-import uk.gov.hmrc.tai.model.admin.HipGetIabdsExpensesToggle
 import uk.gov.hmrc.tai.model.enums.APITypes
+import uk.gov.hmrc.tai.model.domain.IabdDetails
 import uk.gov.hmrc.tai.model.tai.TaxYear
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.Future
+import uk.gov.hmrc.mongoFeatureToggles.services.FeatureFlagService
+import uk.gov.hmrc.tai.model.admin.HipGetIabdsExpensesToggle
 
-import play.api.libs.json.Json
-import uk.gov.hmrc.tai.model.domain.IabdDetails
-import uk.gov.hmrc.tai.model.nps2.IabdType.hipMapping
+import scala.concurrent.ExecutionContext
 
 @Singleton
-class EmployeeExpensesService @Inject() (
-  iabdConnector: IabdConnector,
-  featureFlagService: FeatureFlagService
-)(implicit ec: ExecutionContext) {
+class EmployeeExpensesService @Inject() (iabdConnector: IabdConnector, featureFlagService: FeatureFlagService)(implicit
+  ec: ExecutionContext
+) {
 
   def updateEmployeeExpensesData(
     nino: Nino,
@@ -58,14 +56,13 @@ class EmployeeExpensesService @Inject() (
   def getEmployeeExpenses(nino: Nino, taxYear: Int, iabd: Int)(implicit hc: HeaderCarrier): Future[List[IabdDetails]] =
     featureFlagService.get(HipGetIabdsExpensesToggle).flatMap { toggle =>
       if (toggle.isEnabled) {
-        val iabdTypeString: String = hipMapping(iabd)
-
-        iabdConnector.iabds(nino, TaxYear(taxYear), Some(iabdTypeString)).map { responseJson =>
-          Json
-            .toJson(responseJson)
-            .asOpt[Seq[IabdDetails]](IabdDetails.reads)
-            .getOrElse(Seq.empty)
-            .toList
+        IabdDetails.iabdTypeToString(iabd) match {
+          case None =>
+            Future.failed(new RuntimeException(s"Could not find IABD type for sourceType: $iabd"))
+          case Some(sourceTypeLabel) =>
+            iabdConnector
+              .iabds(nino, TaxYear(taxYear), Some(sourceTypeLabel))
+              .map(_.as[Seq[IabdDetails]](IabdDetails.reads).toList)
         }
       } else {
         iabdConnector.getIabdsForType(nino, taxYear, iabd)

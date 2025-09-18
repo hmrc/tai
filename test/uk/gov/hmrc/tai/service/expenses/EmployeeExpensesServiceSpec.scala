@@ -166,7 +166,7 @@ class EmployeeExpensesServiceSpec extends BaseSpec {
         result.futureValue mustBe validNpsIabd
 
         verify(mockIabdConnector, times(1))
-          .iabds(nino, TaxYear(taxYear), Some(s"Flat-Rate-Job-Expenses-(0$iabd)"))
+          .iabds(nino, TaxYear(taxYear), Some(s"Flat Rate Job Expenses (0$iabd)"))
       }
 
       "success response from hip connector when iabdDetails is missing" in {
@@ -185,7 +185,7 @@ class EmployeeExpensesServiceSpec extends BaseSpec {
         result.futureValue mustBe List.empty
 
         verify(mockIabdConnector, times(1))
-          .iabds(nino, TaxYear(taxYear), Some(s"Flat-Rate-Job-Expenses-(0$iabd)"))
+          .iabds(nino, TaxYear(taxYear), Some(s"Flat Rate Job Expenses (0$iabd)"))
       }
 
       "success response from hip connector when iabdDetails is empty" in {
@@ -204,7 +204,7 @@ class EmployeeExpensesServiceSpec extends BaseSpec {
         result.futureValue mustBe List.empty
 
         verify(mockIabdConnector, times(1))
-          .iabds(nino, TaxYear(taxYear), Some(s"Flat-Rate-Job-Expenses-(0$iabd)"))
+          .iabds(nino, TaxYear(taxYear), Some(s"Flat Rate Job Expenses (0$iabd)"))
       }
 
       "return exception" when {

@@ -17,13 +17,14 @@
 package uk.gov.hmrc.tai.controllers.expenses
 
 import com.google.inject.{Inject, Singleton}
-import play.api.libs.json.{JsValue, Json}
+import play.api.libs.json.{JsValue, Json, Writes}
 import play.api.mvc.{Action, AnyContent, ControllerComponents}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 import uk.gov.hmrc.tai.controllers.auth.AuthJourney
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.model.{IabdUpdateExpensesRequest, UpdateIabdEmployeeExpense}
+import uk.gov.hmrc.tai.model.domain.IabdDetails
 import uk.gov.hmrc.tai.service.expenses.EmployeeExpensesService
 
 import scala.concurrent.ExecutionContext
@@ -66,7 +67,7 @@ class EmployeeExpensesController @Inject() (
   def getEmployeeExpensesData(nino: Nino, year: Int, iabd: Int): Action[AnyContent] =
     authentication.authForEmployeeExpenses.async { implicit request =>
       employeeExpensesService.getEmployeeExpenses(nino, year, iabd).map { iabdData =>
-        Ok(Json.toJson(iabdData))
+        Ok(Json.toJson(iabdData)(Writes.list(IabdDetails.publicWrites)))
       }
     }
 }

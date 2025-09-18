@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2025 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,6 +28,7 @@ import uk.gov.hmrc.tai.connectors.cache.CachingConnector
 import uk.gov.hmrc.tai.controllers.auth.AuthenticatedRequest
 import uk.gov.hmrc.tai.model.admin.HipIabdsUpdateExpensesToggle
 import uk.gov.hmrc.tai.model.domain.IabdDetails
+import uk.gov.hmrc.tai.model.domain.IabdDetails.{publicWrites as IabdDetailsPublicWrites, readsSingle as IabdDetailsReadsSingle}
 import uk.gov.hmrc.tai.model.domain.response.{HodUpdateFailure, HodUpdateResponse, HodUpdateSuccess}
 import uk.gov.hmrc.tai.model.enums.APITypes
 import uk.gov.hmrc.tai.model.enums.APITypes.{APITypes, HipIabdUpdateEmployeeExpensesAPI}
@@ -53,6 +54,9 @@ class CachingIabdConnector @Inject() (
   sensitiveFormatService: SensitiveFormatService
 )(implicit ec: ExecutionContext)
     extends IabdConnector {
+
+  private implicit val listIabdReads: Reads[List[IabdDetails]] = Reads.list(IabdDetailsReadsSingle)
+  private implicit val listIabdWrites: Writes[List[IabdDetails]] = Writes.list(IabdDetailsPublicWrites)
 
   override def iabds(nino: Nino, taxYear: TaxYear, iabdType: Option[String] = None)(implicit
     hc: HeaderCarrier
@@ -138,14 +142,16 @@ class DefaultIabdConnector @Inject() (
   override def iabds(nino: Nino, taxYear: TaxYear, iabdType: Option[String] = None)(implicit
     hc: HeaderCarrier
   ): Future[JsValue] = {
-    val queryString = iabdType.map(iabd => s"?type=$iabd").getOrElse("")
+    val queryString = iabdType.fold("")(iabd => s"?type=$iabd")
 
     if (taxYear > TaxYear()) {
       Future.successful(JsArray(Seq.empty))
     } else {
-      val url = s"${hipConfig.baseURL}/iabd/taxpayer/$nino/tax-year/${taxYear.year}$queryString"
-      val originatorId = hipConfig.originatorId
-      val extraInfo = Some((hipConfig.clientId, hipConfig.clientSecret))
+      val (url, originatorId, extraInfo) = (
+        s"${hipConfig.baseURL}/iabd/taxpayer/$nino/tax-year/${taxYear.year}$queryString",
+        hipConfig.originatorId,
+        Some(hipConfig.clientId -> hipConfig.clientSecret)
+      )
       httpHandler.getFromApi(url, APITypes.NpsIabdAllAPI, headersForIabds(originatorId, hc, extraInfo))
     }
   }
@@ -158,13 +164,15 @@ class DefaultIabdConnector @Inject() (
     iabdType: Int,
     amount: Int
   )(implicit hc: HeaderCarrier, request: AuthenticatedRequest[_]): Future[HodUpdateResponse] = {
-    val requestHeader = Seq(
-      HeaderNames.xSessionId -> hc.sessionId.fold("-")(_.value),
-      HeaderNames.xRequestId -> hc.requestId.fold("-")(_.value)
-    ) ++ hipAuthHeaders(Some((hipConfig.clientId, hipConfig.clientSecret))) ++ Seq(
-      "gov-uk-originator-id" -> hipConfig.originatorId,
-      "correlationId"        -> getUuid
-    )
+    val requestHeader: Seq[(String, String)] =
+      Seq(
+        HeaderNames.xSessionId -> hc.sessionId.fold("-")(_.value),
+        HeaderNames.xRequestId -> hc.requestId.fold("-")(_.value)
+      ) ++ hipAuthHeaders(Some(hipConfig.clientId -> hipConfig.clientSecret)) ++ Seq(
+        "gov-uk-originator-id" -> hipConfig.originatorId,
+        "correlationId"        -> getUuid
+      )
+
     val iabdTypeArgument = URLEncoder.encode(hipMapping(iabdType), "UTF-8").replace("+", "%20")
 
     httpHandler
@@ -176,7 +184,7 @@ class DefaultIabdConnector @Inject() (
         )(IabdUpdateAmount.writesHip),
         api = APITypes.NpsIabdUpdateEstPayManualAPI,
         headers = requestHeader
-      )
+      )(implicitly)
       .map(_ => HodUpdateSuccess)
       .recover { case _ => HodUpdateFailure }
   }
@@ -184,11 +192,11 @@ class DefaultIabdConnector @Inject() (
   override def getIabdsForType(nino: Nino, year: Int, iabdType: Int)(implicit
     hc: HeaderCarrier
   ): Future[List[IabdDetails]] = {
-    val urlToRead =
-      s"${desConfig.baseURL}/pay-as-you-earn/individuals/$nino/iabds/tax-year/$year?type=$iabdType"
+    implicit val listIabdReads: Reads[List[IabdDetails]] = Reads.list(IabdDetailsReadsSingle)
+    val urlToRead = s"${desConfig.baseURL}/pay-as-you-earn/individuals/$nino/iabds/tax-year/$year?type=$iabdType"
     httpHandler
       .getFromApi(url = urlToRead, api = APITypes.DesIabdSpecificAPI, headers = headersForGetIabdsForType)
-      .map(_.as[List[IabdDetails]](Reads.list(IabdDetails.singleObjectReads)))
+      .map(_.as[List[IabdDetails]])
   }
 
   private def headersForUpdateExpensesData(version: Int, originatorId: String)(implicit
@@ -216,7 +224,7 @@ class DefaultIabdConnector @Inject() (
     featureFlagService.get(HipIabdsUpdateExpensesToggle).flatMap { toggle =>
       if (toggle.isEnabled) {
         val (baseUrl, originatorId, extraInfo) =
-          (hipConfig.baseURL, hipConfig.originatorId, Some(Tuple2(hipConfig.clientId, hipConfig.clientSecret)))
+          (hipConfig.baseURL, hipConfig.originatorId, Some(hipConfig.clientId -> hipConfig.clientSecret))
 
         httpHandler.putToApiHttpClientV2[UpdateHipIabdEmployeeExpense](
           s"$baseUrl/iabd/taxpayer/$nino/tax-year/$year/type/${IabdType.hipMapping(iabdType)}",
