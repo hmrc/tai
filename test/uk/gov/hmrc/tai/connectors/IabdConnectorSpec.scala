@@ -29,7 +29,6 @@ import uk.gov.hmrc.tai.config.{DesConfig, HipConfig}
 import uk.gov.hmrc.tai.controllers.auth.AuthenticatedRequest
 import uk.gov.hmrc.tai.model.admin.HipIabdsUpdateExpensesToggle
 import uk.gov.hmrc.tai.model.domain.IabdDetails
-// CHANGED: use IabdDetails reads (single) to parse DES payload for getIabdsForType
 import uk.gov.hmrc.tai.model.domain.IabdDetails.{readsSingle => IabdDetailsReadsSingle}
 import uk.gov.hmrc.tai.model.domain.response.{HodUpdateFailure, HodUpdateSuccess}
 import uk.gov.hmrc.tai.model.enums.APITypes
