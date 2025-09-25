@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 HM Revenue & Customs
+ * Copyright 2025 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,11 +33,14 @@ class IabdService @Inject() (
   iabdConnector: IabdConnector
 )(implicit ec: ExecutionContext) {
 
-  def retrieveIabdDetails(nino: Nino, year: TaxYear)(implicit hc: HeaderCarrier): Future[Seq[IabdDetails]] =
+  def retrieveIabdDetails(nino: Nino, year: TaxYear, iabdType: Option[String] = None)(implicit
+    hc: HeaderCarrier
+  ): Future[Seq[IabdDetails]] =
     iabdConnector
-      .iabds(nino, year)
+      .iabds(nino, year, iabdType)
       .map { responseJson =>
-        responseJson.as[Seq[IabdDetails]](IabdDetails.reads).filter(_.`type`.contains(NewEstimatedPay.code))
+        val seq = responseJson.as[Seq[IabdDetails]](IabdDetails.reads)
+        iabdType.fold(seq.filter(_.`type`.contains(NewEstimatedPay.code)))(_ => seq)
       }
 
   def updateTaxCodeAmount(nino: Nino, taxYear: TaxYear, employmentId: Int, version: Int, amount: Int)(implicit

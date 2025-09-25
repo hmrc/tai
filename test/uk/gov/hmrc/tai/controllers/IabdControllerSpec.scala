@@ -16,24 +16,25 @@
 
 package uk.gov.hmrc.tai.controllers
 
-import org.mockito.ArgumentMatchers.any
+import org.mockito.ArgumentMatchers.{any, eq => meq}
 import org.mockito.Mockito.{reset, when}
 import play.api.http.Status.OK
 import play.api.libs.json.Json
 import play.api.test.FakeRequest
-import play.api.test.Helpers.{contentAsJson, status}
+import play.api.test.Helpers.{contentAsJson, defaultAwaitTimeout, status}
 import uk.gov.hmrc.tai.model.domain.IabdDetails
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.service.IabdService
 import uk.gov.hmrc.tai.util.BaseSpec
-import play.api.test.Helpers.defaultAwaitTimeout
 
 import java.time.LocalDate
 import scala.concurrent.Future
 
 class IabdControllerSpec extends BaseSpec {
-  val mockIabdService: IabdService = mock[IabdService]
-  val sut = new IabdController(
+
+  private val mockIabdService: IabdService = mock[IabdService]
+
+  private val sut = new IabdController(
     loggedInAuthenticationAuthJourney,
     mockIabdService,
     cc
@@ -45,25 +46,25 @@ class IabdControllerSpec extends BaseSpec {
   }
 
   "getIabds" must {
-    "return IABDs for the given NINO" in {
-      when(mockIabdService.retrieveIabdDetails(any(), any())(any())).thenReturn(
+    "return IABDs for the given NINO (no query param)" in {
+      when(mockIabdService.retrieveIabdDetails(any(), any(), meq(None))(any())).thenReturn(
         Future.successful(
           Seq(
             IabdDetails(
-              Some(1),
-              Some(10),
-              Some(11),
-              Some(LocalDate.parse("2025-01-01")),
-              Some(LocalDate.parse("2025-01-01")),
-              Some(BigDecimal(1234.5))
+              employmentSequenceNumber = Some(1),
+              source = Some(10),
+              `type` = Some(11),
+              receiptDate = Some(LocalDate.parse("2025-01-01")),
+              captureDate = Some(LocalDate.parse("2025-01-01")),
+              grossAmount = Some(BigDecimal(1234.5))
             ),
             IabdDetails(
-              Some(1),
-              Some(10),
-              Some(11),
-              Some(LocalDate.parse("2025-01-01")),
-              Some(LocalDate.parse("2025-01-01")),
-              Some(BigDecimal(1234.5))
+              employmentSequenceNumber = Some(1),
+              source = Some(10),
+              `type` = Some(11),
+              receiptDate = Some(LocalDate.parse("2025-01-01")),
+              captureDate = Some(LocalDate.parse("2025-01-01")),
+              grossAmount = Some(BigDecimal(1234.5))
             )
           )
         )
@@ -76,6 +77,36 @@ class IabdControllerSpec extends BaseSpec {
         """{"data":{"iabdDetails": [
           |{"employmentSequenceNumber":1,"type":11,"receiptDate":"2025-01-01","captureDate":"2025-01-01","grossAmount":1234.5},
           |{"employmentSequenceNumber":1,"type":11,"receiptDate":"2025-01-01","captureDate":"2025-01-01","grossAmount":1234.5}
+          |]},"links":[]}""".stripMargin
+      )
+    }
+
+    "forward the optional type query param to the service" in {
+      val q = "New Estimated Pay (027)"
+
+      when(mockIabdService.retrieveIabdDetails(any(), any(), meq(Some(q)))(any()))
+        .thenReturn(
+          Future.successful(
+            Seq(
+              IabdDetails(
+                employmentSequenceNumber = Some(9),
+                source = None,
+                `type` = Some(27),
+                receiptDate = Some(LocalDate.parse("2025-02-02")),
+                captureDate = Some(LocalDate.parse("2025-02-03")),
+                grossAmount = Some(BigDecimal(9999))
+              )
+            )
+          )
+        )
+
+      val req = FakeRequest("GET", s"/tai/${nino.nino}/iabds/years/${TaxYear().year}?type=$q")
+      val result = sut.getIabds(nino, TaxYear())(req)
+
+      status(result) mustBe OK
+      contentAsJson(result) mustBe Json.parse(
+        """{"data":{"iabdDetails": [
+          |{"employmentSequenceNumber":9,"type":27,"receiptDate":"2025-02-02","captureDate":"2025-02-03","grossAmount":9999}
           |]},"links":[]}""".stripMargin
       )
     }

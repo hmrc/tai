@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 HM Revenue & Customs
+ * Copyright 2025 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,88 +40,145 @@ class IabdServiceSpec extends BaseSpec {
     new IabdService(iabdConnector)
 
   "retrieveIabdDetails" must {
-    "return a sequence of IabdDetails" when {
-      "provided with valid nino and tax year from HIP" in {
-        val iabdJson = Json.arr(
-          Json.obj(
-            "nationalInsuranceNumber" -> "BR5600244",
-            "taxYear"                 -> 2017,
-            "type"                    -> "Balancing Charge (027)",
-            "source"                  -> "Annual Coding",
-            "grossAmount"             -> JsNull,
-            "receiptDate"             -> JsNull,
-            "captureDate"             -> "2017-04-10",
-            "typeDescription"         -> "Total gift aid Payments",
-            "netAmount"               -> 100
-          ),
-          Json.obj(
-            "nationalInsuranceNumber"  -> "KX8600231",
-            "employmentSequenceNumber" -> 2,
-            "taxYear"                  -> 2017,
-            "type"                     -> "New Estimated Pay (027)",
-            "source"                   -> "EMAIL",
-            "grossAmount"              -> JsNull,
-            "receiptDate"              -> "2017-04-10",
-            "captureDate"              -> "2017-04-10",
-            "typeDescription"          -> "Total gift aid Payments",
-            "netAmount"                -> 100
-          )
+
+    "return a sequence of IabdDetails (filtered to 027 when no type param provided)" in {
+      val iabdJson = Json.arr(
+        Json.obj(
+          "nationalInsuranceNumber" -> "BR5600244",
+          "taxYear"                 -> 2017,
+          "type"                    -> "Balancing Charge (027)",
+          "source"                  -> "Annual Coding",
+          "grossAmount"             -> JsNull,
+          "receiptDate"             -> JsNull,
+          "captureDate"             -> "2017-04-10",
+          "typeDescription"         -> "Total gift aid Payments",
+          "netAmount"               -> 100
+        ),
+        Json.obj(
+          "nationalInsuranceNumber"  -> "KX8600231",
+          "employmentSequenceNumber" -> 2,
+          "taxYear"                  -> 2017,
+          "type"                     -> "New Estimated Pay (027)",
+          "source"                   -> "EMAIL",
+          "grossAmount"              -> JsNull,
+          "receiptDate"              -> "2017-04-10",
+          "captureDate"              -> "2017-04-10",
+          "typeDescription"          -> "Total gift aid Payments",
+          "netAmount"                -> 100
         )
+      )
 
-        val json = Json.parse(s"""
-                                 |{
-                                 |   "iabdDetails": ${Json.stringify(iabdJson)}
-                                 |}
-                                 |""".stripMargin)
+      val json = Json.parse(
+        s"""{
+           |   "iabdDetails": ${Json.stringify(iabdJson)}
+           |}""".stripMargin
+      )
 
-        when(mockIabdConnector.iabds(any(), any(), any())(any())).thenReturn(Future.successful(json))
+      when(mockIabdConnector.iabds(any(), any(), any())(any()))
+        .thenReturn(Future.successful(json))
 
-        val sut = createSut(mockIabdConnector)
-        val result = sut.retrieveIabdDetails(nino, TaxYear()).futureValue
+      val sut = createSut(mockIabdConnector)
+      val result = sut.retrieveIabdDetails(nino, TaxYear()).futureValue
 
-        result mustBe Seq(
-          IabdDetails(
-            None,
-            Some(26),
-            Some(27),
-            None,
-            Some(LocalDate.parse("2017-04-10"))
-          ),
-          IabdDetails(
-            Some(2),
-            Some(17),
-            Some(27),
-            Some(LocalDate.parse("2017-04-10")),
-            Some(LocalDate.parse("2017-04-10"))
-          )
+      result mustBe Seq(
+        IabdDetails(
+          employmentSequenceNumber = None,
+          source = Some(26),
+          `type` = Some(27),
+          receiptDate = None,
+          captureDate = Some(LocalDate.parse("2017-04-10"))
+        ),
+        IabdDetails(
+          employmentSequenceNumber = Some(2),
+          source = Some(17),
+          `type` = Some(27),
+          receiptDate = Some(LocalDate.parse("2017-04-10")),
+          captureDate = Some(LocalDate.parse("2017-04-10"))
         )
-      }
-
-      "payload is empty" in {
-        val json = Json.obj(
-          "correlationId" -> ""
-        )
-
-        when(mockIabdConnector.iabds(any(), any(), any())(any())).thenReturn(Future.successful(json))
-
-        val sut = createSut(mockIabdConnector)
-        val result = sut.retrieveIabdDetails(nino, TaxYear()).futureValue
-        result mustBe Seq(
-        )
-      }
+      )
     }
 
-    "return an empty sequence of IabdDetails" when {
-      "provided with next tax year" in {
-        when(mockIabdConnector.iabds(any(), any(), any())(any())).thenReturn(Future.successful(JsArray.empty))
+    "not filter when an explicit type is supplied (service returns whatever the connector gives)" in {
+      val iabdJson = Json.arr(
+        Json.obj(
+          "nationalInsuranceNumber"  -> "AA111111A",
+          "employmentSequenceNumber" -> 1,
+          "taxYear"                  -> 2017,
+          "type"                     -> "New Estimated Pay (027)",
+          "source"                   -> "EMAIL",
+          "grossAmount"              -> 1234,
+          "receiptDate"              -> "2017-04-10",
+          "captureDate"              -> "2017-04-10",
+          "typeDescription"          -> "New Estimated Pay",
+          "netAmount"                -> 1234
+        ),
+        Json.obj(
+          "nationalInsuranceNumber"  -> "AA222222A",
+          "employmentSequenceNumber" -> 2,
+          "taxYear"                  -> 2017,
+          "type"                     -> "Some Other (999)",
+          "source"                   -> "LETTER",
+          "grossAmount"              -> 2222,
+          "receiptDate"              -> "2017-05-01",
+          "captureDate"              -> "2017-05-02",
+          "typeDescription"          -> "Other",
+          "netAmount"                -> 2222
+        )
+      )
 
-        val sut = createSut(mockIabdConnector)
-        val result = sut.retrieveIabdDetails(nino, TaxYear().next).futureValue
+      val json = Json.parse(
+        s"""{
+           |   "iabdDetails": ${Json.stringify(iabdJson)}
+           |}""".stripMargin
+      )
 
-        result mustBe Seq.empty[IabdDetails]
-      }
+      when(mockIabdConnector.iabds(any(), any(), any())(any()))
+        .thenReturn(Future.successful(json))
+
+      val sut = createSut(mockIabdConnector)
+      val result = sut.retrieveIabdDetails(nino, TaxYear(), iabdType = Some("New Estimated Pay (027)")).futureValue
+
+      result mustBe Seq(
+        IabdDetails(
+          employmentSequenceNumber = Some(1),
+          source = Some(17),
+          `type` = Some(27),
+          receiptDate = Some(LocalDate.parse("2017-04-10")),
+          captureDate = Some(LocalDate.parse("2017-04-10")),
+          grossAmount = Some(BigDecimal(1234))
+        ),
+        IabdDetails(
+          employmentSequenceNumber = Some(2),
+          source = Some(16),
+          `type` = Some(999),
+          receiptDate = Some(LocalDate.parse("2017-05-01")),
+          captureDate = Some(LocalDate.parse("2017-05-02")),
+          grossAmount = Some(BigDecimal(2222))
+        )
+      )
     }
 
+    "return empty when payload is empty" in {
+      val json = Json.obj("correlationId" -> "")
+
+      when(mockIabdConnector.iabds(any(), any(), any())(any()))
+        .thenReturn(Future.successful(json))
+
+      val sut = createSut(mockIabdConnector)
+      val result = sut.retrieveIabdDetails(nino, TaxYear()).futureValue
+
+      result mustBe Seq.empty
+    }
+
+    "return empty sequence when next tax year is requested" in {
+      when(mockIabdConnector.iabds(any(), any(), any())(any()))
+        .thenReturn(Future.successful(JsArray.empty))
+
+      val sut = createSut(mockIabdConnector)
+      val result = sut.retrieveIabdDetails(nino, TaxYear().next).futureValue
+
+      result mustBe Seq.empty[IabdDetails]
+    }
   }
 
   "updateTaxCodeAmount" must {
