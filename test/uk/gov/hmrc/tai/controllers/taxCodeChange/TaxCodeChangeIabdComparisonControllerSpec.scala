@@ -24,6 +24,7 @@ import play.api.test.FakeRequest
 import play.api.test.Helpers.{status, *}
 import uk.gov.hmrc.domain.Generator
 import uk.gov.hmrc.tai.factory.TaxFreeAmountComparisonFactory
+import uk.gov.hmrc.tai.model.TaxFreeAmountComparison
 import uk.gov.hmrc.tai.service.TaxFreeAmountComparisonService
 import uk.gov.hmrc.tai.util.BaseSpec
 
@@ -55,6 +56,21 @@ class TaxCodeChangeIabdComparisonControllerSpec extends BaseSpec {
         status(result) mustEqual OK
         contentAsJson(result) mustEqual expectedJson
 
+      }
+    }
+
+    "respond with INTERNAL SERVER ERROR" when {
+      "when given empty coding components" in {
+        val nino = ninoGenerator
+
+        val model = TaxFreeAmountComparison(Seq.empty, Seq.empty)
+
+        when(taxFreeAmountComparisonService.taxFreeAmountComparison(meq(nino))(any()))
+          .thenReturn(Future.successful(model))
+
+        val result: Future[Result] = testController.taxCodeChangeIabdComparison(nino)(FakeRequest())
+
+        status(result) mustEqual INTERNAL_SERVER_ERROR
       }
     }
 

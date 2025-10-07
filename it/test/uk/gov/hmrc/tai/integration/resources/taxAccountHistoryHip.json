@@ -1,0 +1,190 @@
+{
+  "nationalInsuranceNumber": "$NINO",
+  "date": "2023-01-14",
+  "isCurrentlyEmployed": false,
+  "taxYear": <CY>,
+  "previousYearTaxAccountIdentifier": 1955,
+  "totalEstimatedTax": 1149.4,
+  "totalEstimatedPayDetails": {
+    "amount": 18327,
+    "summaryIABDDetailsList": [],
+    "summaryIABDEstimatedPayDetailsList": [
+      {
+        "amount": 18327,
+        "type": "New Estimated Pay (027)",
+        "employmentSequenceNumber": 16,
+        "estimatedPaySource": "Annual Coding"
+      }
+    ]
+  },
+  "inYearCalculationsResult": 1,
+  "inYearCalculationAmount": 0,
+  "adjustedNetIncomeDetails": {
+    "amount": 18327,
+    "summaryIABDDetailsList": [],
+    "summaryIABDEstimatedPayDetailsList": [
+      {
+        "amount": 18327,
+        "type": "New Estimated Pay (027)",
+        "employmentSequenceNumber": 16,
+        "estimatedPaySource": "Annual Coding"
+      }
+    ]
+  },
+  "totalLiabilityDetails": {
+    "nonSavings": {
+      "totalIncomeDetails": {
+        "amount": 18327,
+        "summaryIABDDetailsList": [],
+        "summaryIABDEstimatedPayDetailsList": [
+          {
+            "amount": 18327,
+            "type": "New Estimated Pay (027)",
+            "employmentSequenceNumber": 16,
+            "estimatedPaySource": "Annual Coding"
+          }
+        ]
+      },
+      "allowanceReliefDeductionsDetails": {
+        "amount": 12570,
+        "summaryIABDDetailsList": [],
+        "summaryIABDEstimatedPayDetailsList": [
+          {
+            "amount": 12570,
+            "type": "Personal Allowance (PA) (118)"
+          }
+        ]
+      },
+      "totalTax": 1151.4,
+      "totalTaxableIncome": 5757,
+      "taxBandDetails": [
+        {
+          "bandType": "B",
+          "taxCode": "BR",
+          "isBasicRate": true,
+          "income": 5757,
+          "tax": 1151.4,
+          "lowerBand": 0,
+          "upperBand": 37700,
+          "rate": 20
+        },
+        {
+          "bandType": "D0",
+          "taxCode": "D0",
+          "isBasicRate": false,
+          "lowerBand": 37700,
+          "upperBand": 125140,
+          "rate": 40
+        },
+        {
+          "bandType": "D1",
+          "taxCode": "D1",
+          "isBasicRate": false,
+          "lowerBand": 125140,
+          "upperBand": 0,
+          "rate": 45
+        }
+      ]
+    },
+    "untaxedInterest": {},
+    "bankInterest": {},
+    "ukDividends": {},
+    "foreignInterest": {},
+    "foreignDividends": {},
+    "basicRateExtensionsDetails": {
+      "amount": 0,
+      "summaryIABDDetailsList": []
+    },
+    "otherTaxDueDetails": {
+      "summaryIABDDetailsList": []
+    },
+    "totalLiability": 1151.4
+  },
+  "employmentDetailsList": [
+    {
+      "employmentSequenceNumber": 16,
+      "employmentRecordType": "PRIMARY",
+      "employmentStatus": "Live",
+      "jobSeekersAllowance": false,
+      "activePension": false,
+      "otherIncome": false,
+      "payeSchemeOperatorName": "Employer 2",
+      "taxCode": "1257L",
+      "basisOfOperation": "Cumulative",
+      "totalInYearAdjustment": 0,
+      "totalInYearAdjustmentIntoCurrentYear": 0,
+      "totalInYearAdjustmentIntoNextYear": 0,
+      "totalInYearAdjustmentFromPreviousYear": 0,
+      "actualPUPCodedInNextYear": 0,
+      "allowancesDetails": [
+        {
+          "type": "personal allowance (011)",
+          "sourceAmount": 12570,
+          "summaryIABDDetailsList": [],
+          "summaryIABDEstimatedPayDetailsList": [
+            {
+              "amount": 12570,
+              "type": "Personal Allowance (PA) (118)"
+            },
+            {
+              "amount": 18327,
+              "type": "Non-qualifying Relocation Expenses (045)",
+              "employmentSequenceNumber": 16,
+              "estimatedPaySource": "Annual Coding"
+            }
+          ],
+          "adjustedAmount": 12570
+        }
+      ],
+      "deductionsDetails": [],
+      "payAndTax": {
+        "totalIncomeDetails": {
+          "amount": 18327,
+          "summaryIABDDetailsList": [],
+          "summaryIABDEstimatedPayDetailsList": [
+            {
+              "amount": 18327,
+              "type": "New Estimated Pay (027)",
+              "employmentSequenceNumber": 16,
+              "estimatedPaySource": "Annual Coding"
+            }
+          ]
+        },
+        "allowanceReliefDeductionsDetails": {
+          "amount": 12579.84,
+          "summaryIABDDetailsList": []
+        },
+        "totalTax": 1149.4,
+        "totalTaxableIncome": 5747,
+        "taxBandDetails": [
+          {
+            "bandType": "B",
+            "taxCode": "BR",
+            "isBasicRate": true,
+            "income": 5747,
+            "tax": 1149.4,
+            "lowerBand": 0,
+            "upperBand": 37700,
+            "rate": 20
+          },
+          {
+            "bandType": "D0",
+            "taxCode": "D0",
+            "isBasicRate": false,
+            "lowerBand": 37700,
+            "upperBand": 125140,
+            "rate": 40
+          },
+          {
+            "bandType": "D1",
+            "taxCode": "D1",
+            "isBasicRate": false,
+            "lowerBand": 125140,
+            "upperBand": 0,
+            "rate": 45
+          }
+        ]
+      }
+    }
+  ]
+}

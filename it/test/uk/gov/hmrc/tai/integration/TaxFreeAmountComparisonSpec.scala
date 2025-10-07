@@ -27,7 +27,9 @@ import play.api.test.Helpers.{status as getStatus, *}
 import uk.gov.hmrc.http.{HeaderNames, HttpException}
 import uk.gov.hmrc.mongoFeatureToggles.model.{FeatureFlag, FeatureFlagName}
 import uk.gov.hmrc.tai.integration.utils.IntegrationSpec
-import uk.gov.hmrc.tai.model.admin.RtiCallToggle
+import uk.gov.hmrc.tai.model.admin.{HipTaxAccountHistoryToggle, RtiCallToggle}
+
+import scala.concurrent.Future
 
 class TaxFreeAmountComparisonSpec extends IntegrationSpec {
 
@@ -43,6 +45,8 @@ class TaxFreeAmountComparisonSpec extends IntegrationSpec {
     when(mockFeatureFlagService.getAsEitherT(eqTo[FeatureFlagName](RtiCallToggle))).thenReturn(
       EitherT.rightT(FeatureFlag(RtiCallToggle, isEnabled = false))
     )
+    when(mockFeatureFlagService.get(HipTaxAccountHistoryToggle))
+      .thenReturn(Future.successful(FeatureFlag(HipTaxAccountHistoryToggle, true)))
 
     server.stubFor(get(urlEqualTo(hipTaxAccountUrl)).willReturn(ok(taxAccountHipJson)))
     server.stubFor(get(urlEqualTo(desTaxCodeHistoryUrl)).willReturn(ok(taxCodeHistoryJson)))
@@ -54,8 +58,17 @@ class TaxFreeAmountComparisonSpec extends IntegrationSpec {
     "return an OK response for a valid user" in {
       server.stubFor(get(urlEqualTo(desTaxCodeHistoryUrl)).willReturn(ok(taxCodeHistoryJson)))
       server.stubFor(get(urlEqualTo(hipTaxAccountUrl)).willReturn(ok(taxAccountHipJson)))
+      server.stubFor(get(urlEqualTo(hipTaxAccountHistoryUrl(2))).willReturn(ok(taxAccountHistoryHipJson)))
       val result = route(fakeApplication(), request)
       result.map(getStatus) mustBe Some(OK)
+    }
+
+    "return an INTERNAL_SERVER_ERROR response when coding component is empty" in {
+      server.stubFor(get(urlEqualTo(desTaxCodeHistoryUrl)).willReturn(ok(taxCodeHistoryJson)))
+      server.stubFor(get(urlEqualTo(hipTaxAccountUrl)).willReturn(ok(taxAccountHipJson)))
+      server.stubFor(get(urlEqualTo(hipTaxAccountHistoryUrl(2))).willReturn(ok(taxAccountHistoryEmptyHipJson)))
+      val result = route(fakeApplication(), request)
+      result.map(getStatus) mustBe Some(INTERNAL_SERVER_ERROR)
     }
 
     "for tax-code-history failures" must {
