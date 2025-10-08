@@ -26,8 +26,9 @@ import play.api.test.FakeRequest
 import play.api.test.Helpers.{status as getStatus, *}
 import uk.gov.hmrc.http.{HeaderNames, HttpException}
 import uk.gov.hmrc.mongoFeatureToggles.model.{FeatureFlag, FeatureFlagName}
-import uk.gov.hmrc.tai.integration.utils.IntegrationSpec
+import uk.gov.hmrc.tai.integration.utils.{FileHelper, IntegrationSpec}
 import uk.gov.hmrc.tai.model.admin.{HipTaxAccountHistoryToggle, RtiCallToggle}
+import play.api.libs.json.Json
 
 import scala.concurrent.Future
 
@@ -56,17 +57,28 @@ class TaxFreeAmountComparisonSpec extends IntegrationSpec {
 
   "TaxFreeAmountComparison" must {
     "return an OK response for a valid user" in {
+      val expected = FileHelper.loadFile("expected/taxFreeAmountComparison-1.json")
+
       server.stubFor(get(urlEqualTo(desTaxCodeHistoryUrl)).willReturn(ok(taxCodeHistoryJson)))
       server.stubFor(get(urlEqualTo(hipTaxAccountUrl)).willReturn(ok(taxAccountHipJson)))
       server.stubFor(get(urlEqualTo(hipTaxAccountHistoryUrl(2))).willReturn(ok(taxAccountHistoryHipJson)))
       val result = route(fakeApplication(), request)
       result.map(getStatus) mustBe Some(OK)
+      result.map(contentAsJson) mustBe Some(Json.parse(expected))
     }
 
-    "return an INTERNAL_SERVER_ERROR response when coding component is empty" in {
+    "return an INTERNAL_SERVER_ERROR response when previous coding component is empty" in {
       server.stubFor(get(urlEqualTo(desTaxCodeHistoryUrl)).willReturn(ok(taxCodeHistoryJson)))
       server.stubFor(get(urlEqualTo(hipTaxAccountUrl)).willReturn(ok(taxAccountHipJson)))
       server.stubFor(get(urlEqualTo(hipTaxAccountHistoryUrl(2))).willReturn(ok(taxAccountHistoryEmptyHipJson)))
+      val result = route(fakeApplication(), request)
+      result.map(getStatus) mustBe Some(INTERNAL_SERVER_ERROR)
+    }
+
+    "return an INTERNAL_SERVER_ERROR response when current coding component is empty" in {
+      server.stubFor(get(urlEqualTo(desTaxCodeHistoryUrl)).willReturn(ok(taxCodeHistoryJson)))
+      server.stubFor(get(urlEqualTo(hipTaxAccountUrl)).willReturn(ok(taxAccountEmptyHipJson)))
+      server.stubFor(get(urlEqualTo(hipTaxAccountHistoryUrl(2))).willReturn(ok(taxAccountHistoryHipJson)))
       val result = route(fakeApplication(), request)
       result.map(getStatus) mustBe Some(INTERNAL_SERVER_ERROR)
     }

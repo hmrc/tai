@@ -37,25 +37,13 @@ class TaxFreeAmountComparisonService @Inject() (
 ) extends Logging {
 
   def taxFreeAmountComparison(nino: Nino)(implicit hc: HeaderCarrier): Future[TaxFreeAmountComparison] = {
-    lazy val currentComponents: Future[Seq[CodingComponent]] = getCurrentComponents(nino)
+    lazy val currentComponents: Future[Seq[CodingComponent]] = codingComponentService.codingComponents(nino, TaxYear())
     lazy val previousComponents: Future[Seq[CodingComponent]] = getPreviousComponents(nino)
 
     for {
       current  <- currentComponents
       previous <- previousComponents
     } yield TaxFreeAmountComparison(previous, current)
-  }
-
-  private def getCurrentComponents(nino: Nino)(implicit hc: HeaderCarrier): Future[Seq[CodingComponent]] = {
-    val currentCodingComponentFuture = codingComponentService.codingComponents(nino, TaxYear())
-
-    currentCodingComponentFuture.failed.foreach {
-      case NonFatal(e) =>
-        logger.error("Could not fetch current coding components for TaxFreeAmountComparison - " + e.getMessage)
-      case _ => throw new RuntimeException("Could not fetch current coding components for TaxFreeAmountComparison")
-    }
-
-    currentCodingComponentFuture
   }
 
   private def getPreviousComponents(nino: Nino)(implicit hc: HeaderCarrier): Future[Seq[CodingComponent]] =

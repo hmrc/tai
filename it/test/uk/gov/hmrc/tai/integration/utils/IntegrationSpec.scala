@@ -153,6 +153,7 @@ trait IntegrationSpec
 
   val taxAccountJson: String = FileHelper.loadFile("taxAccount.json")
   val taxAccountHipJson: String = FileHelper.loadFile("taxAccountHip.json")
+  val taxAccountEmptyHipJson: String = FileHelper.loadFile("taxAccountEmptyHip.json")
   val taxAccountHistoryHipJson: String = FileHelper.loadFile("taxAccountHistoryHip.json")
   val taxAccountHistoryEmptyHipJson: String = FileHelper.loadFile("taxAccountHistoryEmptyHip.json")
   val npsIabdsJson: String = FileHelper.loadFile("iabdsNps.json")

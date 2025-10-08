@@ -1,189 +1,5773 @@
 {
   "nationalInsuranceNumber": "$NINO",
-  "date": "2023-01-14",
-  "isCurrentlyEmployed": false,
+  "date": "<CY>-12-10",
   "taxYear": <CY>,
-  "previousYearTaxAccountIdentifier": 1955,
-  "totalEstimatedTax": 1149.4,
-  "totalEstimatedPayDetails": {
-    "amount": 18327,
-    "summaryIABDDetailsList": [],
-    "summaryIABDEstimatedPayDetailsList": [
-      {
-        "amount": 18327,
-        "type": "New Estimated Pay (027)",
-        "employmentSequenceNumber": 16,
-        "estimatedPaySource": "Annual Coding"
-      }
-    ]
-  },
-  "inYearCalculationsResult": 1,
-  "inYearCalculationAmount": 0,
-  "adjustedNetIncomeDetails": {
-    "amount": 18327,
-    "summaryIABDDetailsList": [],
-    "summaryIABDEstimatedPayDetailsList": [
-      {
-        "amount": 18327,
-        "type": "New Estimated Pay (027)",
-        "employmentSequenceNumber": 16,
-        "estimatedPaySource": "Annual Coding"
-      }
-    ]
-  },
+  "previousYearTaxAccountIdentifier": 1929,
+  "totalEstimatedTax": 1360.6,
   "totalLiabilityDetails": {
     "nonSavings": {
       "totalIncomeDetails": {
-        "amount": 18327,
-        "summaryIABDDetailsList": [],
+        "amount": 10001,
+        "employmentSequenceNumber": 1,
+        "summaryIABDDetailsList": [
+          {
+            "amount": 11100001,
+            "type": "Gift Aid Payments (001)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100002,
+            "type": "Gift Aid treated as paid in previous tax year (002)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100003,
+            "type": "One off Gift Aid Payments (003)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100004,
+            "type": "Gift Aid after end of tax year (004)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100005,
+            "type": "Personal Pension Payments (005)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100006,
+            "type": "Maintenance Payments (006)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100007,
+            "type": "Total gift aid Payments (007)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100008,
+            "type": "Employer Provided Services (008)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100009,
+            "type": "Widows and Orphans (009)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100010,
+            "type": "Balancing Charge (010)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100011,
+            "type": "Loan Interest Amount (011)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100012,
+            "type": "Death, Sickness or Funeral Benefits (012)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100013,
+            "type": "Married Couples Allowance (MAA) (013)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100014,
+            "type": "Blind Persons Allowance (014)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100015,
+            "type": "BPA Received from Spouse/Civil Partner (015)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100016,
+            "type": "Community Investment Tax Credit (016)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100017,
+            "type": "Gifts of Shares to Charity (017)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100018,
+            "type": "Retirement Annuity Payments (018)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100019,
+            "type": "Non-Coded Income (019)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100020,
+            "type": "Commission (020)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100021,
+            "type": "Other Income (Earned) (021)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100022,
+            "type": "Other Income (Not Earned) (022)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100023,
+            "type": "Part Time Earnings (023)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100024,
+            "type": "Tips (024)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100025,
+            "type": "Other Earnings (025)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100026,
+            "type": "Casual Earnings (026)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100027,
+            "type": "New Estimated Pay (027)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100028,
+            "type": "Benefit in Kind (028)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100029,
+            "type": "Car Fuel Benefit (029)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100030,
+            "type": "Medical Insurance (030)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100031,
+            "type": "Car Benefit (031)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100032,
+            "type": "Telephone (032)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100033,
+            "type": "Service Benefit (033)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100034,
+            "type": "Taxable Expenses Benefit (034)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100035,
+            "type": "Van Benefit (035)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100036,
+            "type": "Van Fuel Benefit (036)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100037,
+            "type": "Beneficial Loan (037)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100038,
+            "type": "Accommodation (038)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100039,
+            "type": "Assets (039)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100040,
+            "type": "Asset Transfer (040)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100041,
+            "type": "Educational Services (041)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100042,
+            "type": "Entertaining (042)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100043,
+            "type": "Expenses (043)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100044,
+            "type": "Mileage (044)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100045,
+            "type": "Non-qualifying Relocation Expenses (045)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100046,
+            "type": "Nursery Places (046)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100047,
+            "type": "Other Items (047)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100048,
+            "type": "Payments on Employee's Behalf (048)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100049,
+            "type": "Personal Incidental Expenses (049)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100050,
+            "type": "Qualifying Relocation Expenses (050)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100051,
+            "type": "Employer Provided Professional Subscription (051)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100052,
+            "type": "Income Tax Paid but not deducted from Director's Remuneration (052)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100053,
+            "type": "Travel and Subsistence (053)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100054,
+            "type": "Vouchers and Credit Cards (054)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100055,
+            "type": "Job Expenses (055)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100056,
+            "type": "Flat Rate Job Expenses (056)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100057,
+            "type": "Professional Subscriptions (057)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100058,
+            "type": "Hotel and Meal Expenses (058)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100059,
+            "type": "Other Expenses (059)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100060,
+            "type": "Vehicle Expenses (060)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100061,
+            "type": "Mileage Allowance Relief (061)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100062,
+            "type": "Foreign Dividend Income (062)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100063,
+            "type": "Foreign Property Income (063)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100064,
+            "type": "Foreign Interest & Other Savings (064)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100065,
+            "type": "Foreign Pensions & Other Income (065)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100066,
+            "type": "State Pension (066)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100067,
+            "type": "Occupational Pension (067)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100068,
+            "type": "Public Services Pension (068)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100069,
+            "type": "Forces Pension (069)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100070,
+            "type": "Personal Pension Annuity (070)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100071,
+            "type": "Lump Sum Deferral (071)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100072,
+            "type": "Profit (072)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100073,
+            "type": "Loss (073)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100074,
+            "type": "Loss Brought Forward from earlier tax year (074)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100075,
+            "type": "Taxed Interest (075)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100076,
+            "type": "UK Dividend (076)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100077,
+            "type": "Unit Trust (077)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100078,
+            "type": "Stock Dividend (078)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100079,
+            "type": "National Savings (079)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100080,
+            "type": "Savings Bond (080)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100081,
+            "type": "Purchased Life Annuities (081)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100082,
+            "type": "Untaxed Interest (082)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100083,
+            "type": "Incapacity Benefit (083)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100084,
+            "type": "Job Seekers Allowance (084)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100085,
+            "type": "Other Benefit (085)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100086,
+            "type": "Trusts, Settlements & Estates at Trust Rate (086)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100087,
+            "type": "Trusts, Settlements & Estates at Basic Rate (087)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100088,
+            "type": "Trusts, Settlements & Estates at Lower Rate (088)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100089,
+            "type": "Trusts, Settlements & Estates at Non-payable Dividend Rate (089)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100090,
+            "type": "Venture Capital Trust (090)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100091,
+            "type": "BPA Transferred to Spouse/Civil Partner (091)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100093,
+            "type": "Trade Union Subscriptions (093)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100094,
+            "type": "Chargeable Event Gain (094)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100095,
+            "type": "Gift Aid Adjustment (095)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100096,
+            "type": "Widows and Orphans Adjustment (096)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100097,
+            "type": "Married Couples Allowance to Wife (MAW) (097)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100098,
+            "type": "Double Taxation Relief (098)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100099,
+            "type": "Concession Relief (099)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100100,
+            "type": "Enterprise Investment Scheme (100)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100101,
+            "type": "Early Years Adjustment (101)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100102,
+            "type": "Loss relief (102)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100103,
+            "type": "Estimated Income (103)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100104,
+            "type": "Foreign Pension Allowance (104)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100105,
+            "type": "Allowances Allocated Elsewhere (105)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100106,
+            "type": "Allowances Allocated Here (106)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100107,
+            "type": "Estimated NIB (107)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100108,
+            "type": "Estimated IB (108)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100109,
+            "type": "Married Couples Allowance (MAE) (109)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100110,
+            "type": "Married Couples Allowance (MCCP) (110)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100111,
+            "type": "Surplus Married Couples Allowance (MAT) (111)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100112,
+            "type": "Surplus Married Couples Allowance to Wife (WAA) (112)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100113,
+            "type": "Surplus Married Couples Allowance to Wife (WAE) (113)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100114,
+            "type": "Married Couples Allowance to Wife (WMA) (114)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100115,
+            "type": "Friendly Society Subscriptions (115)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100116,
+            "type": "Higher Rate Adjustment (116)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100117,
+            "type": "Non-Cash Benefit (117)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100118,
+            "type": "Personal Allowance (PA) (118)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100119,
+            "type": "Personal Allowance Aged (PAA) (119)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100120,
+            "type": "Personal Allowance Elderly (PAE) (120)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100121,
+            "type": "Starting Rate Adjustment (LRA) (121)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100122,
+            "type": "Starting Rate Band Adjustment (ELR) (122)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100123,
+            "type": "Employment and Support Allowance (123)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100124,
+            "type": "Child Benefit (124)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100125,
+            "type": "Bereavement Allowance (125)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100126,
+            "type": "PA transferred to spouse/civil partner (126)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100127,
+            "type": "PA received from spouse/civil partner (127)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100128,
+            "type": "Personal Savings Allowance (128)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100129,
+            "type": "Dividend Tax (129)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100130,
+            "type": "Relief At Source (RAS) (130)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100131,
+            "type": "HICBC PAYE (131)",
+            "employmentSequenceNumber": 1
+          }
+        ],
         "summaryIABDEstimatedPayDetailsList": [
           {
-            "amount": 18327,
-            "type": "New Estimated Pay (027)",
-            "employmentSequenceNumber": 16,
-            "estimatedPaySource": "Annual Coding"
+            "amount": 1,
+            "type": "aa (019)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 2,
+            "type": "aa (020)",
+            "employmentSequenceNumber": 2
+          },
+          {
+            "amount": 3,
+            "type": "aa (021)",
+            "employmentSequenceNumber": 3
+          },
+          {
+            "amount": 4,
+            "type": "aa (022)",
+            "employmentSequenceNumber": 4
+          },
+          {
+            "amount": 5,
+            "type": "aa (023)",
+            "employmentSequenceNumber": 5
+          },
+          {
+            "amount": 6,
+            "type": "aa (024)",
+            "employmentSequenceNumber": 6
+          },
+          {
+            "amount": 7,
+            "type": "aa (025)",
+            "employmentSequenceNumber": 7
+          },
+          {
+            "amount": 8,
+            "type": "aa (026)",
+            "employmentSequenceNumber": 8
+          },
+          {
+            "amount": 9,
+            "type": "aa (062)",
+            "employmentSequenceNumber": 9
+          },
+          {
+            "amount": 10,
+            "type": "aa (063)",
+            "employmentSequenceNumber": 11
+          },
+          {
+            "amount": 11,
+            "type": "aa (064)",
+            "employmentSequenceNumber": 11
+          },
+          {
+            "amount": 12,
+            "type": "aa (065)",
+            "employmentSequenceNumber": 12
+          },
+          {
+            "amount": 13,
+            "type": "aa (066)",
+            "employmentSequenceNumber": 13
+          },
+          {
+            "amount": 14,
+            "type": "aa (067)",
+            "employmentSequenceNumber": 14
+          },
+          {
+            "amount": 15,
+            "type": "aa (068)",
+            "employmentSequenceNumber": 15
+          },
+          {
+            "amount": 16,
+            "type": "aa (069)",
+            "employmentSequenceNumber": 16
+          },
+          {
+            "amount": 17,
+            "type": "aa (070)",
+            "employmentSequenceNumber": 17
+          },
+          {
+            "amount": 18,
+            "type": "aa (072)",
+            "employmentSequenceNumber": 18
+          },
+          {
+            "amount": 19,
+            "type": "aa (075)",
+            "employmentSequenceNumber": 19
+          },
+          {
+            "amount": 20,
+            "type": "aa (076)",
+            "employmentSequenceNumber": 20
+          },
+          {
+            "amount": 21,
+            "type": "aa (077)",
+            "employmentSequenceNumber": 21
+          },
+          {
+            "amount": 22,
+            "type": "aa (078)",
+            "employmentSequenceNumber": 22
+          },
+          {
+            "amount": 23,
+            "type": "aa (079)",
+            "employmentSequenceNumber": 23
+          },
+          {
+            "amount": 24,
+            "type": "aa (080)",
+            "employmentSequenceNumber": 24
+          },
+          {
+            "amount": 25,
+            "type": "aa (081)",
+            "employmentSequenceNumber": 25
+          },
+          {
+            "amount": 26,
+            "type": "aa (082)",
+            "employmentSequenceNumber": 26
+          },
+          {
+            "amount": 27,
+            "type": "aa (083)",
+            "employmentSequenceNumber": 27
+          },
+          {
+            "amount": 28,
+            "type": "aa (084)",
+            "employmentSequenceNumber": 28
+          },
+          {
+            "amount": 29,
+            "type": "aa (123)",
+            "employmentSequenceNumber": 29
           }
         ]
       },
       "allowanceReliefDeductionsDetails": {
-        "amount": 12570,
-        "summaryIABDDetailsList": [],
-        "summaryIABDEstimatedPayDetailsList": [
-          {
-            "amount": 12570,
-            "type": "Personal Allowance (PA) (118)"
-          }
-        ]
+        "amount": 10002,
+        "employmentSequenceNumber": 1,
+        "summaryIABDDetailsList": []
       },
-      "totalTax": 1151.4,
-      "totalTaxableIncome": 5757,
+      "totalTax": 10003,
+      "totalTaxableIncome": 10004,
       "taxBandDetails": [
         {
           "bandType": "B",
           "taxCode": "BR",
-          "isBasicRate": true,
-          "income": 5757,
-          "tax": 1151.4,
+          "income": 6807,
+          "tax": 1361.4,
           "lowerBand": 0,
-          "upperBand": 37700,
+          "upperBand": 31865,
           "rate": 20
         },
         {
           "bandType": "D0",
           "taxCode": "D0",
-          "isBasicRate": false,
-          "lowerBand": 37700,
-          "upperBand": 125140,
+          "lowerBand": 31865,
+          "upperBand": 150000,
           "rate": 40
         },
         {
           "bandType": "D1",
           "taxCode": "D1",
-          "isBasicRate": false,
-          "lowerBand": 125140,
+          "lowerBand": 150000,
           "upperBand": 0,
           "rate": 45
         }
       ]
     },
-    "untaxedInterest": {},
-    "bankInterest": {},
-    "ukDividends": {},
-    "foreignInterest": {},
-    "foreignDividends": {},
+    "untaxedInterest": {
+      "totalIncomeDetails": {
+        "amount": 20001,
+        "employmentSequenceNumber": 1,
+        "summaryIABDDetailsList": [
+          {
+            "amount": 11100001,
+            "type": "Gift Aid Payments (001)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100002,
+            "type": "Gift Aid treated as paid in previous tax year (002)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100003,
+            "type": "One off Gift Aid Payments (003)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100004,
+            "type": "Gift Aid after end of tax year (004)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100005,
+            "type": "Personal Pension Payments (005)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100006,
+            "type": "Maintenance Payments (006)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100007,
+            "type": "Total gift aid Payments (007)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100008,
+            "type": "Employer Provided Services (008)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100009,
+            "type": "Widows and Orphans (009)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100010,
+            "type": "Balancing Charge (010)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100011,
+            "type": "Loan Interest Amount (011)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100012,
+            "type": "Death, Sickness or Funeral Benefits (012)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100013,
+            "type": "Married Couples Allowance (MAA) (013)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100014,
+            "type": "Blind Persons Allowance (014)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100015,
+            "type": "BPA Received from Spouse/Civil Partner (015)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100016,
+            "type": "Community Investment Tax Credit (016)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100017,
+            "type": "Gifts of Shares to Charity (017)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100018,
+            "type": "Retirement Annuity Payments (018)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100019,
+            "type": "Non-Coded Income (019)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100020,
+            "type": "Commission (020)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100021,
+            "type": "Other Income (Earned) (021)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100022,
+            "type": "Other Income (Not Earned) (022)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100023,
+            "type": "Part Time Earnings (023)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100024,
+            "type": "Tips (024)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100025,
+            "type": "Other Earnings (025)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100026,
+            "type": "Casual Earnings (026)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100027,
+            "type": "New Estimated Pay (027)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100028,
+            "type": "Benefit in Kind (028)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100029,
+            "type": "Car Fuel Benefit (029)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100030,
+            "type": "Medical Insurance (030)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100031,
+            "type": "Car Benefit (031)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100032,
+            "type": "Telephone (032)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100033,
+            "type": "Service Benefit (033)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100034,
+            "type": "Taxable Expenses Benefit (034)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100035,
+            "type": "Van Benefit (035)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100036,
+            "type": "Van Fuel Benefit (036)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100037,
+            "type": "Beneficial Loan (037)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100038,
+            "type": "Accommodation (038)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100039,
+            "type": "Assets (039)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100040,
+            "type": "Asset Transfer (040)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100041,
+            "type": "Educational Services (041)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100042,
+            "type": "Entertaining (042)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100043,
+            "type": "Expenses (043)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100044,
+            "type": "Mileage (044)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100045,
+            "type": "Non-qualifying Relocation Expenses (045)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100046,
+            "type": "Nursery Places (046)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100047,
+            "type": "Other Items (047)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100048,
+            "type": "Payments on Employee's Behalf (048)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100049,
+            "type": "Personal Incidental Expenses (049)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100050,
+            "type": "Qualifying Relocation Expenses (050)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100051,
+            "type": "Employer Provided Professional Subscription (051)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100052,
+            "type": "Income Tax Paid but not deducted from Director's Remuneration (052)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100053,
+            "type": "Travel and Subsistence (053)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100054,
+            "type": "Vouchers and Credit Cards (054)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100055,
+            "type": "Job Expenses (055)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100056,
+            "type": "Flat Rate Job Expenses (056)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100057,
+            "type": "Professional Subscriptions (057)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100058,
+            "type": "Hotel and Meal Expenses (058)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100059,
+            "type": "Other Expenses (059)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100060,
+            "type": "Vehicle Expenses (060)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100061,
+            "type": "Mileage Allowance Relief (061)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100062,
+            "type": "Foreign Dividend Income (062)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100063,
+            "type": "Foreign Property Income (063)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100064,
+            "type": "Foreign Interest & Other Savings (064)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100065,
+            "type": "Foreign Pensions & Other Income (065)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100066,
+            "type": "State Pension (066)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100067,
+            "type": "Occupational Pension (067)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100068,
+            "type": "Public Services Pension (068)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100069,
+            "type": "Forces Pension (069)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100070,
+            "type": "Personal Pension Annuity (070)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100071,
+            "type": "Lump Sum Deferral (071)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100072,
+            "type": "Profit (072)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100073,
+            "type": "Loss (073)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100074,
+            "type": "Loss Brought Forward from earlier tax year (074)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100075,
+            "type": "Taxed Interest (075)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100076,
+            "type": "UK Dividend (076)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100077,
+            "type": "Unit Trust (077)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100078,
+            "type": "Stock Dividend (078)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100079,
+            "type": "National Savings (079)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100080,
+            "type": "Savings Bond (080)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100081,
+            "type": "Purchased Life Annuities (081)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100082,
+            "type": "Untaxed Interest (082)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100083,
+            "type": "Incapacity Benefit (083)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100084,
+            "type": "Job Seekers Allowance (084)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100085,
+            "type": "Other Benefit (085)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100086,
+            "type": "Trusts, Settlements & Estates at Trust Rate (086)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100087,
+            "type": "Trusts, Settlements & Estates at Basic Rate (087)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100088,
+            "type": "Trusts, Settlements & Estates at Lower Rate (088)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100089,
+            "type": "Trusts, Settlements & Estates at Non-payable Dividend Rate (089)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100090,
+            "type": "Venture Capital Trust (090)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100091,
+            "type": "BPA Transferred to Spouse/Civil Partner (091)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100093,
+            "type": "Trade Union Subscriptions (093)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100094,
+            "type": "Chargeable Event Gain (094)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100095,
+            "type": "Gift Aid Adjustment (095)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100096,
+            "type": "Widows and Orphans Adjustment (096)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100097,
+            "type": "Married Couples Allowance to Wife (MAW) (097)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100098,
+            "type": "Double Taxation Relief (098)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100099,
+            "type": "Concession Relief (099)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100100,
+            "type": "Enterprise Investment Scheme (100)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100101,
+            "type": "Early Years Adjustment (101)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100102,
+            "type": "Loss relief (102)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100103,
+            "type": "Estimated Income (103)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100104,
+            "type": "Foreign Pension Allowance (104)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100105,
+            "type": "Allowances Allocated Elsewhere (105)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100106,
+            "type": "Allowances Allocated Here (106)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100107,
+            "type": "Estimated NIB (107)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100108,
+            "type": "Estimated IB (108)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100109,
+            "type": "Married Couples Allowance (MAE) (109)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100110,
+            "type": "Married Couples Allowance (MCCP) (110)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100111,
+            "type": "Surplus Married Couples Allowance (MAT) (111)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100112,
+            "type": "Surplus Married Couples Allowance to Wife (WAA) (112)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100113,
+            "type": "Surplus Married Couples Allowance to Wife (WAE) (113)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100114,
+            "type": "Married Couples Allowance to Wife (WMA) (114)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100115,
+            "type": "Friendly Society Subscriptions (115)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100116,
+            "type": "Higher Rate Adjustment (116)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100117,
+            "type": "Non-Cash Benefit (117)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100118,
+            "type": "Personal Allowance (PA) (118)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100119,
+            "type": "Personal Allowance Aged (PAA) (119)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100120,
+            "type": "Personal Allowance Elderly (PAE) (120)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100121,
+            "type": "Starting Rate Adjustment (LRA) (121)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100122,
+            "type": "Starting Rate Band Adjustment (ELR) (122)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100123,
+            "type": "Employment and Support Allowance (123)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100124,
+            "type": "Child Benefit (124)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100125,
+            "type": "Bereavement Allowance (125)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100126,
+            "type": "PA transferred to spouse/civil partner (126)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100127,
+            "type": "PA received from spouse/civil partner (127)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100128,
+            "type": "Personal Savings Allowance (128)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100129,
+            "type": "Dividend Tax (129)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100130,
+            "type": "Relief At Source (RAS) (130)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100131,
+            "type": "HICBC PAYE (131)",
+            "employmentSequenceNumber": 1
+          }
+        ],
+        "summaryIABDEstimatedPayDetailsList": [
+          {
+            "amount": 1,
+            "type": "aa (019)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 2,
+            "type": "aa (020)",
+            "employmentSequenceNumber": 2
+          },
+          {
+            "amount": 3,
+            "type": "aa (021)",
+            "employmentSequenceNumber": 3
+          },
+          {
+            "amount": 4,
+            "type": "aa (022)",
+            "employmentSequenceNumber": 4
+          },
+          {
+            "amount": 5,
+            "type": "aa (023)",
+            "employmentSequenceNumber": 5
+          },
+          {
+            "amount": 6,
+            "type": "aa (024)",
+            "employmentSequenceNumber": 6
+          },
+          {
+            "amount": 7,
+            "type": "aa (025)",
+            "employmentSequenceNumber": 7
+          },
+          {
+            "amount": 8,
+            "type": "aa (026)",
+            "employmentSequenceNumber": 8
+          },
+          {
+            "amount": 9,
+            "type": "aa (062)",
+            "employmentSequenceNumber": 9
+          },
+          {
+            "amount": 10,
+            "type": "aa (063)",
+            "employmentSequenceNumber": 11
+          },
+          {
+            "amount": 11,
+            "type": "aa (064)",
+            "employmentSequenceNumber": 11
+          },
+          {
+            "amount": 12,
+            "type": "aa (065)",
+            "employmentSequenceNumber": 12
+          },
+          {
+            "amount": 13,
+            "type": "aa (066)",
+            "employmentSequenceNumber": 13
+          },
+          {
+            "amount": 14,
+            "type": "aa (067)",
+            "employmentSequenceNumber": 14
+          },
+          {
+            "amount": 15,
+            "type": "aa (068)",
+            "employmentSequenceNumber": 15
+          },
+          {
+            "amount": 16,
+            "type": "aa (069)",
+            "employmentSequenceNumber": 16
+          },
+          {
+            "amount": 17,
+            "type": "aa (070)",
+            "employmentSequenceNumber": 17
+          },
+          {
+            "amount": 18,
+            "type": "aa (072)",
+            "employmentSequenceNumber": 18
+          },
+          {
+            "amount": 19,
+            "type": "aa (075)",
+            "employmentSequenceNumber": 19
+          },
+          {
+            "amount": 20,
+            "type": "aa (076)",
+            "employmentSequenceNumber": 20
+          },
+          {
+            "amount": 21,
+            "type": "aa (077)",
+            "employmentSequenceNumber": 21
+          },
+          {
+            "amount": 22,
+            "type": "aa (078)",
+            "employmentSequenceNumber": 22
+          },
+          {
+            "amount": 23,
+            "type": "aa (079)",
+            "employmentSequenceNumber": 23
+          },
+          {
+            "amount": 24,
+            "type": "aa (080)",
+            "employmentSequenceNumber": 24
+          },
+          {
+            "amount": 25,
+            "type": "aa (081)",
+            "employmentSequenceNumber": 25
+          },
+          {
+            "amount": 26,
+            "type": "aa (082)",
+            "employmentSequenceNumber": 26
+          },
+          {
+            "amount": 27,
+            "type": "aa (083)",
+            "employmentSequenceNumber": 27
+          },
+          {
+            "amount": 28,
+            "type": "aa (084)",
+            "employmentSequenceNumber": 28
+          },
+          {
+            "amount": 29,
+            "type": "aa (123)",
+            "employmentSequenceNumber": 29
+          }
+        ]
+      },
+      "allowanceReliefDeductionsDetails": {
+        "amount": 20002,
+        "employmentSequenceNumber": 1,
+        "summaryIABDDetailsList": []
+      },
+      "totalTax": 20003,
+      "totalTaxableIncome": 20004,
+      "taxBandDetails": [
+        {
+          "bandType": "B",
+          "taxCode": "BR",
+          "income": 6807,
+          "tax": 1361.4,
+          "lowerBand": 0,
+          "upperBand": 31865,
+          "rate": 20
+        },
+        {
+          "bandType": "D0",
+          "taxCode": "D0",
+          "lowerBand": 31865,
+          "upperBand": 150000,
+          "rate": 40
+        },
+        {
+          "bandType": "D1",
+          "taxCode": "D1",
+          "lowerBand": 150000,
+          "upperBand": 0,
+          "rate": 45
+        },
+        {
+          "bandType": "HSR1",
+          "taxCode": "D0",
+          "isBasicRate": false,
+          "income": 54325,
+          "tax": 21730,
+          "lowerBand": 32910,
+          "upperBand": 151125,
+          "rate": 40
+        },
+        {
+          "bandType": "PSR",
+          "taxCode": "BR",
+          "isBasicRate": false,
+          "income": 1000,
+          "tax": null,
+          "lowerBand": 5000,
+          "upperBand": 1000,
+          "rate": 0
+        }
+      ]
+    },
+    "bankInterest": {
+      "totalIncomeDetails": {
+        "amount": 30001,
+        "employmentSequenceNumber": 1,
+        "summaryIABDDetailsList": [
+          {
+            "amount": 11100001,
+            "type": "Gift Aid Payments (001)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100002,
+            "type": "Gift Aid treated as paid in previous tax year (002)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100003,
+            "type": "One off Gift Aid Payments (003)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100004,
+            "type": "Gift Aid after end of tax year (004)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100005,
+            "type": "Personal Pension Payments (005)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100006,
+            "type": "Maintenance Payments (006)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100007,
+            "type": "Total gift aid Payments (007)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100008,
+            "type": "Employer Provided Services (008)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100009,
+            "type": "Widows and Orphans (009)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100010,
+            "type": "Balancing Charge (010)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100011,
+            "type": "Loan Interest Amount (011)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100012,
+            "type": "Death, Sickness or Funeral Benefits (012)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100013,
+            "type": "Married Couples Allowance (MAA) (013)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100014,
+            "type": "Blind Persons Allowance (014)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100015,
+            "type": "BPA Received from Spouse/Civil Partner (015)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100016,
+            "type": "Community Investment Tax Credit (016)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100017,
+            "type": "Gifts of Shares to Charity (017)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100018,
+            "type": "Retirement Annuity Payments (018)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100019,
+            "type": "Non-Coded Income (019)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100020,
+            "type": "Commission (020)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100021,
+            "type": "Other Income (Earned) (021)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100022,
+            "type": "Other Income (Not Earned) (022)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100023,
+            "type": "Part Time Earnings (023)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100024,
+            "type": "Tips (024)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100025,
+            "type": "Other Earnings (025)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100026,
+            "type": "Casual Earnings (026)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100027,
+            "type": "New Estimated Pay (027)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100028,
+            "type": "Benefit in Kind (028)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100029,
+            "type": "Car Fuel Benefit (029)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100030,
+            "type": "Medical Insurance (030)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100031,
+            "type": "Car Benefit (031)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100032,
+            "type": "Telephone (032)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100033,
+            "type": "Service Benefit (033)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100034,
+            "type": "Taxable Expenses Benefit (034)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100035,
+            "type": "Van Benefit (035)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100036,
+            "type": "Van Fuel Benefit (036)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100037,
+            "type": "Beneficial Loan (037)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100038,
+            "type": "Accommodation (038)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100039,
+            "type": "Assets (039)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100040,
+            "type": "Asset Transfer (040)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100041,
+            "type": "Educational Services (041)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100042,
+            "type": "Entertaining (042)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100043,
+            "type": "Expenses (043)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100044,
+            "type": "Mileage (044)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100045,
+            "type": "Non-qualifying Relocation Expenses (045)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100046,
+            "type": "Nursery Places (046)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100047,
+            "type": "Other Items (047)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100048,
+            "type": "Payments on Employee's Behalf (048)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100049,
+            "type": "Personal Incidental Expenses (049)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100050,
+            "type": "Qualifying Relocation Expenses (050)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100051,
+            "type": "Employer Provided Professional Subscription (051)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100052,
+            "type": "Income Tax Paid but not deducted from Director's Remuneration (052)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100053,
+            "type": "Travel and Subsistence (053)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100054,
+            "type": "Vouchers and Credit Cards (054)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100055,
+            "type": "Job Expenses (055)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100056,
+            "type": "Flat Rate Job Expenses (056)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100057,
+            "type": "Professional Subscriptions (057)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100058,
+            "type": "Hotel and Meal Expenses (058)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100059,
+            "type": "Other Expenses (059)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100060,
+            "type": "Vehicle Expenses (060)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100061,
+            "type": "Mileage Allowance Relief (061)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100062,
+            "type": "Foreign Dividend Income (062)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100063,
+            "type": "Foreign Property Income (063)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100064,
+            "type": "Foreign Interest & Other Savings (064)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100065,
+            "type": "Foreign Pensions & Other Income (065)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100066,
+            "type": "State Pension (066)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100067,
+            "type": "Occupational Pension (067)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100068,
+            "type": "Public Services Pension (068)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100069,
+            "type": "Forces Pension (069)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100070,
+            "type": "Personal Pension Annuity (070)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100071,
+            "type": "Lump Sum Deferral (071)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100072,
+            "type": "Profit (072)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100073,
+            "type": "Loss (073)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100074,
+            "type": "Loss Brought Forward from earlier tax year (074)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100075,
+            "type": "Taxed Interest (075)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100076,
+            "type": "UK Dividend (076)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100077,
+            "type": "Unit Trust (077)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100078,
+            "type": "Stock Dividend (078)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100079,
+            "type": "National Savings (079)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100080,
+            "type": "Savings Bond (080)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100081,
+            "type": "Purchased Life Annuities (081)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100082,
+            "type": "Untaxed Interest (082)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100083,
+            "type": "Incapacity Benefit (083)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100084,
+            "type": "Job Seekers Allowance (084)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100085,
+            "type": "Other Benefit (085)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100086,
+            "type": "Trusts, Settlements & Estates at Trust Rate (086)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100087,
+            "type": "Trusts, Settlements & Estates at Basic Rate (087)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100088,
+            "type": "Trusts, Settlements & Estates at Lower Rate (088)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100089,
+            "type": "Trusts, Settlements & Estates at Non-payable Dividend Rate (089)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100090,
+            "type": "Venture Capital Trust (090)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100091,
+            "type": "BPA Transferred to Spouse/Civil Partner (091)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100093,
+            "type": "Trade Union Subscriptions (093)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100094,
+            "type": "Chargeable Event Gain (094)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100095,
+            "type": "Gift Aid Adjustment (095)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100096,
+            "type": "Widows and Orphans Adjustment (096)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100097,
+            "type": "Married Couples Allowance to Wife (MAW) (097)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100098,
+            "type": "Double Taxation Relief (098)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100099,
+            "type": "Concession Relief (099)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100100,
+            "type": "Enterprise Investment Scheme (100)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100101,
+            "type": "Early Years Adjustment (101)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100102,
+            "type": "Loss relief (102)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100103,
+            "type": "Estimated Income (103)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100104,
+            "type": "Foreign Pension Allowance (104)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100105,
+            "type": "Allowances Allocated Elsewhere (105)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100106,
+            "type": "Allowances Allocated Here (106)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100107,
+            "type": "Estimated NIB (107)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100108,
+            "type": "Estimated IB (108)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100109,
+            "type": "Married Couples Allowance (MAE) (109)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100110,
+            "type": "Married Couples Allowance (MCCP) (110)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100111,
+            "type": "Surplus Married Couples Allowance (MAT) (111)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100112,
+            "type": "Surplus Married Couples Allowance to Wife (WAA) (112)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100113,
+            "type": "Surplus Married Couples Allowance to Wife (WAE) (113)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100114,
+            "type": "Married Couples Allowance to Wife (WMA) (114)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100115,
+            "type": "Friendly Society Subscriptions (115)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100116,
+            "type": "Higher Rate Adjustment (116)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100117,
+            "type": "Non-Cash Benefit (117)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100118,
+            "type": "Personal Allowance (PA) (118)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100119,
+            "type": "Personal Allowance Aged (PAA) (119)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100120,
+            "type": "Personal Allowance Elderly (PAE) (120)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100121,
+            "type": "Starting Rate Adjustment (LRA) (121)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100122,
+            "type": "Starting Rate Band Adjustment (ELR) (122)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100123,
+            "type": "Employment and Support Allowance (123)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100124,
+            "type": "Child Benefit (124)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100125,
+            "type": "Bereavement Allowance (125)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100126,
+            "type": "PA transferred to spouse/civil partner (126)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100127,
+            "type": "PA received from spouse/civil partner (127)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100128,
+            "type": "Personal Savings Allowance (128)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100129,
+            "type": "Dividend Tax (129)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100130,
+            "type": "Relief At Source (RAS) (130)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100131,
+            "type": "HICBC PAYE (131)",
+            "employmentSequenceNumber": 1
+          }
+        ],
+        "summaryIABDEstimatedPayDetailsList": [
+          {
+            "amount": 1,
+            "type": "aa (019)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 2,
+            "type": "aa (020)",
+            "employmentSequenceNumber": 2
+          },
+          {
+            "amount": 3,
+            "type": "aa (021)",
+            "employmentSequenceNumber": 3
+          },
+          {
+            "amount": 4,
+            "type": "aa (022)",
+            "employmentSequenceNumber": 4
+          },
+          {
+            "amount": 5,
+            "type": "aa (023)",
+            "employmentSequenceNumber": 5
+          },
+          {
+            "amount": 6,
+            "type": "aa (024)",
+            "employmentSequenceNumber": 6
+          },
+          {
+            "amount": 7,
+            "type": "aa (025)",
+            "employmentSequenceNumber": 7
+          },
+          {
+            "amount": 8,
+            "type": "aa (026)",
+            "employmentSequenceNumber": 8
+          },
+          {
+            "amount": 9,
+            "type": "aa (062)",
+            "employmentSequenceNumber": 9
+          },
+          {
+            "amount": 10,
+            "type": "aa (063)",
+            "employmentSequenceNumber": 11
+          },
+          {
+            "amount": 11,
+            "type": "aa (064)",
+            "employmentSequenceNumber": 11
+          },
+          {
+            "amount": 12,
+            "type": "aa (065)",
+            "employmentSequenceNumber": 12
+          },
+          {
+            "amount": 13,
+            "type": "aa (066)",
+            "employmentSequenceNumber": 13
+          },
+          {
+            "amount": 14,
+            "type": "aa (067)",
+            "employmentSequenceNumber": 14
+          },
+          {
+            "amount": 15,
+            "type": "aa (068)",
+            "employmentSequenceNumber": 15
+          },
+          {
+            "amount": 16,
+            "type": "aa (069)",
+            "employmentSequenceNumber": 16
+          },
+          {
+            "amount": 17,
+            "type": "aa (070)",
+            "employmentSequenceNumber": 17
+          },
+          {
+            "amount": 18,
+            "type": "aa (072)",
+            "employmentSequenceNumber": 18
+          },
+          {
+            "amount": 19,
+            "type": "aa (075)",
+            "employmentSequenceNumber": 19
+          },
+          {
+            "amount": 20,
+            "type": "aa (076)",
+            "employmentSequenceNumber": 20
+          },
+          {
+            "amount": 21,
+            "type": "aa (077)",
+            "employmentSequenceNumber": 21
+          },
+          {
+            "amount": 22,
+            "type": "aa (078)",
+            "employmentSequenceNumber": 22
+          },
+          {
+            "amount": 23,
+            "type": "aa (079)",
+            "employmentSequenceNumber": 23
+          },
+          {
+            "amount": 24,
+            "type": "aa (080)",
+            "employmentSequenceNumber": 24
+          },
+          {
+            "amount": 25,
+            "type": "aa (081)",
+            "employmentSequenceNumber": 25
+          },
+          {
+            "amount": 26,
+            "type": "aa (082)",
+            "employmentSequenceNumber": 26
+          },
+          {
+            "amount": 27,
+            "type": "aa (083)",
+            "employmentSequenceNumber": 27
+          },
+          {
+            "amount": 28,
+            "type": "aa (084)",
+            "employmentSequenceNumber": 28
+          },
+          {
+            "amount": 29,
+            "type": "aa (123)",
+            "employmentSequenceNumber": 29
+          }
+        ]
+      },
+      "allowanceReliefDeductionsDetails": {
+        "employmentSequenceNumber": 1,
+        "amount": 30002,
+        "summaryIABDDetailsList": []
+      },
+      "totalTax": 30003,
+      "totalTaxableIncome": 30004,
+      "taxBandDetails": [
+        {
+          "bandType": "B",
+          "taxCode": "BR",
+          "income": 6807,
+          "tax": 1361.4,
+          "lowerBand": 0,
+          "upperBand": 31865,
+          "rate": 20
+        },
+        {
+          "bandType": "D0",
+          "taxCode": "D0",
+          "lowerBand": 31865,
+          "upperBand": 150000,
+          "rate": 40
+        },
+        {
+          "bandType": "D1",
+          "taxCode": "D1",
+          "lowerBand": 150000,
+          "upperBand": 0,
+          "rate": 45
+        }
+      ]
+
+    },
+    "ukDividends": {
+      "totalIncomeDetails": {
+        "amount": 40001,
+        "employmentSequenceNumber": 1,
+        "summaryIABDDetailsList": [
+          {
+            "amount": 11100001,
+            "type": "Gift Aid Payments (001)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100002,
+            "type": "Gift Aid treated as paid in previous tax year (002)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100003,
+            "type": "One off Gift Aid Payments (003)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100004,
+            "type": "Gift Aid after end of tax year (004)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100005,
+            "type": "Personal Pension Payments (005)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100006,
+            "type": "Maintenance Payments (006)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100007,
+            "type": "Total gift aid Payments (007)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100008,
+            "type": "Employer Provided Services (008)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100009,
+            "type": "Widows and Orphans (009)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100010,
+            "type": "Balancing Charge (010)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100011,
+            "type": "Loan Interest Amount (011)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100012,
+            "type": "Death, Sickness or Funeral Benefits (012)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100013,
+            "type": "Married Couples Allowance (MAA) (013)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100014,
+            "type": "Blind Persons Allowance (014)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100015,
+            "type": "BPA Received from Spouse/Civil Partner (015)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100016,
+            "type": "Community Investment Tax Credit (016)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100017,
+            "type": "Gifts of Shares to Charity (017)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100018,
+            "type": "Retirement Annuity Payments (018)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100019,
+            "type": "Non-Coded Income (019)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100020,
+            "type": "Commission (020)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100021,
+            "type": "Other Income (Earned) (021)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100022,
+            "type": "Other Income (Not Earned) (022)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100023,
+            "type": "Part Time Earnings (023)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100024,
+            "type": "Tips (024)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100025,
+            "type": "Other Earnings (025)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100026,
+            "type": "Casual Earnings (026)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100027,
+            "type": "New Estimated Pay (027)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100028,
+            "type": "Benefit in Kind (028)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100029,
+            "type": "Car Fuel Benefit (029)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100030,
+            "type": "Medical Insurance (030)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100031,
+            "type": "Car Benefit (031)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100032,
+            "type": "Telephone (032)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100033,
+            "type": "Service Benefit (033)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100034,
+            "type": "Taxable Expenses Benefit (034)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100035,
+            "type": "Van Benefit (035)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100036,
+            "type": "Van Fuel Benefit (036)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100037,
+            "type": "Beneficial Loan (037)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100038,
+            "type": "Accommodation (038)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100039,
+            "type": "Assets (039)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100040,
+            "type": "Asset Transfer (040)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100041,
+            "type": "Educational Services (041)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100042,
+            "type": "Entertaining (042)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100043,
+            "type": "Expenses (043)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100044,
+            "type": "Mileage (044)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100045,
+            "type": "Non-qualifying Relocation Expenses (045)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100046,
+            "type": "Nursery Places (046)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100047,
+            "type": "Other Items (047)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100048,
+            "type": "Payments on Employee's Behalf (048)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100049,
+            "type": "Personal Incidental Expenses (049)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100050,
+            "type": "Qualifying Relocation Expenses (050)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100051,
+            "type": "Employer Provided Professional Subscription (051)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100052,
+            "type": "Income Tax Paid but not deducted from Director's Remuneration (052)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100053,
+            "type": "Travel and Subsistence (053)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100054,
+            "type": "Vouchers and Credit Cards (054)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100055,
+            "type": "Job Expenses (055)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100056,
+            "type": "Flat Rate Job Expenses (056)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100057,
+            "type": "Professional Subscriptions (057)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100058,
+            "type": "Hotel and Meal Expenses (058)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100059,
+            "type": "Other Expenses (059)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100060,
+            "type": "Vehicle Expenses (060)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100061,
+            "type": "Mileage Allowance Relief (061)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100062,
+            "type": "Foreign Dividend Income (062)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100063,
+            "type": "Foreign Property Income (063)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100064,
+            "type": "Foreign Interest & Other Savings (064)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100065,
+            "type": "Foreign Pensions & Other Income (065)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100066,
+            "type": "State Pension (066)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100067,
+            "type": "Occupational Pension (067)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100068,
+            "type": "Public Services Pension (068)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100069,
+            "type": "Forces Pension (069)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100070,
+            "type": "Personal Pension Annuity (070)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100071,
+            "type": "Lump Sum Deferral (071)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100072,
+            "type": "Profit (072)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100073,
+            "type": "Loss (073)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100074,
+            "type": "Loss Brought Forward from earlier tax year (074)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100075,
+            "type": "Taxed Interest (075)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100076,
+            "type": "UK Dividend (076)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100077,
+            "type": "Unit Trust (077)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100078,
+            "type": "Stock Dividend (078)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100079,
+            "type": "National Savings (079)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100080,
+            "type": "Savings Bond (080)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100081,
+            "type": "Purchased Life Annuities (081)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100082,
+            "type": "Untaxed Interest (082)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100083,
+            "type": "Incapacity Benefit (083)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100084,
+            "type": "Job Seekers Allowance (084)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100085,
+            "type": "Other Benefit (085)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100086,
+            "type": "Trusts, Settlements & Estates at Trust Rate (086)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100087,
+            "type": "Trusts, Settlements & Estates at Basic Rate (087)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100088,
+            "type": "Trusts, Settlements & Estates at Lower Rate (088)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100089,
+            "type": "Trusts, Settlements & Estates at Non-payable Dividend Rate (089)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100090,
+            "type": "Venture Capital Trust (090)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100091,
+            "type": "BPA Transferred to Spouse/Civil Partner (091)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100093,
+            "type": "Trade Union Subscriptions (093)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100094,
+            "type": "Chargeable Event Gain (094)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100095,
+            "type": "Gift Aid Adjustment (095)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100096,
+            "type": "Widows and Orphans Adjustment (096)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100097,
+            "type": "Married Couples Allowance to Wife (MAW) (097)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100098,
+            "type": "Double Taxation Relief (098)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100099,
+            "type": "Concession Relief (099)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100100,
+            "type": "Enterprise Investment Scheme (100)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100101,
+            "type": "Early Years Adjustment (101)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100102,
+            "type": "Loss relief (102)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100103,
+            "type": "Estimated Income (103)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100104,
+            "type": "Foreign Pension Allowance (104)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100105,
+            "type": "Allowances Allocated Elsewhere (105)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100106,
+            "type": "Allowances Allocated Here (106)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100107,
+            "type": "Estimated NIB (107)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100108,
+            "type": "Estimated IB (108)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100109,
+            "type": "Married Couples Allowance (MAE) (109)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100110,
+            "type": "Married Couples Allowance (MCCP) (110)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100111,
+            "type": "Surplus Married Couples Allowance (MAT) (111)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100112,
+            "type": "Surplus Married Couples Allowance to Wife (WAA) (112)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100113,
+            "type": "Surplus Married Couples Allowance to Wife (WAE) (113)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100114,
+            "type": "Married Couples Allowance to Wife (WMA) (114)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100115,
+            "type": "Friendly Society Subscriptions (115)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100116,
+            "type": "Higher Rate Adjustment (116)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100117,
+            "type": "Non-Cash Benefit (117)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100118,
+            "type": "Personal Allowance (PA) (118)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100119,
+            "type": "Personal Allowance Aged (PAA) (119)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100120,
+            "type": "Personal Allowance Elderly (PAE) (120)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100121,
+            "type": "Starting Rate Adjustment (LRA) (121)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100122,
+            "type": "Starting Rate Band Adjustment (ELR) (122)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100123,
+            "type": "Employment and Support Allowance (123)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100124,
+            "type": "Child Benefit (124)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100125,
+            "type": "Bereavement Allowance (125)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100126,
+            "type": "PA transferred to spouse/civil partner (126)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100127,
+            "type": "PA received from spouse/civil partner (127)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100128,
+            "type": "Personal Savings Allowance (128)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100129,
+            "type": "Dividend Tax (129)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100130,
+            "type": "Relief At Source (RAS) (130)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100131,
+            "type": "HICBC PAYE (131)",
+            "employmentSequenceNumber": 1
+          }
+        ],
+        "summaryIABDEstimatedPayDetailsList": [
+          {
+            "amount": 1,
+            "type": "aa (019)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 2,
+            "type": "aa (020)",
+            "employmentSequenceNumber": 2
+          },
+          {
+            "amount": 3,
+            "type": "aa (021)",
+            "employmentSequenceNumber": 3
+          },
+          {
+            "amount": 4,
+            "type": "aa (022)",
+            "employmentSequenceNumber": 4
+          },
+          {
+            "amount": 5,
+            "type": "aa (023)",
+            "employmentSequenceNumber": 5
+          },
+          {
+            "amount": 6,
+            "type": "aa (024)",
+            "employmentSequenceNumber": 6
+          },
+          {
+            "amount": 7,
+            "type": "aa (025)",
+            "employmentSequenceNumber": 7
+          },
+          {
+            "amount": 8,
+            "type": "aa (026)",
+            "employmentSequenceNumber": 8
+          },
+          {
+            "amount": 9,
+            "type": "aa (062)",
+            "employmentSequenceNumber": 9
+          },
+          {
+            "amount": 10,
+            "type": "aa (063)",
+            "employmentSequenceNumber": 11
+          },
+          {
+            "amount": 11,
+            "type": "aa (064)",
+            "employmentSequenceNumber": 11
+          },
+          {
+            "amount": 12,
+            "type": "aa (065)",
+            "employmentSequenceNumber": 12
+          },
+          {
+            "amount": 13,
+            "type": "aa (066)",
+            "employmentSequenceNumber": 13
+          },
+          {
+            "amount": 14,
+            "type": "aa (067)",
+            "employmentSequenceNumber": 14
+          },
+          {
+            "amount": 15,
+            "type": "aa (068)",
+            "employmentSequenceNumber": 15
+          },
+          {
+            "amount": 16,
+            "type": "aa (069)",
+            "employmentSequenceNumber": 16
+          },
+          {
+            "amount": 17,
+            "type": "aa (070)",
+            "employmentSequenceNumber": 17
+          },
+          {
+            "amount": 18,
+            "type": "aa (072)",
+            "employmentSequenceNumber": 18
+          },
+          {
+            "amount": 19,
+            "type": "aa (075)",
+            "employmentSequenceNumber": 19
+          },
+          {
+            "amount": 20,
+            "type": "aa (076)",
+            "employmentSequenceNumber": 20
+          },
+          {
+            "amount": 21,
+            "type": "aa (077)",
+            "employmentSequenceNumber": 21
+          },
+          {
+            "amount": 22,
+            "type": "aa (078)",
+            "employmentSequenceNumber": 22
+          },
+          {
+            "amount": 23,
+            "type": "aa (079)",
+            "employmentSequenceNumber": 23
+          },
+          {
+            "amount": 24,
+            "type": "aa (080)",
+            "employmentSequenceNumber": 24
+          },
+          {
+            "amount": 25,
+            "type": "aa (081)",
+            "employmentSequenceNumber": 25
+          },
+          {
+            "amount": 26,
+            "type": "aa (082)",
+            "employmentSequenceNumber": 26
+          },
+          {
+            "amount": 27,
+            "type": "aa (083)",
+            "employmentSequenceNumber": 27
+          },
+          {
+            "amount": 28,
+            "type": "aa (084)",
+            "employmentSequenceNumber": 28
+          },
+          {
+            "amount": 29,
+            "type": "aa (123)",
+            "employmentSequenceNumber": 29
+          }
+        ]
+      },
+      "allowanceReliefDeductionsDetails": {
+        "amount": 40002,
+        "employmentSequenceNumber": 1,
+        "summaryIABDDetailsList": []
+      },
+      "totalTax": 40003,
+      "totalTaxableIncome": 40004,
+      "taxBandDetails": [
+        {
+          "bandType": "B",
+          "taxCode": "BR",
+          "income": 6807,
+          "tax": 1361.4,
+          "lowerBand": 0,
+          "upperBand": 31865,
+          "rate": 20
+        },
+        {
+          "bandType": "D0",
+          "taxCode": "D0",
+          "lowerBand": 31865,
+          "upperBand": 150000,
+          "rate": 40
+        },
+        {
+          "bandType": "D1",
+          "taxCode": "D1",
+          "lowerBand": 150000,
+          "upperBand": 0,
+          "rate": 45
+        }
+      ]
+    },
+    "foreignInterest": {
+      "totalIncomeDetails": {
+        "amount": 50001,
+        "employmentSequenceNumber": 1,
+        "summaryIABDDetailsList": [
+          {
+            "amount": 11100001,
+            "type": "Gift Aid Payments (001)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100002,
+            "type": "Gift Aid treated as paid in previous tax year (002)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100003,
+            "type": "One off Gift Aid Payments (003)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100004,
+            "type": "Gift Aid after end of tax year (004)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100005,
+            "type": "Personal Pension Payments (005)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100006,
+            "type": "Maintenance Payments (006)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100007,
+            "type": "Total gift aid Payments (007)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100008,
+            "type": "Employer Provided Services (008)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100009,
+            "type": "Widows and Orphans (009)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100010,
+            "type": "Balancing Charge (010)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100011,
+            "type": "Loan Interest Amount (011)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100012,
+            "type": "Death, Sickness or Funeral Benefits (012)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100013,
+            "type": "Married Couples Allowance (MAA) (013)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100014,
+            "type": "Blind Persons Allowance (014)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100015,
+            "type": "BPA Received from Spouse/Civil Partner (015)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100016,
+            "type": "Community Investment Tax Credit (016)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100017,
+            "type": "Gifts of Shares to Charity (017)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100018,
+            "type": "Retirement Annuity Payments (018)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100019,
+            "type": "Non-Coded Income (019)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100020,
+            "type": "Commission (020)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100021,
+            "type": "Other Income (Earned) (021)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100022,
+            "type": "Other Income (Not Earned) (022)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100023,
+            "type": "Part Time Earnings (023)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100024,
+            "type": "Tips (024)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100025,
+            "type": "Other Earnings (025)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100026,
+            "type": "Casual Earnings (026)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100027,
+            "type": "New Estimated Pay (027)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100028,
+            "type": "Benefit in Kind (028)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100029,
+            "type": "Car Fuel Benefit (029)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100030,
+            "type": "Medical Insurance (030)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100031,
+            "type": "Car Benefit (031)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100032,
+            "type": "Telephone (032)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100033,
+            "type": "Service Benefit (033)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100034,
+            "type": "Taxable Expenses Benefit (034)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100035,
+            "type": "Van Benefit (035)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100036,
+            "type": "Van Fuel Benefit (036)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100037,
+            "type": "Beneficial Loan (037)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100038,
+            "type": "Accommodation (038)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100039,
+            "type": "Assets (039)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100040,
+            "type": "Asset Transfer (040)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100041,
+            "type": "Educational Services (041)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100042,
+            "type": "Entertaining (042)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100043,
+            "type": "Expenses (043)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100044,
+            "type": "Mileage (044)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100045,
+            "type": "Non-qualifying Relocation Expenses (045)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100046,
+            "type": "Nursery Places (046)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100047,
+            "type": "Other Items (047)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100048,
+            "type": "Payments on Employee's Behalf (048)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100049,
+            "type": "Personal Incidental Expenses (049)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100050,
+            "type": "Qualifying Relocation Expenses (050)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100051,
+            "type": "Employer Provided Professional Subscription (051)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100052,
+            "type": "Income Tax Paid but not deducted from Director's Remuneration (052)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100053,
+            "type": "Travel and Subsistence (053)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100054,
+            "type": "Vouchers and Credit Cards (054)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100055,
+            "type": "Job Expenses (055)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100056,
+            "type": "Flat Rate Job Expenses (056)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100057,
+            "type": "Professional Subscriptions (057)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100058,
+            "type": "Hotel and Meal Expenses (058)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100059,
+            "type": "Other Expenses (059)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100060,
+            "type": "Vehicle Expenses (060)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100061,
+            "type": "Mileage Allowance Relief (061)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100062,
+            "type": "Foreign Dividend Income (062)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100063,
+            "type": "Foreign Property Income (063)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100064,
+            "type": "Foreign Interest & Other Savings (064)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100065,
+            "type": "Foreign Pensions & Other Income (065)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100066,
+            "type": "State Pension (066)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100067,
+            "type": "Occupational Pension (067)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100068,
+            "type": "Public Services Pension (068)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100069,
+            "type": "Forces Pension (069)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100070,
+            "type": "Personal Pension Annuity (070)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100071,
+            "type": "Lump Sum Deferral (071)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100072,
+            "type": "Profit (072)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100073,
+            "type": "Loss (073)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100074,
+            "type": "Loss Brought Forward from earlier tax year (074)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100075,
+            "type": "Taxed Interest (075)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100076,
+            "type": "UK Dividend (076)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100077,
+            "type": "Unit Trust (077)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100078,
+            "type": "Stock Dividend (078)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100079,
+            "type": "National Savings (079)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100080,
+            "type": "Savings Bond (080)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100081,
+            "type": "Purchased Life Annuities (081)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100082,
+            "type": "Untaxed Interest (082)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100083,
+            "type": "Incapacity Benefit (083)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100084,
+            "type": "Job Seekers Allowance (084)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100085,
+            "type": "Other Benefit (085)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100086,
+            "type": "Trusts, Settlements & Estates at Trust Rate (086)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100087,
+            "type": "Trusts, Settlements & Estates at Basic Rate (087)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100088,
+            "type": "Trusts, Settlements & Estates at Lower Rate (088)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100089,
+            "type": "Trusts, Settlements & Estates at Non-payable Dividend Rate (089)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100090,
+            "type": "Venture Capital Trust (090)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100091,
+            "type": "BPA Transferred to Spouse/Civil Partner (091)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100093,
+            "type": "Trade Union Subscriptions (093)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100094,
+            "type": "Chargeable Event Gain (094)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100095,
+            "type": "Gift Aid Adjustment (095)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100096,
+            "type": "Widows and Orphans Adjustment (096)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100097,
+            "type": "Married Couples Allowance to Wife (MAW) (097)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100098,
+            "type": "Double Taxation Relief (098)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100099,
+            "type": "Concession Relief (099)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100100,
+            "type": "Enterprise Investment Scheme (100)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100101,
+            "type": "Early Years Adjustment (101)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100102,
+            "type": "Loss relief (102)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100103,
+            "type": "Estimated Income (103)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100104,
+            "type": "Foreign Pension Allowance (104)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100105,
+            "type": "Allowances Allocated Elsewhere (105)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100106,
+            "type": "Allowances Allocated Here (106)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100107,
+            "type": "Estimated NIB (107)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100108,
+            "type": "Estimated IB (108)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100109,
+            "type": "Married Couples Allowance (MAE) (109)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100110,
+            "type": "Married Couples Allowance (MCCP) (110)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100111,
+            "type": "Surplus Married Couples Allowance (MAT) (111)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100112,
+            "type": "Surplus Married Couples Allowance to Wife (WAA) (112)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100113,
+            "type": "Surplus Married Couples Allowance to Wife (WAE) (113)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100114,
+            "type": "Married Couples Allowance to Wife (WMA) (114)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100115,
+            "type": "Friendly Society Subscriptions (115)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100116,
+            "type": "Higher Rate Adjustment (116)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100117,
+            "type": "Non-Cash Benefit (117)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100118,
+            "type": "Personal Allowance (PA) (118)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100119,
+            "type": "Personal Allowance Aged (PAA) (119)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100120,
+            "type": "Personal Allowance Elderly (PAE) (120)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100121,
+            "type": "Starting Rate Adjustment (LRA) (121)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100122,
+            "type": "Starting Rate Band Adjustment (ELR) (122)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100123,
+            "type": "Employment and Support Allowance (123)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100124,
+            "type": "Child Benefit (124)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100125,
+            "type": "Bereavement Allowance (125)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100126,
+            "type": "PA transferred to spouse/civil partner (126)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100127,
+            "type": "PA received from spouse/civil partner (127)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100128,
+            "type": "Personal Savings Allowance (128)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100129,
+            "type": "Dividend Tax (129)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100130,
+            "type": "Relief At Source (RAS) (130)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100131,
+            "type": "HICBC PAYE (131)",
+            "employmentSequenceNumber": 1
+          }
+        ],
+        "summaryIABDEstimatedPayDetailsList": [
+          {
+            "amount": 1,
+            "type": "aa (019)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 2,
+            "type": "aa (020)",
+            "employmentSequenceNumber": 2
+          },
+          {
+            "amount": 3,
+            "type": "aa (021)",
+            "employmentSequenceNumber": 3
+          },
+          {
+            "amount": 4,
+            "type": "aa (022)",
+            "employmentSequenceNumber": 4
+          },
+          {
+            "amount": 5,
+            "type": "aa (023)",
+            "employmentSequenceNumber": 5
+          },
+          {
+            "amount": 6,
+            "type": "aa (024)",
+            "employmentSequenceNumber": 6
+          },
+          {
+            "amount": 7,
+            "type": "aa (025)",
+            "employmentSequenceNumber": 7
+          },
+          {
+            "amount": 8,
+            "type": "aa (026)",
+            "employmentSequenceNumber": 8
+          },
+          {
+            "amount": 9,
+            "type": "aa (062)",
+            "employmentSequenceNumber": 9
+          },
+          {
+            "amount": 10,
+            "type": "aa (063)",
+            "employmentSequenceNumber": 11
+          },
+          {
+            "amount": 11,
+            "type": "aa (064)",
+            "employmentSequenceNumber": 11
+          },
+          {
+            "amount": 12,
+            "type": "aa (065)",
+            "employmentSequenceNumber": 12
+          },
+          {
+            "amount": 13,
+            "type": "aa (066)",
+            "employmentSequenceNumber": 13
+          },
+          {
+            "amount": 14,
+            "type": "aa (067)",
+            "employmentSequenceNumber": 14
+          },
+          {
+            "amount": 15,
+            "type": "aa (068)",
+            "employmentSequenceNumber": 15
+          },
+          {
+            "amount": 16,
+            "type": "aa (069)",
+            "employmentSequenceNumber": 16
+          },
+          {
+            "amount": 17,
+            "type": "aa (070)",
+            "employmentSequenceNumber": 17
+          },
+          {
+            "amount": 18,
+            "type": "aa (072)",
+            "employmentSequenceNumber": 18
+          },
+          {
+            "amount": 19,
+            "type": "aa (075)",
+            "employmentSequenceNumber": 19
+          },
+          {
+            "amount": 20,
+            "type": "aa (076)",
+            "employmentSequenceNumber": 20
+          },
+          {
+            "amount": 21,
+            "type": "aa (077)",
+            "employmentSequenceNumber": 21
+          },
+          {
+            "amount": 22,
+            "type": "aa (078)",
+            "employmentSequenceNumber": 22
+          },
+          {
+            "amount": 23,
+            "type": "aa (079)",
+            "employmentSequenceNumber": 23
+          },
+          {
+            "amount": 24,
+            "type": "aa (080)",
+            "employmentSequenceNumber": 24
+          },
+          {
+            "amount": 25,
+            "type": "aa (081)",
+            "employmentSequenceNumber": 25
+          },
+          {
+            "amount": 26,
+            "type": "aa (082)",
+            "employmentSequenceNumber": 26
+          },
+          {
+            "amount": 27,
+            "type": "aa (083)",
+            "employmentSequenceNumber": 27
+          },
+          {
+            "amount": 28,
+            "type": "aa (084)",
+            "employmentSequenceNumber": 28
+          },
+          {
+            "amount": 29,
+            "type": "aa (123)",
+            "employmentSequenceNumber": 29
+          }
+        ]
+      },
+      "allowanceReliefDeductionsDetails": {
+        "amount": 50002,
+        "employmentSequenceNumber": 1,
+        "summaryIABDDetailsList": []
+      },
+      "totalTax": 50003,
+      "totalTaxableIncome": 50004,
+      "taxBandDetails": [
+        {
+          "bandType": "B",
+          "taxCode": "BR",
+          "income": 6807,
+          "tax": 1361.4,
+          "lowerBand": 0,
+          "upperBand": 31865,
+          "rate": 20
+        },
+        {
+          "bandType": "D0",
+          "taxCode": "D0",
+          "lowerBand": 31865,
+          "upperBand": 150000,
+          "rate": 40
+        },
+        {
+          "bandType": "D1",
+          "taxCode": "D1",
+          "lowerBand": 150000,
+          "upperBand": 0,
+          "rate": 45
+        }
+      ]
+    },
+    "foreignDividends": {
+      "totalIncomeDetails": {
+        "amount": 60001,
+        "summaryIABDDetailsList": [
+          {
+            "amount": 11100001,
+            "type": "Gift Aid Payments (001)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100002,
+            "type": "Gift Aid treated as paid in previous tax year (002)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100003,
+            "type": "One off Gift Aid Payments (003)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100004,
+            "type": "Gift Aid after end of tax year (004)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100005,
+            "type": "Personal Pension Payments (005)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100006,
+            "type": "Maintenance Payments (006)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100007,
+            "type": "Total gift aid Payments (007)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100008,
+            "type": "Employer Provided Services (008)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100009,
+            "type": "Widows and Orphans (009)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100010,
+            "type": "Balancing Charge (010)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100011,
+            "type": "Loan Interest Amount (011)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100012,
+            "type": "Death, Sickness or Funeral Benefits (012)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100013,
+            "type": "Married Couples Allowance (MAA) (013)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100014,
+            "type": "Blind Persons Allowance (014)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100015,
+            "type": "BPA Received from Spouse/Civil Partner (015)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100016,
+            "type": "Community Investment Tax Credit (016)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100017,
+            "type": "Gifts of Shares to Charity (017)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100018,
+            "type": "Retirement Annuity Payments (018)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100019,
+            "type": "Non-Coded Income (019)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100020,
+            "type": "Commission (020)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100021,
+            "type": "Other Income (Earned) (021)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100022,
+            "type": "Other Income (Not Earned) (022)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100023,
+            "type": "Part Time Earnings (023)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100024,
+            "type": "Tips (024)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100025,
+            "type": "Other Earnings (025)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100026,
+            "type": "Casual Earnings (026)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100027,
+            "type": "New Estimated Pay (027)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100028,
+            "type": "Benefit in Kind (028)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100029,
+            "type": "Car Fuel Benefit (029)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100030,
+            "type": "Medical Insurance (030)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100031,
+            "type": "Car Benefit (031)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100032,
+            "type": "Telephone (032)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100033,
+            "type": "Service Benefit (033)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100034,
+            "type": "Taxable Expenses Benefit (034)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100035,
+            "type": "Van Benefit (035)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100036,
+            "type": "Van Fuel Benefit (036)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100037,
+            "type": "Beneficial Loan (037)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100038,
+            "type": "Accommodation (038)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100039,
+            "type": "Assets (039)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100040,
+            "type": "Asset Transfer (040)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100041,
+            "type": "Educational Services (041)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100042,
+            "type": "Entertaining (042)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100043,
+            "type": "Expenses (043)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100044,
+            "type": "Mileage (044)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100045,
+            "type": "Non-qualifying Relocation Expenses (045)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100046,
+            "type": "Nursery Places (046)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100047,
+            "type": "Other Items (047)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100048,
+            "type": "Payments on Employee's Behalf (048)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100049,
+            "type": "Personal Incidental Expenses (049)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100050,
+            "type": "Qualifying Relocation Expenses (050)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100051,
+            "type": "Employer Provided Professional Subscription (051)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100052,
+            "type": "Income Tax Paid but not deducted from Director's Remuneration (052)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100053,
+            "type": "Travel and Subsistence (053)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100054,
+            "type": "Vouchers and Credit Cards (054)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100055,
+            "type": "Job Expenses (055)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100056,
+            "type": "Flat Rate Job Expenses (056)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100057,
+            "type": "Professional Subscriptions (057)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100058,
+            "type": "Hotel and Meal Expenses (058)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100059,
+            "type": "Other Expenses (059)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100060,
+            "type": "Vehicle Expenses (060)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100061,
+            "type": "Mileage Allowance Relief (061)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100062,
+            "type": "Foreign Dividend Income (062)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100063,
+            "type": "Foreign Property Income (063)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100064,
+            "type": "Foreign Interest & Other Savings (064)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100065,
+            "type": "Foreign Pensions & Other Income (065)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100066,
+            "type": "State Pension (066)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100067,
+            "type": "Occupational Pension (067)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100068,
+            "type": "Public Services Pension (068)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100069,
+            "type": "Forces Pension (069)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100070,
+            "type": "Personal Pension Annuity (070)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100071,
+            "type": "Lump Sum Deferral (071)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100072,
+            "type": "Profit (072)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100073,
+            "type": "Loss (073)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100074,
+            "type": "Loss Brought Forward from earlier tax year (074)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100075,
+            "type": "Taxed Interest (075)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100076,
+            "type": "UK Dividend (076)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100077,
+            "type": "Unit Trust (077)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100078,
+            "type": "Stock Dividend (078)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100079,
+            "type": "National Savings (079)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100080,
+            "type": "Savings Bond (080)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100081,
+            "type": "Purchased Life Annuities (081)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100082,
+            "type": "Untaxed Interest (082)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100083,
+            "type": "Incapacity Benefit (083)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100084,
+            "type": "Job Seekers Allowance (084)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100085,
+            "type": "Other Benefit (085)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100086,
+            "type": "Trusts, Settlements & Estates at Trust Rate (086)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100087,
+            "type": "Trusts, Settlements & Estates at Basic Rate (087)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100088,
+            "type": "Trusts, Settlements & Estates at Lower Rate (088)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100089,
+            "type": "Trusts, Settlements & Estates at Non-payable Dividend Rate (089)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100090,
+            "type": "Venture Capital Trust (090)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100091,
+            "type": "BPA Transferred to Spouse/Civil Partner (091)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100093,
+            "type": "Trade Union Subscriptions (093)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100094,
+            "type": "Chargeable Event Gain (094)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100095,
+            "type": "Gift Aid Adjustment (095)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100096,
+            "type": "Widows and Orphans Adjustment (096)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100097,
+            "type": "Married Couples Allowance to Wife (MAW) (097)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100098,
+            "type": "Double Taxation Relief (098)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100099,
+            "type": "Concession Relief (099)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100100,
+            "type": "Enterprise Investment Scheme (100)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100101,
+            "type": "Early Years Adjustment (101)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100102,
+            "type": "Loss relief (102)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100103,
+            "type": "Estimated Income (103)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100104,
+            "type": "Foreign Pension Allowance (104)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100105,
+            "type": "Allowances Allocated Elsewhere (105)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100106,
+            "type": "Allowances Allocated Here (106)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100107,
+            "type": "Estimated NIB (107)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100108,
+            "type": "Estimated IB (108)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100109,
+            "type": "Married Couples Allowance (MAE) (109)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100110,
+            "type": "Married Couples Allowance (MCCP) (110)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100111,
+            "type": "Surplus Married Couples Allowance (MAT) (111)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100112,
+            "type": "Surplus Married Couples Allowance to Wife (WAA) (112)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100113,
+            "type": "Surplus Married Couples Allowance to Wife (WAE) (113)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100114,
+            "type": "Married Couples Allowance to Wife (WMA) (114)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100115,
+            "type": "Friendly Society Subscriptions (115)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100116,
+            "type": "Higher Rate Adjustment (116)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100117,
+            "type": "Non-Cash Benefit (117)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100118,
+            "type": "Personal Allowance (PA) (118)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100119,
+            "type": "Personal Allowance Aged (PAA) (119)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100120,
+            "type": "Personal Allowance Elderly (PAE) (120)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100121,
+            "type": "Starting Rate Adjustment (LRA) (121)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100122,
+            "type": "Starting Rate Band Adjustment (ELR) (122)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100123,
+            "type": "Employment and Support Allowance (123)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100124,
+            "type": "Child Benefit (124)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100125,
+            "type": "Bereavement Allowance (125)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100126,
+            "type": "PA transferred to spouse/civil partner (126)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100127,
+            "type": "PA received from spouse/civil partner (127)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100128,
+            "type": "Personal Savings Allowance (128)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100129,
+            "type": "Dividend Tax (129)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100130,
+            "type": "Relief At Source (RAS) (130)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 11100131,
+            "type": "HICBC PAYE (131)",
+            "employmentSequenceNumber": 1
+          }
+        ],
+        "summaryIABDEstimatedPayDetailsList": [
+          {
+            "amount": 1,
+            "type": "aa (019)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 2,
+            "type": "aa (020)",
+            "employmentSequenceNumber": 2
+          },
+          {
+            "amount": 3,
+            "type": "aa (021)",
+            "employmentSequenceNumber": 3
+          },
+          {
+            "amount": 4,
+            "type": "aa (022)",
+            "employmentSequenceNumber": 4
+          },
+          {
+            "amount": 5,
+            "type": "aa (023)",
+            "employmentSequenceNumber": 5
+          },
+          {
+            "amount": 6,
+            "type": "aa (024)",
+            "employmentSequenceNumber": 6
+          },
+          {
+            "amount": 7,
+            "type": "aa (025)",
+            "employmentSequenceNumber": 7
+          },
+          {
+            "amount": 8,
+            "type": "aa (026)",
+            "employmentSequenceNumber": 8
+          },
+          {
+            "amount": 9,
+            "type": "aa (062)",
+            "employmentSequenceNumber": 9
+          },
+          {
+            "amount": 10,
+            "type": "aa (063)",
+            "employmentSequenceNumber": 11
+          },
+          {
+            "amount": 11,
+            "type": "aa (064)",
+            "employmentSequenceNumber": 11
+          },
+          {
+            "amount": 12,
+            "type": "aa (065)",
+            "employmentSequenceNumber": 12
+          },
+          {
+            "amount": 13,
+            "type": "aa (066)",
+            "employmentSequenceNumber": 13
+          },
+          {
+            "amount": 14,
+            "type": "aa (067)",
+            "employmentSequenceNumber": 14
+          },
+          {
+            "amount": 15,
+            "type": "aa (068)",
+            "employmentSequenceNumber": 15
+          },
+          {
+            "amount": 16,
+            "type": "aa (069)",
+            "employmentSequenceNumber": 16
+          },
+          {
+            "amount": 17,
+            "type": "aa (070)",
+            "employmentSequenceNumber": 17
+          },
+          {
+            "amount": 18,
+            "type": "aa (072)",
+            "employmentSequenceNumber": 18
+          },
+          {
+            "amount": 19,
+            "type": "aa (075)",
+            "employmentSequenceNumber": 19
+          },
+          {
+            "amount": 20,
+            "type": "aa (076)",
+            "employmentSequenceNumber": 20
+          },
+          {
+            "amount": 21,
+            "type": "aa (077)",
+            "employmentSequenceNumber": 21
+          },
+          {
+            "amount": 22,
+            "type": "aa (078)",
+            "employmentSequenceNumber": 22
+          },
+          {
+            "amount": 23,
+            "type": "aa (079)",
+            "employmentSequenceNumber": 23
+          },
+          {
+            "amount": 24,
+            "type": "aa (080)",
+            "employmentSequenceNumber": 24
+          },
+          {
+            "amount": 25,
+            "type": "aa (081)",
+            "employmentSequenceNumber": 25
+          },
+          {
+            "amount": 26,
+            "type": "aa (082)",
+            "employmentSequenceNumber": 26
+          },
+          {
+            "amount": 27,
+            "type": "aa (083)",
+            "employmentSequenceNumber": 27
+          },
+          {
+            "amount": 28,
+            "type": "aa (084)",
+            "employmentSequenceNumber": 28
+          },
+          {
+            "amount": 29,
+            "type": "aa (123)",
+            "employmentSequenceNumber": 29
+          }
+        ]
+      },
+      "allowanceReliefDeductionsDetails": {
+        "amount": 60002,
+        "summaryIABDDetailsList": []
+      },
+      "totalTax": 60003,
+      "totalTaxableIncome": 60004,
+      "taxBandDetails": [
+        {
+          "bandType": "B",
+          "taxCode": "BR",
+          "income": 6807,
+          "tax": 1361.4,
+          "lowerBand": 0,
+          "upperBand": 31865,
+          "rate": 20
+        },
+        {
+          "bandType": "D0",
+          "taxCode": "D0",
+          "lowerBand": 31865,
+          "upperBand": 150000,
+          "rate": 40
+        },
+        {
+          "bandType": "D1",
+          "taxCode": "D1",
+          "lowerBand": 150000,
+          "upperBand": 0,
+          "rate": 45
+        }
+      ]
+    },
     "basicRateExtensionsDetails": {
-      "amount": 0,
-      "summaryIABDDetailsList": []
+      "amount": 9999,
+      "employmentSequenceNumber": 1,
+      "summaryIABDDetailsList": [],
+      "personalPensionPayment": 88801001,
+      "giftAidPayment": 88801002,
+      "personalPensionPaymentRelief": 88801003,
+      "giftAidPaymentsRelief": 88801004
+    },
+    "reliefsGivingBackTaxDetails": {
+      "amount": 101010,
+      "employmentSequenceNumber": 1,
+      "enterpriseInvestmentSchemeRelief": 1010101,
+      "concessionalRelief": 1010102,
+      "maintenancePayments": 1010103,
+      "marriedCouplesAllowance": 1010104,
+      "doubleTaxationRelief": 1010105
     },
     "otherTaxDueDetails": {
-      "summaryIABDDetailsList": []
+      "amount": 999010,
+      "employmentSequenceNumber": 1,
+      "summaryIABDDetailsList": [],
+      "excessGiftAidTax": 99901001,
+      "excessWidowsAndOrphans": 99901002,
+      "pensionPaymentsAdjustment": 99901003,
+      "childBenefit": 99901004
     },
-    "totalLiability": 1151.4
+    "alreadyTaxedAtSourceDetails": {
+      "amount": 202010,
+      "employmentSequenceNumber": 1,
+      "summaryIABDDetailsList": [],
+      "taxOnBankBSInterest": 20202001,
+      "taxCreditOnUKDividends": 20202002,
+      "taxCreditOnForeignInterest": 20202003,
+      "taxCreditOnForeignIncomeDividends": 20202004
+    },
+    "totalLiability": 99999
   },
+
   "employmentDetailsList": [
     {
-      "employmentSequenceNumber": 16,
+      "employmentSequenceNumber": 1,
       "employmentRecordType": "PRIMARY",
       "employmentStatus": "Live",
       "jobSeekersAllowance": false,
       "activePension": false,
       "otherIncome": false,
-      "payeSchemeOperatorName": "Employer 2",
-      "taxCode": "1257L",
-      "basisOfOperation": "Cumulative",
-      "totalInYearAdjustment": 0,
-      "totalInYearAdjustmentIntoCurrentYear": 0,
-      "totalInYearAdjustmentIntoNextYear": 0,
-      "totalInYearAdjustmentFromPreviousYear": 0,
-      "actualPUPCodedInNextYear": 0,
+      "payeSchemeOperatorName": "Primary live (tax account api)",
+      "taxCode": "1150L",
+      "totalInYearAdjustment": 4567,
+      "totalInYearAdjustmentIntoCurrentYear": 6789,
+      "totalInYearAdjustmentIntoNextYear": 1234,
       "allowancesDetails": [
         {
+          "type": "job expenses (001)",
+          "adjustedAmount": "201",
+          "sourceAmount": "30201"
+        },
+        {
+          "type": "flat rate job expenses (002)",
+          "adjustedAmount": "202",
+          "sourceAmount": "30202"
+        },
+        {
+          "type": "professional subscriptions (003)",
+          "adjustedAmount": "203",
+          "sourceAmount": "30203"
+        },
+        {
+          "type": "payments towards a retirement annuity (004)",
+          "adjustedAmount": "204",
+          "sourceAmount": "30204"
+        },
+        {
+          "type": "Personal Pension Relief (005)",
+          "adjustedAmount": "205",
+          "sourceAmount": "30205"
+        },
+        {
+          "type": "Gift Aid payments (006)",
+          "adjustedAmount": "206",
+          "sourceAmount": "30206"
+        },
+        {
+          "type": "Enterprise Investment Scheme relief (007)",
+          "adjustedAmount": "207",
+          "sourceAmount": "30207"
+        },
+        {
+          "type": "loan interest (008)",
+          "adjustedAmount": "208",
+          "sourceAmount": "30208"
+        },
+        {
+          "type": "loss relief (009)",
+          "adjustedAmount": "209",
+          "sourceAmount": "30209"
+        },
+        {
+          "type": "maintenance payments (010)",
+          "adjustedAmount": "210",
+          "sourceAmount": "30210"
+        },
+        {
           "type": "personal allowance (011)",
-          "sourceAmount": 12570,
-          "summaryIABDDetailsList": [],
-          "summaryIABDEstimatedPayDetailsList": [
-            {
-              "amount": 12570,
-              "type": "Personal Allowance (PA) (118)"
-            },
-            {
-              "amount": 18327,
-              "type": "Non-qualifying Relocation Expenses (045)",
-              "employmentSequenceNumber": 16,
-              "estimatedPaySource": "Annual Coding"
-            }
-          ],
-          "adjustedAmount": 12570
+          "adjustedAmount": "211",
+          "sourceAmount": "30211"
+        },
+        {
+          "type": "personal allowance (012)",
+          "adjustedAmount": "212",
+          "sourceAmount": "30212"
+        },
+        {
+          "type": "personal allowance (013)",
+          "adjustedAmount": "213",
+          "sourceAmount": "30213"
+        },
+        {
+          "type": "personal allowance (014)",
+          "adjustedAmount": "214",
+          "sourceAmount": "30214"
+        },
+        {
+          "type": "married couple's allowance (015)",
+          "adjustedAmount": "215",
+          "sourceAmount": "30215"
+        },
+        {
+          "type": "married couple's allowance (016)",
+          "adjustedAmount": "216",
+          "sourceAmount": "30216"
+        },
+        {
+          "type": "married couple's allowance (017)",
+          "adjustedAmount": "217",
+          "sourceAmount": "30217"
+        },
+        {
+          "type": "married couple's allowance (018)",
+          "adjustedAmount": "218",
+          "sourceAmount": "30218"
+        },
+        {
+          "type": "married couple's allowance from husband (019)",
+          "adjustedAmount": "219",
+          "sourceAmount": "30219"
+        },
+        {
+          "type": "married couple's allowance from husband (020)",
+          "adjustedAmount": "220",
+          "sourceAmount": "30220"
+        },
+        {
+          "type": "married couple's allowance (021)",
+          "adjustedAmount": "221",
+          "sourceAmount": "30221"
+        },
+        {
+          "type": "blind person's allowance (022)",
+          "adjustedAmount": "222",
+          "sourceAmount": "30222"
+        },
+        {
+          "type": "balance of tax allowances (023)",
+          "adjustedAmount": "223",
+          "sourceAmount": "30223"
+        },
+        {
+          "type": "death, sickness or funeral benefits (024)",
+          "adjustedAmount": "224",
+          "sourceAmount": "30224"
+        },
+        {
+          "type": "death, sickness or funeral benefits (025)",
+          "adjustedAmount": "225",
+          "sourceAmount": "30225"
+        },
+        {
+          "type": "death, sickness or funeral benefits (026)",
+          "adjustedAmount": "226",
+          "sourceAmount": "30226"
+        },
+        {
+          "type": "Starting rate adjustment (027)",
+          "adjustedAmount": "227",
+          "sourceAmount": "30227"
+        },
+        {
+          "type": "concessional relief (028)",
+          "adjustedAmount": "228",
+          "sourceAmount": "30228"
+        },
+        {
+          "type": "double taxation relief (029)",
+          "adjustedAmount": "229",
+          "sourceAmount": "30229"
+        },
+        {
+          "type": "foreign pension allowance (030)",
+          "adjustedAmount": "230",
+          "sourceAmount": "30230"
+        },
+        {
+          "type": "Earlier Years Adjustment (031)",
+          "adjustedAmount": "231",
+          "sourceAmount": "30231"
+        },
+        {
+          "type": "Personal Allowance Received from Partner (032)",
+          "adjustedAmount": "232",
+          "sourceAmount": "30232"
+        },
+        {
+          "type": "Personal Savings Allowance (033)",
+          "adjustedAmount": "233",
+          "sourceAmount": "30233"
+        },
+        {
+          "type": "BR Difference Tax Reduction (034)",
+          "adjustedAmount": "234",
+          "sourceAmount": "30234"
         }
       ],
-      "deductionsDetails": [],
+      "deductionsDetails": [
+        {
+          "type": "state pension/state benefits (001)",
+          "adjustedAmount": "100",
+          "sourceAmount": "30100"
+        },
+        {
+          "type": "public services pension (002)",
+          "adjustedAmount": "101",
+          "sourceAmount": "30101"
+        },
+        {
+          "type": "Forces Pension (003)",
+          "adjustedAmount": "102",
+          "sourceAmount": "30102"
+        },
+        {
+          "type": "other pension (004)",
+          "adjustedAmount": "103",
+          "sourceAmount": "30103"
+        },
+        {
+          "type": "taxable incapacity benefit (005)",
+          "adjustedAmount": "104",
+          "sourceAmount": "30104"
+        },
+        {
+          "type": "married couple's allowance to your wife (006)",
+          "adjustedAmount": "105",
+          "sourceAmount": "30105"
+        },
+        {
+          "type": "employer benefits (007)",
+          "adjustedAmount": "106",
+          "sourceAmount": "30106"
+        },
+        {
+          "type": "car benefit (008)",
+          "adjustedAmount": "107",
+          "sourceAmount": "30107"
+        },
+        {
+          "type": "van benefit (009)",
+          "adjustedAmount": "108",
+          "sourceAmount": "30108"
+        },
+        {
+          "type": "car fuel (010)",
+          "adjustedAmount": "109",
+          "sourceAmount": "30109"
+        },
+        {
+          "type": "service benefit (011)",
+          "adjustedAmount": "110",
+          "sourceAmount": "30110"
+        },
+        {
+          "type": "loan from your employer (012)",
+          "adjustedAmount": "111",
+          "sourceAmount": "30111"
+        },
+        {
+          "type": "medical insurance (013)",
+          "adjustedAmount": "112",
+          "sourceAmount": "30112"
+        },
+        {
+          "type": "telephone (014)",
+          "adjustedAmount": "113",
+          "sourceAmount": "30113"
+        },
+        {
+          "type": "balancing charge (015)",
+          "adjustedAmount": "114",
+          "sourceAmount": "30114"
+        },
+        {
+          "type": "taxable expenses payments (016)",
+          "adjustedAmount": "115",
+          "sourceAmount": "30115"
+        },
+        {
+          "type": "other earnings (017)",
+          "adjustedAmount": "116",
+          "sourceAmount": "30116"
+        },
+        {
+          "type": "Jobseeker's allowance (018)",
+          "adjustedAmount": "117",
+          "sourceAmount": "30117"
+        },
+        {
+          "type": "part time earnings (019)",
+          "adjustedAmount": "118",
+          "sourceAmount": "30118"
+        },
+        {
+          "type": "Tips (020)",
+          "adjustedAmount": "119",
+          "sourceAmount": "30119"
+        },
+        {
+          "type": "Commission (021)",
+          "adjustedAmount": "120",
+          "sourceAmount": "30120"
+        },
+        {
+          "type": "other earnings (022)",
+          "adjustedAmount": "121",
+          "sourceAmount": "30121"
+        },
+        {
+          "type": "interest without tax taken off (gross interest) (023)",
+          "adjustedAmount": "122",
+          "sourceAmount": "30122"
+        },
+        {
+          "type": "other income (not earnings) (024)",
+          "adjustedAmount": "123",
+          "sourceAmount": "30123"
+        },
+        {
+          "type": "property income (025)",
+          "adjustedAmount": "124",
+          "sourceAmount": "30124"
+        },
+        {
+          "type": "annuity (026)",
+          "adjustedAmount": "125",
+          "sourceAmount": "30125"
+        },
+        {
+          "type": "property income (027)",
+          "adjustedAmount": "126",
+          "sourceAmount": "30126"
+        },
+        {
+          "type": "underpayment restriction (028)",
+          "adjustedAmount": "127",
+          "sourceAmount": "30127"
+        },
+        {
+          "type": "other earnings, (or pension) (029)",
+          "adjustedAmount": "128",
+          "sourceAmount": "30128"
+        },
+        {
+          "type": "Gift Aid adjustment (030)",
+          "adjustedAmount": "129",
+          "sourceAmount": "30129"
+        },
+        {
+          "type": "widow'sand orphans' adjustment (031)",
+          "adjustedAmount": "130",
+          "sourceAmount": "30130"
+        },
+        {
+          "type": "savings income taxable at higher rate (032)",
+          "adjustedAmount": "131",
+          "sourceAmount": "30131"
+        },
+        {
+          "type": "adjustment to basic rate band (033)",
+          "adjustedAmount": "132",
+          "sourceAmount": "30132"
+        },
+        {
+          "type": "Adjustment to lower rate band (034)",
+          "adjustedAmount": "133",
+          "sourceAmount": "30133"
+        },
+        {
+          "type": "Underpayment amount (035)",
+          "adjustedAmount": "134",
+          "sourceAmount": "30134"
+        },
+        {
+          "type": "Van Fuel Benefit (036)",
+          "adjustedAmount": "135",
+          "sourceAmount": "30135"
+        },
+        {
+          "type": "Higher Personal Allowance Restriction (037)",
+          "adjustedAmount": "136",
+          "sourceAmount": "30136"
+        },
+        {
+          "type": "Employment Support Allowance (038)",
+          "adjustedAmount": "137",
+          "sourceAmount": "30137"
+        },
+        {
+          "type": "Non Cash Benefits (039)",
+          "adjustedAmount": "138",
+          "sourceAmount": "30138"
+        },
+        {
+          "type": "Adjustment to Rate Band (040)",
+          "adjustedAmount": "139",
+          "sourceAmount": "30139"
+        },
+        {
+          "type": "Outstanding Debt Restriction (041)",
+          "adjustedAmount": "140",
+          "sourceAmount": "30140"
+        },
+        {
+          "type": "Child Benefit (042)",
+          "adjustedAmount": "141",
+          "sourceAmount": "30141"
+        },
+        {
+          "type": "Personal Allowance Transferred to Partner (043)",
+          "adjustedAmount": "142",
+          "sourceAmount": "30142"
+        },
+        {
+          "type": "Dividend Tax (044)",
+          "adjustedAmount": "143",
+          "sourceAmount": "30143"
+        },
+        {
+          "type": "In Year Adjustment (045)",
+          "adjustedAmount": "144",
+          "sourceAmount": "30144"
+        },
+        {
+          "type": "In Year Underpayment Adjustment (046)",
+          "adjustedAmount": "145",
+          "sourceAmount": "30145"
+        },
+        {
+          "type": "In Year Adjustment Primary Employment Contribution (047)",
+          "adjustedAmount": "146",
+          "sourceAmount": "30146"
+        },
+        {
+          "type": "In Year Adjustment Secondary Employment Contribution (048)",
+          "adjustedAmount": "147",
+          "sourceAmount": "30147"
+        },
+        {
+          "type": "In Year Adjustment Refund Contribution (049)",
+          "adjustedAmount": "148",
+          "sourceAmount": "30148"
+        },
+        {
+          "type": "BR Difference Tax Charge (050)",
+          "adjustedAmount": "149",
+          "sourceAmount": "30149"
+        },
+        {
+          "type": "HICBC PAYE (051)",
+          "adjustedAmount": "150",
+          "sourceAmount": "30150"
+        }
+      ],
       "payAndTax": {
         "totalIncomeDetails": {
-          "amount": 18327,
-          "summaryIABDDetailsList": [],
           "summaryIABDEstimatedPayDetailsList": [
             {
-              "amount": 18327,
+              "amount": 100,
               "type": "New Estimated Pay (027)",
-              "employmentSequenceNumber": 16,
-              "estimatedPaySource": "Annual Coding"
+              "employmentSequenceNumber": 1
             }
           ]
-        },
-        "allowanceReliefDeductionsDetails": {
-          "amount": 12579.84,
-          "summaryIABDDetailsList": []
-        },
-        "totalTax": 1149.4,
-        "totalTaxableIncome": 5747,
-        "taxBandDetails": [
-          {
-            "bandType": "B",
-            "taxCode": "BR",
-            "isBasicRate": true,
-            "income": 5747,
-            "tax": 1149.4,
-            "lowerBand": 0,
-            "upperBand": 37700,
-            "rate": 20
-          },
-          {
-            "bandType": "D0",
-            "taxCode": "D0",
-            "isBasicRate": false,
-            "lowerBand": 37700,
-            "upperBand": 125140,
-            "rate": 40
-          },
-          {
-            "bandType": "D1",
-            "taxCode": "D1",
-            "isBasicRate": false,
-            "lowerBand": 125140,
-            "upperBand": 0,
-            "rate": 45
-          }
-        ]
+        }
+      }
+    },
+    {
+      "employmentSequenceNumber": 2,
+      "employmentRecordType": "PRIMARY",
+      "employmentStatus": "Ceased",
+      "jobSeekersAllowance": false,
+      "activePension": false,
+      "otherIncome": false,
+      "payeSchemeOperatorName": "Primary ceased (tax account api)",
+      "taxCode": "1150L",
+      "payAndTax": {
+        "totalIncomeDetails": {
+          "summaryIABDEstimatedPayDetailsList": [
+            {
+              "amount": 101,
+              "type": "New Estimated Pay (027)",
+              "employmentSequenceNumber": 2
+            }
+          ]
+        }
+      }
+    },
+    {
+      "employmentSequenceNumber": 3,
+      "employmentRecordType": "SECONDARY",
+      "employmentStatus": "Live",
+      "jobSeekersAllowance": false,
+      "activePension": false,
+      "otherIncome": false,
+      "payeSchemeOperatorName": "Secondary live (tax account api)",
+      "taxCode": "1150L",
+      "payAndTax": {
+        "totalIncomeDetails": {
+          "summaryIABDEstimatedPayDetailsList": [
+            {
+              "amount": 103,
+              "type": "New Estimated Pay (027)",
+              "employmentSequenceNumber": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "employmentSequenceNumber": 4,
+      "employmentRecordType": "SECONDARY",
+      "employmentStatus": "Ceased",
+      "jobSeekersAllowance": false,
+      "activePension": false,
+      "otherIncome": false,
+      "payeSchemeOperatorName": "Secondary ceased (tax account api)",
+      "taxCode": "1150L",
+      "payAndTax": {
+        "totalIncomeDetails": {
+          "summaryIABDEstimatedPayDetailsList": [
+            {
+              "amount": 104,
+              "type": "New Estimated Pay (027)",
+              "employmentSequenceNumber": 4
+            }
+          ]
+        }
+      }
+    },
+    {
+      "employmentSequenceNumber": 5,
+      "employmentRecordType": "PRIMARY",
+      "employmentStatus": "Live",
+      "jobSeekersAllowance": true,
+      "activePension": false,
+      "otherIncome": false,
+      "payeSchemeOperatorName": "Primary live job seeker allowance (tax account api)",
+      "taxCode": "1150L",
+      "payAndTax": {
+        "totalIncomeDetails": {
+          "summaryIABDEstimatedPayDetailsList": [
+            {
+              "amount": 105,
+              "type": "New Estimated Pay (027)",
+              "employmentSequenceNumber": 5
+            }
+          ]
+        }
+      }
+    },
+    {
+      "employmentSequenceNumber": 6,
+      "employmentRecordType": "PRIMARY",
+      "employmentStatus": "Live",
+      "jobSeekersAllowance": false,
+      "activePension": true,
+      "otherIncome": false,
+      "payeSchemeOperatorName": "Primary live pension (tax account api)",
+      "taxCode": "1150L",
+      "payAndTax": {
+        "totalIncomeDetails": {
+          "summaryIABDEstimatedPayDetailsList": [
+            {
+              "amount": 106,
+              "type": "New Estimated Pay (027)",
+              "employmentSequenceNumber": 6
+            }
+          ]
+        }
+      }
+    },
+    {
+      "employmentSequenceNumber": 7,
+      "employmentRecordType": "SECONDARY",
+      "employmentStatus": "Live",
+      "jobSeekersAllowance": false,
+      "activePension": true,
+      "otherIncome": false,
+      "payeSchemeOperatorName": "Secondary live pension (tax account api)",
+      "taxCode": "1150L",
+      "payAndTax": {
+        "totalIncomeDetails": {
+          "summaryIABDEstimatedPayDetailsList": [
+            {
+              "amount": 107,
+              "type": "New Estimated Pay (027)",
+              "employmentSequenceNumber": 7
+            }
+          ]
+        }
+      }
+    },
+    {
+      "employmentSequenceNumber": 8,
+      "employmentRecordType": "PRIMARY",
+      "employmentStatus": "Ceased",
+      "jobSeekersAllowance": false,
+      "activePension": true,
+      "otherIncome": false,
+      "payeSchemeOperatorName": "Primary Ceased pension (tax account api)",
+      "taxCode": "1150L",
+      "payAndTax": {
+        "totalIncomeDetails": {
+          "summaryIABDEstimatedPayDetailsList": [
+            {
+              "amount": 108,
+              "type": "New Estimated Pay (027)",
+              "employmentSequenceNumber": 8
+            }
+          ]
+        }
+      }
+    },
+    {
+      "employmentSequenceNumber": 9,
+      "employmentRecordType": "SECONDARY",
+      "employmentStatus": "Ceased",
+      "jobSeekersAllowance": false,
+      "activePension": true,
+      "otherIncome": false,
+      "payeSchemeOperatorName": "Secondary ceased pension (tax account api)",
+      "taxCode": "1150L",
+      "payAndTax": {
+        "totalIncomeDetails": {
+          "summaryIABDEstimatedPayDetailsList": [
+            {
+              "amount": 109,
+              "type": "New Estimated Pay (027)",
+              "employmentSequenceNumber": 9
+            }
+          ]
+        }
+      }
+    },
+    {
+      "employmentSequenceNumber": 10,
+      "employmentRecordType": "PRIMARY",
+      "employmentStatus": "Permanently Ceased",
+      "jobSeekersAllowance": false,
+      "activePension": false,
+      "otherIncome": false,
+      "payeSchemeOperatorName": "Primary permanently ceased employment (tax account api)",
+      "taxCode": "1150L",
+      "payAndTax": {
+        "totalIncomeDetails": {
+          "summaryIABDEstimatedPayDetailsList": [
+            {
+              "amount": 110,
+              "type": "New Estimated Pay (027)",
+              "employmentSequenceNumber": 10
+            }
+          ]
+        }
+      }
+    },
+    {
+      "employmentSequenceNumber": 11,
+      "employmentRecordType": "PRIMARY",
+      "employmentStatus": "Potentially Ceased",
+      "jobSeekersAllowance": false,
+      "activePension": false,
+      "otherIncome": false,
+      "payeSchemeOperatorName": "Primary Potentially ceased employment (tax account api)",
+      "taxCode": "1150L",
+      "payAndTax": {
+        "totalIncomeDetails": {
+          "summaryIABDEstimatedPayDetailsList": [
+            {
+              "amount": 111,
+              "type": "New Estimated Pay (027)",
+              "employmentSequenceNumber": 11
+            }
+          ]
+        }
+      }
+    },
+    {
+      "employmentSequenceNumber": 12,
+      "employmentRecordType": "PRIMARY",
+      "employmentStatus": "Live",
+      "jobSeekersAllowance": false,
+      "activePension": false,
+      "otherIncome": false,
+      "payeSchemeOperatorName": "Primary Live but ceased in employment (tax account api)",
+      "taxCode": "1150L",
+      "payAndTax": {
+        "totalIncomeDetails": {
+          "summaryIABDEstimatedPayDetailsList": [
+            {
+              "amount": 112,
+              "type": "New Estimated Pay (027)",
+              "employmentSequenceNumber": 12
+            }
+          ]
+        }
       }
     }
   ]
