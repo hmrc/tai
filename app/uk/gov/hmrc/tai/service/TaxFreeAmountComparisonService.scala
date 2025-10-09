@@ -37,7 +37,7 @@ class TaxFreeAmountComparisonService @Inject() (
 ) extends Logging {
 
   def taxFreeAmountComparison(nino: Nino)(implicit hc: HeaderCarrier): Future[TaxFreeAmountComparison] = {
-    lazy val currentComponents: Future[Seq[CodingComponent]] = getCurrentComponents(nino)
+    lazy val currentComponents: Future[Seq[CodingComponent]] = codingComponentService.codingComponents(nino, TaxYear())
     lazy val previousComponents: Future[Seq[CodingComponent]] = getPreviousComponents(nino)
 
     for {
@@ -46,38 +46,13 @@ class TaxFreeAmountComparisonService @Inject() (
     } yield TaxFreeAmountComparison(previous, current)
   }
 
-  private def getCurrentComponents(nino: Nino)(implicit hc: HeaderCarrier): Future[Seq[CodingComponent]] = {
-    val currentCodingComponentFuture = codingComponentService.codingComponents(nino, TaxYear())
-
-    currentCodingComponentFuture.failed.foreach {
-      case NonFatal(e) =>
-        logger.error("Could not fetch current coding components for TaxFreeAmountComparison - " + e.getMessage)
-      case _ => throw new RuntimeException("Could not fetch current coding components for TaxFreeAmountComparison")
-    }
-
-    currentCodingComponentFuture
-  }
-
   private def getPreviousComponents(nino: Nino)(implicit hc: HeaderCarrier): Future[Seq[CodingComponent]] =
     previousPrimaryTaxCodeRecord(nino).flatMap {
-      case Some(record) => previousCodingComponentForId(nino, record.taxCodeId)
+      case Some(record) => codingComponentService.codingComponentsForTaxCodeId(nino, record.taxCodeId)
       case None         => Future.successful(Seq.empty[CodingComponent])
     }
 
   private def previousPrimaryTaxCodeRecord(nino: Nino)(implicit hc: HeaderCarrier): Future[Option[TaxCodeSummary]] =
     taxCodeChangeService.taxCodeChange(nino).map(taxCodeChange => taxCodeChange.primaryPreviousRecord)
-
-  private def previousCodingComponentForId(nino: Nino, taxCodeId: Int)(implicit
-    hc: HeaderCarrier
-  ): Future[Seq[CodingComponent]] = {
-    val previousCodingComponentsFuture = codingComponentService.codingComponentsForTaxCodeId(nino, taxCodeId)
-
-    previousCodingComponentsFuture.failed.foreach {
-      case NonFatal(e) =>
-        logger.error("Could not fetch previous coding components for TaxFreeAmountComparison - " + e.getMessage)
-      case _ => throw new RuntimeException("Could not fetch previous coding components for TaxFreeAmountComparison")
-    }
-    previousCodingComponentsFuture
-  }
 
 }
