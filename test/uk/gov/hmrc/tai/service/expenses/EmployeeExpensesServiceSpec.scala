@@ -22,7 +22,6 @@ import play.api.mvc.AnyContentAsEmpty
 import play.api.test.FakeRequest
 import uk.gov.hmrc.http.{BadRequestException, HttpResponse}
 import uk.gov.hmrc.tai.connectors.*
-import uk.gov.hmrc.tai.controllers.auth.AuthenticatedRequest
 import uk.gov.hmrc.tai.model.UpdateIabdEmployeeExpense
 import uk.gov.hmrc.tai.model.nps.NpsIabdRoot
 import uk.gov.hmrc.tai.model.tai.TaxYear
@@ -76,14 +75,13 @@ class EmployeeExpensesServiceSpec extends BaseSpec {
     reset(mockIabdConnector, mockFeatureFlagService)
   }
 
-  implicit val authenticatedRequest: AuthenticatedRequest[AnyContentAsEmpty.type] =
-    AuthenticatedRequest(FakeRequest(), nino)
+  implicit val fakeRequest: FakeRequest[AnyContentAsEmpty.type] = FakeRequest()
 
   "updateEmployeeExpensesData" must {
 
     "return 200" when {
       "success response from des connector" in {
-        when(mockIabdConnector.updateExpensesData(any(), any(), any(), any(), any(), any())(any(), any()))
+        when(mockIabdConnector.updateExpensesData(any(), any(), any(), any(), any(), any())(any()))
           .thenReturn(Future.successful(HttpResponse(200, responseBody)))
 
         service
@@ -95,7 +93,7 @@ class EmployeeExpensesServiceSpec extends BaseSpec {
 
     "return 500" when {
       "failure response from des connector" in {
-        when(mockIabdConnector.updateExpensesData(any(), any(), any(), any(), any(), any())(any(), any()))
+        when(mockIabdConnector.updateExpensesData(any(), any(), any(), any(), any(), any())(any()))
           .thenReturn(Future.successful(HttpResponse(500, responseBody)))
 
         service

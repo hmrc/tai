@@ -24,13 +24,12 @@ import play.api.mvc.Request
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse, UpstreamErrorResponse}
 import uk.gov.hmrc.tai.audit.Auditor
-import uk.gov.hmrc.tai.connectors.{EmploymentDetailsConnector, RtiConnector}
+import uk.gov.hmrc.tai.connectors.{CitizenDetailsConnector, EmploymentDetailsConnector, RtiConnector}
 import uk.gov.hmrc.tai.model.api.EmploymentCollection
 import uk.gov.hmrc.tai.model.api.EmploymentCollection.employmentCollectionHodReadsHIP
 import uk.gov.hmrc.tai.model.domain.*
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.model.templates.{EmploymentPensionViewModel, PdfSubmission}
-import uk.gov.hmrc.tai.repositories.deprecated.PersonRepository
 import uk.gov.hmrc.tai.templates.html.EmploymentIForm
 import uk.gov.hmrc.tai.templates.xml.PdfSubmissionMetadata
 import uk.gov.hmrc.tai.util.IFormConstants
@@ -44,8 +43,8 @@ import scala.concurrent.{ExecutionContext, Future}
 class EmploymentService @Inject() (
   employmentDetailsConnector: EmploymentDetailsConnector,
   rtiConnector: RtiConnector,
+  citizenDetailsConnector: CitizenDetailsConnector,
   employmentBuilder: EmploymentBuilder,
-  personRepository: PersonRepository,
   iFormSubmissionService: IFormSubmissionService,
   fileUploadService: FileUploadService,
   pdfService: PdfService,
@@ -142,7 +141,7 @@ class EmploymentService @Inject() (
     EitherT(employmentAsEitherT(nino, id).value.flatMap {
       case Right(Some(existingEmployment)) =>
         for {
-          person <- personRepository.getPerson(nino)
+          person <- citizenDetailsConnector.getPerson(nino)
           templateModel = EmploymentPensionViewModel(TaxYear(), person, endEmployment, existingEmployment)
           endEmploymentHtml = EmploymentIForm(templateModel).toString
           pdf <-
@@ -184,7 +183,7 @@ class EmploymentService @Inject() (
 
   def addEmployment(nino: Nino, employment: AddEmployment)(implicit hc: HeaderCarrier): Future[String] =
     for {
-      person <- personRepository.getPerson(nino)
+      person <- citizenDetailsConnector.getPerson(nino)
       templateModel = EmploymentPensionViewModel(TaxYear(), person, employment)
       addEmploymentHtml = EmploymentIForm(templateModel).toString
       pdf        <- pdfService.generatePdf(addEmploymentHtml)

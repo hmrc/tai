@@ -22,7 +22,6 @@ import play.api.libs.json.{JsArray, JsNull, Json}
 import play.api.mvc.AnyContentAsEmpty
 import play.api.test.FakeRequest
 import uk.gov.hmrc.tai.connectors.IabdConnector
-import uk.gov.hmrc.tai.controllers.auth.AuthenticatedRequest
 import uk.gov.hmrc.tai.model.domain.IabdDetails
 import uk.gov.hmrc.tai.model.domain.response.{HodUpdateFailure, HodUpdateSuccess, IncomeUpdateFailed, IncomeUpdateSuccess}
 import uk.gov.hmrc.tai.model.tai.TaxYear
@@ -34,8 +33,7 @@ import scala.concurrent.Future
 class IabdServiceSpec extends BaseSpec {
 
   private val mockIabdConnector = mock[IabdConnector]
-  implicit val authenticatedRequest: AuthenticatedRequest[AnyContentAsEmpty.type] =
-    AuthenticatedRequest(FakeRequest(), nino)
+  implicit val fakeRequest: FakeRequest[AnyContentAsEmpty.type] = FakeRequest()
   private def createSut(iabdConnector: IabdConnector = mock[IabdConnector]) =
     new IabdService(iabdConnector)
 
@@ -126,7 +124,7 @@ class IabdServiceSpec extends BaseSpec {
 
   "updateTaxCodeAmount" must {
     "return IncomeUpdateSuccess when the update is successful" in {
-      when(mockIabdConnector.updateTaxCodeAmount(any(), any(), any(), any(), any(), any())(any(), any()))
+      when(mockIabdConnector.updateTaxCodeAmount(any(), any(), any(), any(), any(), any())(any()))
         .thenReturn(Future.successful(HodUpdateSuccess))
 
       val sut = createSut(mockIabdConnector)
@@ -136,7 +134,7 @@ class IabdServiceSpec extends BaseSpec {
     }
 
     "return IncomeUpdateFailed when the update fails" in {
-      when(mockIabdConnector.updateTaxCodeAmount(any(), any(), any(), any(), any(), any())(any(), any()))
+      when(mockIabdConnector.updateTaxCodeAmount(any(), any(), any(), any(), any(), any())(any()))
         .thenReturn(Future.successful(HodUpdateFailure))
 
       val sut = createSut(mockIabdConnector)
