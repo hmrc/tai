@@ -18,6 +18,7 @@ package uk.gov.hmrc.tai.controllers
 
 import com.google.inject.{Inject, Singleton}
 import play.api.mvc.{Action, AnyContent, ControllerComponents}
+import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 import uk.gov.hmrc.tai.connectors.cache.CacheId
 import uk.gov.hmrc.tai.controllers.auth.AuthJourney
@@ -37,5 +38,11 @@ class SessionController @Inject() (
   def invalidateCache: Action[AnyContent] = authentication.authWithUserDetails.async { implicit request =>
     for (success <- sessionRepository.invalidateCache(CacheId(request.nino)))
       yield if (success) Accepted else InternalServerError
+  }
+
+  def invalidateCacheWithNino(nino: Nino): Action[AnyContent] = authentication.authWithUserDetails.async {
+    implicit request =>
+      for (success <- sessionRepository.invalidateCache(CacheId(nino)))
+        yield if (success) Accepted else InternalServerError
   }
 }
