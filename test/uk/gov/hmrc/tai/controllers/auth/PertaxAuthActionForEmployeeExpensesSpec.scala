@@ -22,7 +22,6 @@ import org.mockito.Mockito.when
 import play.api.Application
 import play.api.http.Status.{BAD_GATEWAY, BAD_REQUEST, INTERNAL_SERVER_ERROR, UNAUTHORIZED}
 import play.api.inject.guice.GuiceApplicationBuilder
-import play.api.mvc.AnyContentAsEmpty
 import play.api.test.FakeRequest
 import uk.gov.hmrc.http.UpstreamErrorResponse
 import uk.gov.hmrc.tai.connectors.PertaxConnector
@@ -41,7 +40,6 @@ class PertaxAuthActionForEmployeeExpensesSpec extends BaseSpec {
     new PertaxAuthActionForEmployeeExpenses(mockPertaxConnector, cc)
 
   private val testRequest = FakeRequest("GET", "/check-income-tax/what-do-you-want-to-do")
-  val expectedRequest: AuthenticatedRequest[AnyContentAsEmpty.type] = AuthenticatedRequest(testRequest, nino)
 
   "PertaxAuthActionForEmployeeExpenses" when {
     "the pertax API returns an ACCESS_GRANTED response" must {
@@ -53,7 +51,7 @@ class PertaxAuthActionForEmployeeExpensesSpec extends BaseSpec {
             )
           )
 
-        val result = pertaxAuthActionForEmployeeExpenses.filter(expectedRequest).futureValue
+        val result = pertaxAuthActionForEmployeeExpenses.filter(testRequest).futureValue
         result mustBe None
       }
     }
@@ -75,7 +73,7 @@ class PertaxAuthActionForEmployeeExpensesSpec extends BaseSpec {
               )
             )
 
-          val result = pertaxAuthActionForEmployeeExpenses.filter(expectedRequest).futureValue
+          val result = pertaxAuthActionForEmployeeExpenses.filter(testRequest).futureValue
           result mustBe None
         }
       }
@@ -90,7 +88,7 @@ class PertaxAuthActionForEmployeeExpensesSpec extends BaseSpec {
             )
           )
 
-        val result = pertaxAuthActionForEmployeeExpenses.filter(expectedRequest).futureValue
+        val result = pertaxAuthActionForEmployeeExpenses.filter(testRequest).futureValue
 
         result must not be empty
         result.get.header.status mustBe UNAUTHORIZED
@@ -106,7 +104,7 @@ class PertaxAuthActionForEmployeeExpensesSpec extends BaseSpec {
             )
           )
 
-        val result = pertaxAuthActionForEmployeeExpenses.filter(expectedRequest).futureValue
+        val result = pertaxAuthActionForEmployeeExpenses.filter(testRequest).futureValue
 
         result must not be empty
         result.get.header.status mustBe BAD_GATEWAY
@@ -123,7 +121,7 @@ class PertaxAuthActionForEmployeeExpensesSpec extends BaseSpec {
           )
         )
 
-      val result = pertaxAuthActionForEmployeeExpenses.filter(expectedRequest).futureValue
+      val result = pertaxAuthActionForEmployeeExpenses.filter(testRequest).futureValue
 
       result must not be empty
       result.get.header.status mustBe INTERNAL_SERVER_ERROR
@@ -139,7 +137,7 @@ class PertaxAuthActionForEmployeeExpensesSpec extends BaseSpec {
           )
         )
 
-      val result = pertaxAuthActionForEmployeeExpenses.filter(expectedRequest).futureValue
+      val result = pertaxAuthActionForEmployeeExpenses.filter(testRequest).futureValue
 
       result must not be empty
       result.get.header.status mustBe UNAUTHORIZED

@@ -18,17 +18,15 @@ package uk.gov.hmrc.tai.controllers
 
 import com.google.inject.{Inject, Singleton}
 import play.api.mvc.{Action, AnyContent, ControllerComponents}
-import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
-import uk.gov.hmrc.tai.connectors.cache.CacheId
 import uk.gov.hmrc.tai.controllers.auth.AuthJourney
-import uk.gov.hmrc.tai.repositories.deprecated.SessionRepository
+import uk.gov.hmrc.tai.repositories.cache.TaiSessionCacheRepository
 
 import scala.concurrent.ExecutionContext
 
 @Singleton
 class SessionController @Inject() (
-  sessionRepository: SessionRepository,
+  sessionRepository: TaiSessionCacheRepository,
   authentication: AuthJourney,
   cc: ControllerComponents
 )(implicit
@@ -36,13 +34,8 @@ class SessionController @Inject() (
 ) extends BackendController(cc) {
 
   def invalidateCache: Action[AnyContent] = authentication.authWithUserDetails.async { implicit request =>
-    for (success <- sessionRepository.invalidateCache(CacheId(request.nino)))
-      yield if (success) Accepted else InternalServerError
-  }
-
-  def invalidateCacheWithNino(nino: Nino): Action[AnyContent] = authentication.authWithUserDetails.async {
-    implicit request =>
-      for (success <- sessionRepository.invalidateCache(CacheId(nino)))
-        yield if (success) Accepted else InternalServerError
+    sessionRepository.deleteAllFromSession.map { _ =>
+      Accepted
+    }
   }
 }
