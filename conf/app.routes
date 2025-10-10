@@ -54,6 +54,7 @@ POST          /file-upload/callback                                             
 
 # Invalidate Session Cache
 DELETE        /session-cache                                                                                          @uk.gov.hmrc.tai.controllers.SessionController.invalidateCache
+DELETE        /:nino/session-cache                                                                                    @uk.gov.hmrc.tai.controllers.SessionController.invalidateCacheWithNino(nino: Nino)
 
 # Tax code change
 GET           /:nino/tax-account/tax-code-change/exists                                                               @uk.gov.hmrc.tai.controllers.taxCodeChange.TaxCodeChangeController.hasTaxCodeChanged(nino: Nino)

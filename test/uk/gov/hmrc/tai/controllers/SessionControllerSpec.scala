@@ -46,6 +46,17 @@ class SessionControllerSpec extends BaseSpec {
 
         status(result) mustBe ACCEPTED
       }
+
+      "invalidate the cache with nino" in {
+        val mockSessionRepository = mock[SessionRepository]
+        when(mockSessionRepository.invalidateCache(any()))
+          .thenReturn(Future.successful(true))
+
+        val sut = createSUT(mockSessionRepository)
+        val result = sut.invalidateCacheWithNino(nino)(fakeRequest)
+
+        status(result) mustBe ACCEPTED
+      }
     }
 
     "return Internal Server Error" when {
@@ -56,6 +67,17 @@ class SessionControllerSpec extends BaseSpec {
 
         val sut = createSUT(mockSessionRepository)
         val result = sut.invalidateCache(fakeRequest)
+
+        status(result) mustBe INTERNAL_SERVER_ERROR
+      }
+
+      "not able to invalidate the cache with nino" in {
+        val mockSessionRepository = mock[SessionRepository]
+        when(mockSessionRepository.invalidateCache(any()))
+          .thenReturn(Future.successful(false))
+
+        val sut = createSUT(mockSessionRepository)
+        val result = sut.invalidateCacheWithNino(nino)(fakeRequest)
 
         status(result) mustBe INTERNAL_SERVER_ERROR
       }
