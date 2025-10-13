@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2025 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,9 +39,10 @@ class IabdController @Inject() (
   ec: ExecutionContext
 ) extends BackendController(cc) {
 
-  def getIabds(nino: Nino, year: TaxYear): Action[AnyContent] = authentication.authWithUserDetails.async {
-    implicit request =>
-      iabdService.retrieveIabdDetails(nino, year).map { iabdDetails =>
+  def getIabds(nino: Nino, year: TaxYear): Action[AnyContent] =
+    authentication.authWithUserDetails.async { implicit request =>
+      val iabdType: Option[String] = request.getQueryString("type")
+      iabdService.retrieveIabdDetails(nino, year, iabdType).map { iabdDetails =>
         Ok(
           Json.toJson(
             ApiResponse[JsObject](
@@ -51,5 +52,5 @@ class IabdController @Inject() (
           )
         )
       }
-  }
+    }
 }
