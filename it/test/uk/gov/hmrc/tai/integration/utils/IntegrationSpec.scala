@@ -143,6 +143,7 @@ trait IntegrationSpec
   val cidEtagUrl = s"/citizen-details/$nino/etag"
   val npsTaxAccountUrl = s"/nps-hod-service/services/nps/person/$nino/tax-account/$year"
   val hipTaxAccountUrl = s"/v1/api/person/$nino/tax-account/$year"
+  def hipTaxAccountHistoryUrl(id: Int) = s"/v1/api/person/$nino/tax-account/history/$id"
   val npsIabdsUrl = s"/nps-hod-service/services/nps/person/$nino/iabds/$year"
   val hipIabdsUrl = s"/v1/api/iabd/taxpayer/$nino/tax-year/$year"
   val desTaxCodeHistoryUrl = s"/individuals/tax-code-history/list/$nino/$year?endTaxYear=$year"
@@ -152,6 +153,9 @@ trait IntegrationSpec
 
   val taxAccountJson: String = FileHelper.loadFile("taxAccount.json")
   val taxAccountHipJson: String = FileHelper.loadFile("taxAccountHip.json")
+  val taxAccountEmptyHipJson: String = FileHelper.loadFile("taxAccountEmptyHip.json")
+  val taxAccountHistoryHipJson: String = FileHelper.loadFile("taxAccountHistoryHip.json")
+  val taxAccountHistoryEmptyHipJson: String = FileHelper.loadFile("taxAccountHistoryEmptyHip.json")
   val npsIabdsJson: String = FileHelper.loadFile("iabdsNps.json")
   val hipIabdsJson: String = FileHelper.loadFile("iabdsHip.json")
   val taxCodeHistoryJson: String = FileHelper.loadFile("taxCodeHistory.json")

@@ -20,7 +20,6 @@ import com.google.inject.{Inject, Singleton}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.tai.connectors.IabdConnector
-import uk.gov.hmrc.tai.controllers.auth.AuthenticatedRequest
 import uk.gov.hmrc.tai.model.domain.response.*
 import uk.gov.hmrc.tai.model.domain.IabdDetails
 import uk.gov.hmrc.tai.model.nps2.IabdType.NewEstimatedPay
@@ -41,8 +40,7 @@ class IabdService @Inject() (
       }
 
   def updateTaxCodeAmount(nino: Nino, taxYear: TaxYear, employmentId: Int, version: Int, amount: Int)(implicit
-    hc: HeaderCarrier,
-    request: AuthenticatedRequest[_]
+    hc: HeaderCarrier
   ): Future[IncomeUpdateResponse] =
     for {
       updateAmountResult <-

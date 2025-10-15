@@ -18,15 +18,14 @@ package uk.gov.hmrc.tai.util
 
 import play.api.mvc.*
 import play.api.test.Helpers
-import uk.gov.hmrc.domain.Nino
-import uk.gov.hmrc.tai.controllers.auth.{AuthJourney, AuthenticatedRequest}
+import uk.gov.hmrc.tai.controllers.auth.AuthJourney
 
 import scala.concurrent.{ExecutionContext, Future}
 
 object FakeAuthJourney extends AuthJourney {
   private val actionBuilderFixture = new ActionBuilderFixture {
-    override def invokeBlock[A](request: Request[A], block: AuthenticatedRequest[A] => Future[Result]): Future[Result] =
-      block(AuthenticatedRequest(request, Nino("AA000003A")))
+    override def invokeBlock[A](request: Request[A], block: Request[A] => Future[Result]): Future[Result] =
+      block(request)
   }
 
   override val authWithUserDetails: ActionBuilderFixture = actionBuilderFixture
@@ -34,8 +33,8 @@ object FakeAuthJourney extends AuthJourney {
   override val authForEmployeeExpenses: ActionBuilderFixture = actionBuilderFixture
 }
 
-trait ActionBuilderFixture extends ActionBuilder[AuthenticatedRequest, AnyContent] {
-  override def invokeBlock[A](a: Request[A], block: AuthenticatedRequest[A] => Future[Result]): Future[Result]
+trait ActionBuilderFixture extends ActionBuilder[Request, AnyContent] {
+  override def invokeBlock[A](a: Request[A], block: Request[A] => Future[Result]): Future[Result]
 
   override def parser: BodyParser[AnyContent] = Helpers.stubBodyParser()
 

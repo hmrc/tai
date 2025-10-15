@@ -19,17 +19,19 @@ package uk.gov.hmrc.tai.service
 import com.google.inject.{Inject, Singleton}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.mongoFeatureToggles.services.FeatureFlagService
 import uk.gov.hmrc.tai.connectors.TaxAccountConnector
-import uk.gov.hmrc.tai.model.domain.calculation.CodingComponent
-import uk.gov.hmrc.tai.model.hip.reads.CodingComponentHipReads
+import uk.gov.hmrc.tai.model.admin.HipTaxAccountHistoryToggle
+import uk.gov.hmrc.tai.model.domain.calculation.{CodingComponent, CodingComponentHipReads, CodingComponentSquidReads}
 import uk.gov.hmrc.tai.model.tai.TaxYear
 
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class CodingComponentService @Inject() (
-  taxAccountConnector: TaxAccountConnector
-)(implicit ec: ExecutionContext) {
+                                         taxAccountConnector: TaxAccountConnector,
+                                         featureFlagService: FeatureFlagService
+                                       )(implicit ec: ExecutionContext) {
 
   def codingComponents(nino: Nino, year: TaxYear)(implicit hc: HeaderCarrier): Future[Seq[CodingComponent]] =
     taxAccountConnector
@@ -37,9 +39,14 @@ class CodingComponentService @Inject() (
       .map(_.as[Seq[CodingComponent]](CodingComponentHipReads.codingComponentReads))
 
   def codingComponentsForTaxCodeId(nino: Nino, taxCodeId: Int)(implicit
-    hc: HeaderCarrier
+                                                               hc: HeaderCarrier
   ): Future[Seq[CodingComponent]] =
-    taxAccountConnector
-      .taxAccountHistory(nino = nino, iocdSeqNo = taxCodeId)
-      .map(_.as[Seq[CodingComponent]](CodingComponentHipReads.codingComponentReads))
+    featureFlagService.get(HipTaxAccountHistoryToggle).flatMap { flag =>
+      val reads = if (flag.isEnabled) { CodingComponentHipReads.codingComponentReads }
+      else { CodingComponentSquidReads.codingComponentReads }
+
+      taxAccountConnector
+        .taxAccountHistory(nino = nino, iocdSeqNo = taxCodeId)
+        .map(_.as[Seq[CodingComponent]](reads))
+    }
 }

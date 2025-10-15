@@ -22,9 +22,9 @@ import java.time.LocalDate
 import play.api.Logger
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.tai.connectors.CitizenDetailsConnector
 import uk.gov.hmrc.tai.model.domain.{MimeContentType, Person}
 import uk.gov.hmrc.tai.model.templates.PdfSubmission
-import uk.gov.hmrc.tai.repositories.deprecated.PersonRepository
 import uk.gov.hmrc.tai.templates.xml.PdfSubmissionMetadata
 
 import java.time.format.DateTimeFormatter
@@ -32,7 +32,7 @@ import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class IFormSubmissionService @Inject() (
-  personRepository: PersonRepository,
+  citizenDetailsConnector: CitizenDetailsConnector,
   pdfService: PdfService,
   fileUploadService: FileUploadService
 )(implicit ec: ExecutionContext) {
@@ -54,7 +54,7 @@ class IFormSubmissionService @Inject() (
     iformGenerationFunc: Person => Future[String]
   )(implicit hc: HeaderCarrier): Future[String] =
     for {
-      person     <- personRepository.getPerson(nino)
+      person     <- citizenDetailsConnector.getPerson(nino)
       formData   <- iformGenerationFunc(person)
       pdf        <- pdfService.generatePdf(formData)
       envelopeId <- fileUploadService.createEnvelope()

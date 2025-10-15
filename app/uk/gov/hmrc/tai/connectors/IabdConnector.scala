@@ -25,7 +25,6 @@ import uk.gov.hmrc.http._
 import uk.gov.hmrc.mongoFeatureToggles.services.FeatureFlagService
 import uk.gov.hmrc.tai.config.{DesConfig, HipConfig}
 import uk.gov.hmrc.tai.connectors.cache.CachingConnector
-import uk.gov.hmrc.tai.controllers.auth.AuthenticatedRequest
 import uk.gov.hmrc.tai.model.admin.HipIabdsUpdateExpensesToggle
 import uk.gov.hmrc.tai.model.domain.IabdDetails
 import uk.gov.hmrc.tai.model.domain.IabdDetails.{publicWrites as IabdDetailsPublicWrites, readsSingle as IabdDetailsReadsSingle}
@@ -39,7 +38,7 @@ import uk.gov.hmrc.tai.model.{IabdUpdateAmount, UpdateHipIabdEmployeeExpense, Up
 import uk.gov.hmrc.tai.service.SensitiveFormatService
 import uk.gov.hmrc.tai.service.SensitiveFormatService.SensitiveJsValue
 import uk.gov.hmrc.tai.util.HodsSource.NpsSource
-import uk.gov.hmrc.tai.util.{InvalidateCaches, TaiConstants}
+import uk.gov.hmrc.tai.util.TaiConstants
 
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
@@ -50,7 +49,6 @@ import scala.concurrent.{ExecutionContext, Future}
 class CachingIabdConnector @Inject() (
   @Named("default") underlying: IabdConnector,
   cachingConnector: CachingConnector,
-  invalidateCaches: InvalidateCaches,
   sensitiveFormatService: SensitiveFormatService
 )(implicit ec: ExecutionContext)
     extends IabdConnector {
@@ -76,8 +74,8 @@ class CachingIabdConnector @Inject() (
     version: Int,
     iabdType: Int,
     amount: Int
-  )(implicit hc: HeaderCarrier, request: AuthenticatedRequest[_]): Future[HodUpdateResponse] =
-    invalidateCaches.invalidateAll {
+  )(implicit hc: HeaderCarrier): Future[HodUpdateResponse] =
+    cachingConnector.invalidateAll {
       underlying.updateTaxCodeAmount(nino, taxYear, employmentId, version, iabdType, amount)
     }
 
@@ -94,8 +92,8 @@ class CachingIabdConnector @Inject() (
     version: Int,
     expensesData: UpdateIabdEmployeeExpense,
     apiType: APITypes
-  )(implicit hc: HeaderCarrier, request: AuthenticatedRequest[_]): Future[HttpResponse] =
-    invalidateCaches.invalidateAll {
+  )(implicit hc: HeaderCarrier): Future[HttpResponse] =
+    cachingConnector.invalidateAll {
       underlying.updateExpensesData(nino, year, iabdType, version, expensesData, apiType)
     }
 }
@@ -163,7 +161,7 @@ class DefaultIabdConnector @Inject() (
     version: Int,
     iabdType: Int,
     amount: Int
-  )(implicit hc: HeaderCarrier, request: AuthenticatedRequest[_]): Future[HodUpdateResponse] = {
+  )(implicit hc: HeaderCarrier): Future[HodUpdateResponse] = {
     val requestHeader: Seq[(String, String)] =
       Seq(
         HeaderNames.xSessionId -> hc.sessionId.fold("-")(_.value),
@@ -220,7 +218,7 @@ class DefaultIabdConnector @Inject() (
     version: Int,
     expensesData: UpdateIabdEmployeeExpense,
     apiType: APITypes
-  )(implicit hc: HeaderCarrier, request: AuthenticatedRequest[_]): Future[HttpResponse] =
+  )(implicit hc: HeaderCarrier): Future[HttpResponse] =
     featureFlagService.get(HipIabdsUpdateExpensesToggle).flatMap { toggle =>
       if (toggle.isEnabled) {
         val (baseUrl, originatorId, extraInfo) =
@@ -248,9 +246,7 @@ trait IabdConnector {
   def iabds(nino: Nino, taxYear: TaxYear, iabdType: Option[String] = None)(implicit hc: HeaderCarrier): Future[JsValue]
 
   def updateTaxCodeAmount(nino: Nino, taxYear: TaxYear, employmentId: Int, version: Int, iabdType: Int, amount: Int)(
-    implicit
-    hc: HeaderCarrier,
-    request: AuthenticatedRequest[_]
+    implicit hc: HeaderCarrier
   ): Future[HodUpdateResponse]
 
   def getIabdsForType(nino: Nino, year: Int, iabdType: Int)(implicit hc: HeaderCarrier): Future[List[IabdDetails]]
@@ -262,6 +258,6 @@ trait IabdConnector {
     version: Int,
     expensesData: UpdateIabdEmployeeExpense,
     apiType: APITypes
-  )(implicit hc: HeaderCarrier, request: AuthenticatedRequest[_]): Future[HttpResponse]
+  )(implicit hc: HeaderCarrier): Future[HttpResponse]
 
 }

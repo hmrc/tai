@@ -20,7 +20,6 @@ import com.google.inject.{Inject, Singleton}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
 import uk.gov.hmrc.tai.connectors.IabdConnector
-import uk.gov.hmrc.tai.controllers.auth.AuthenticatedRequest
 import uk.gov.hmrc.tai.model.UpdateIabdEmployeeExpense
 import uk.gov.hmrc.tai.model.enums.APITypes
 import uk.gov.hmrc.tai.model.domain.IabdDetails
@@ -43,7 +42,7 @@ class EmployeeExpensesService @Inject() (iabdConnector: IabdConnector, featureFl
     version: Int,
     expensesData: UpdateIabdEmployeeExpense,
     iabd: Int
-  )(implicit hc: HeaderCarrier, authenticatedRequest: AuthenticatedRequest[_]): Future[HttpResponse] =
+  )(implicit hc: HeaderCarrier): Future[HttpResponse] =
     iabdConnector.updateExpensesData(
       nino = nino,
       year = taxYear.year,

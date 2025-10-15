@@ -22,7 +22,6 @@ import org.mockito.Mockito.when
 import play.api.Application
 import play.api.http.Status.{BAD_GATEWAY, BAD_REQUEST, INTERNAL_SERVER_ERROR, UNAUTHORIZED}
 import play.api.inject.guice.GuiceApplicationBuilder
-import play.api.mvc.AnyContentAsEmpty
 import play.api.test.FakeRequest
 import uk.gov.hmrc.http.UpstreamErrorResponse
 import uk.gov.hmrc.tai.connectors.PertaxConnector
@@ -41,7 +40,6 @@ class PertaxAuthActionSpec extends BaseSpec {
     new PertaxAuthAction(mockPertaxConnector, cc)
 
   private val testRequest = FakeRequest("GET", "/check-income-tax/what-do-you-want-to-do")
-  val expectedRequest: AuthenticatedRequest[AnyContentAsEmpty.type] = AuthenticatedRequest(testRequest, nino)
 
   "Pertax auth action" when {
     "the pertax API returns an ACCESS_GRANTED response" must {
@@ -53,7 +51,7 @@ class PertaxAuthActionSpec extends BaseSpec {
             )
           )
 
-        val result = pertaxAuthAction.filter(expectedRequest).futureValue
+        val result = pertaxAuthAction.filter(testRequest).futureValue
         result mustBe None
       }
     }
@@ -67,7 +65,7 @@ class PertaxAuthActionSpec extends BaseSpec {
             )
           )
 
-        val result = pertaxAuthAction.filter(expectedRequest).futureValue
+        val result = pertaxAuthAction.filter(testRequest).futureValue
 
         result must not be empty
         result.get.header.status mustBe UNAUTHORIZED
@@ -83,7 +81,7 @@ class PertaxAuthActionSpec extends BaseSpec {
             )
           )
 
-        val result = pertaxAuthAction.filter(expectedRequest).futureValue
+        val result = pertaxAuthAction.filter(testRequest).futureValue
 
         result must not be empty
         result.get.header.status mustBe BAD_GATEWAY
@@ -100,7 +98,7 @@ class PertaxAuthActionSpec extends BaseSpec {
           )
         )
 
-      val result = pertaxAuthAction.filter(expectedRequest).futureValue
+      val result = pertaxAuthAction.filter(testRequest).futureValue
 
       result must not be empty
       result.get.header.status mustBe INTERNAL_SERVER_ERROR
@@ -116,7 +114,7 @@ class PertaxAuthActionSpec extends BaseSpec {
           )
         )
 
-      val result = pertaxAuthAction.filter(expectedRequest).futureValue
+      val result = pertaxAuthAction.filter(testRequest).futureValue
 
       result must not be empty
       result.get.header.status mustBe UNAUTHORIZED

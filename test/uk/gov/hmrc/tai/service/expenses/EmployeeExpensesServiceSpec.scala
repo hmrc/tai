@@ -25,7 +25,6 @@ import uk.gov.hmrc.http.{BadRequestException, HttpResponse}
 import uk.gov.hmrc.mongoFeatureToggles.model.{FeatureFlag, FeatureFlagName}
 import uk.gov.hmrc.mongoFeatureToggles.services.FeatureFlagService
 import uk.gov.hmrc.tai.connectors.*
-import uk.gov.hmrc.tai.controllers.auth.AuthenticatedRequest
 import uk.gov.hmrc.tai.model.UpdateIabdEmployeeExpense
 import uk.gov.hmrc.tai.model.admin.HipGetIabdsExpensesToggle
 import uk.gov.hmrc.tai.model.domain.IabdDetails
@@ -75,14 +74,13 @@ class EmployeeExpensesServiceSpec extends BaseSpec {
     reset(mockIabdConnector, mockFeatureFlagService)
   }
 
-  implicit val authenticatedRequest: AuthenticatedRequest[AnyContentAsEmpty.type] =
-    AuthenticatedRequest(FakeRequest(), nino)
+  implicit val fakeRequest: FakeRequest[AnyContentAsEmpty.type] = FakeRequest()
 
   "updateEmployeeExpensesData" must {
 
     "return 200" when {
       "success response from des connector" in {
-        when(mockIabdConnector.updateExpensesData(any(), any(), any(), any(), any(), any())(any(), any()))
+        when(mockIabdConnector.updateExpensesData(any(), any(), any(), any(), any(), any())(any()))
           .thenReturn(Future.successful(HttpResponse(200, responseBody)))
 
         service
@@ -94,7 +92,7 @@ class EmployeeExpensesServiceSpec extends BaseSpec {
 
     "return 500" when {
       "failure response from des connector" in {
-        when(mockIabdConnector.updateExpensesData(any(), any(), any(), any(), any(), any())(any(), any()))
+        when(mockIabdConnector.updateExpensesData(any(), any(), any(), any(), any(), any())(any()))
           .thenReturn(Future.successful(HttpResponse(500, responseBody)))
 
         service
