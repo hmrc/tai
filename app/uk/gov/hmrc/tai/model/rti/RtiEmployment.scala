@@ -15,7 +15,7 @@
  */
 
 package uk.gov.hmrc.tai.model.rti
-import PayFrequency._
+import uk.gov.hmrc.tai.model.rti.PayFrequency.*
 
 /*
  * A single employment, containing a list of payments for a given year
@@ -26,7 +26,7 @@ import PayFrequency._
  * @param payeRef Pay As You Earn (PAYE) reference of the scheme making the
  *   payment to the employee
  * @param payments
- * @param eyu end year updates for reconcilliation inputs
+ * @param eyu end year updates for reconciliation inputs
  * @param currentPayId employer's current identification of the employee
  * @param sequenceNumber along with the associated [[RtiData.nino]], this
  *   uniquely identifies a specific employment in NPS
@@ -44,4 +44,21 @@ case class RtiEmployment(
   def payFrequency: PayFrequency.Value = payments.lastOption.map(_.payFrequency).getOrElse(Irregular)
 
   def taxablePayYTD: BigDecimal = payments.lastOption.map(_.taxablePayYTD).getOrElse(0)
+}
+
+object RtiEmployment {
+  def unapply(
+    rti: RtiEmployment
+  ): Option[(String, String, String, List[RtiPayment], List[RtiEyu], Option[String], Int)] =
+    Some(
+      (
+        rti.officeRefNo,
+        rti.payeRef,
+        rti.accountOfficeReference,
+        rti.payments,
+        rti.eyu,
+        rti.currentPayId,
+        rti.sequenceNumber
+      )
+    )
 }

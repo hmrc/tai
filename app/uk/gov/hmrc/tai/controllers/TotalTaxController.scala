@@ -35,12 +35,12 @@ class TotalTaxController @Inject() (
   authentication: AuthJourney,
   cc: ControllerComponents
 )(implicit ec: ExecutionContext)
-    extends BackendController(cc) with NpsExceptions with ControllerErrorHandler {
+    extends BackendController(cc) with NpsExceptions {
 
   def totalTax(nino: Nino, year: TaxYear): Action[AnyContent] = authentication.authWithUserDetails.async {
     implicit request =>
       totalTaxService.totalTax(nino, year) map { totalTax =>
         Ok(Json.toJson(ApiResponse(totalTax, Nil)))
-      } recoverWith taxAccountErrorHandler()
+      }
   }
 }

@@ -19,14 +19,13 @@ package uk.gov.hmrc.tai.connectors
 import com.google.inject.name.Named
 import com.google.inject.{Inject, Singleton}
 import play.api.http.MimeTypes
-import play.api.libs.json._
+import play.api.libs.json.*
 import uk.gov.hmrc.domain.Nino
-import uk.gov.hmrc.http._
+import uk.gov.hmrc.http.*
 import uk.gov.hmrc.mongoFeatureToggles.services.FeatureFlagService
-import uk.gov.hmrc.tai.config.{DesConfig, HipConfig, NpsConfig}
+import uk.gov.hmrc.tai.config.{DesConfig, HipConfig}
 import uk.gov.hmrc.tai.connectors.cache.CachingConnector
-import uk.gov.hmrc.tai.controllers.auth.AuthenticatedRequest
-import uk.gov.hmrc.tai.model.admin.{HipToggleEmploymentIabds, HipToggleIabds}
+import uk.gov.hmrc.tai.model.admin.HipIabdsUpdateExpensesToggle
 import uk.gov.hmrc.tai.model.domain.response.{HodUpdateFailure, HodUpdateResponse, HodUpdateSuccess}
 import uk.gov.hmrc.tai.model.enums.APITypes
 import uk.gov.hmrc.tai.model.enums.APITypes.{APITypes, HipIabdUpdateEmployeeExpensesAPI}
@@ -39,7 +38,7 @@ import uk.gov.hmrc.tai.model.{IabdUpdateAmount, UpdateHipIabdEmployeeExpense, Up
 import uk.gov.hmrc.tai.service.SensitiveFormatService
 import uk.gov.hmrc.tai.service.SensitiveFormatService.SensitiveJsValue
 import uk.gov.hmrc.tai.util.HodsSource.NpsSource
-import uk.gov.hmrc.tai.util.{InvalidateCaches, TaiConstants}
+import uk.gov.hmrc.tai.util.TaiConstants
 
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
@@ -50,17 +49,18 @@ import scala.concurrent.{ExecutionContext, Future}
 class CachingIabdConnector @Inject() (
   @Named("default") underlying: IabdConnector,
   cachingConnector: CachingConnector,
-  invalidateCaches: InvalidateCaches,
   sensitiveFormatService: SensitiveFormatService
 )(implicit ec: ExecutionContext)
     extends IabdConnector {
 
-  override def iabds(nino: Nino, taxYear: TaxYear)(implicit hc: HeaderCarrier): Future[JsValue] =
+  override def iabds(nino: Nino, taxYear: TaxYear, iabdType: Option[String] = None)(implicit
+    hc: HeaderCarrier
+  ): Future[JsValue] =
     cachingConnector
       .cache(s"iabds-$nino-${taxYear.year}") {
         underlying
-          .iabds(nino: Nino, taxYear: TaxYear)
-          .map(SensitiveJsValue)
+          .iabds(nino: Nino, taxYear: TaxYear, iabdType)
+          .map(SensitiveJsValue.apply)
       }(sensitiveFormatService.sensitiveFormatJsValue[JsValue], implicitly)
       .map(_.decryptedValue)
 
@@ -71,8 +71,8 @@ class CachingIabdConnector @Inject() (
     version: Int,
     iabdType: Int,
     amount: Int
-  )(implicit hc: HeaderCarrier, request: AuthenticatedRequest[_]): Future[HodUpdateResponse] =
-    invalidateCaches.invalidateAll {
+  )(implicit hc: HeaderCarrier): Future[HodUpdateResponse] =
+    cachingConnector.invalidateAll {
       underlying.updateTaxCodeAmount(nino, taxYear, employmentId, version, iabdType, amount)
     }
 
@@ -90,29 +90,21 @@ class CachingIabdConnector @Inject() (
     version: Int,
     expensesData: UpdateIabdEmployeeExpense,
     apiType: APITypes
-  )(implicit hc: HeaderCarrier, request: AuthenticatedRequest[_]): Future[HttpResponse] =
-    invalidateCaches.invalidateAll {
+  )(implicit hc: HeaderCarrier): Future[HttpResponse] =
+    cachingConnector.invalidateAll {
       underlying.updateExpensesData(nino, year, iabdType, version, expensesData, apiType)
     }
 }
 
 class DefaultIabdConnector @Inject() (
   httpHandler: HttpHandler,
-  npsConfig: NpsConfig,
   desConfig: DesConfig,
   hipConfig: HipConfig,
-  iabdUrls: IabdUrls,
   featureFlagService: FeatureFlagService
 )(implicit ec: ExecutionContext)
     extends IabdConnector {
 
   private def getUuid = UUID.randomUUID().toString
-
-  private def sessionOrUUID(implicit hc: HeaderCarrier): String =
-    hc.sessionId match {
-      case Some(sessionId) => sessionId.value
-      case None            => UUID.randomUUID().toString.replace("-", "")
-    }
 
   private def hipAuthHeaders(clientIdAndSecret: Option[(String, String)]): Seq[(String, String)] =
     clientIdAndSecret.fold[Seq[(String, String)]](Seq.empty) { case (clientId, clientSecret) =>
@@ -145,30 +137,28 @@ class DefaultIabdConnector @Inject() (
       "CorrelationId"        -> UUID.randomUUID().toString
     )
 
-  override def iabds(nino: Nino, taxYear: TaxYear)(implicit hc: HeaderCarrier): Future[JsValue] =
+  override def iabds(nino: Nino, taxYear: TaxYear, iabdType: Option[String] = None)(implicit
+    hc: HeaderCarrier
+  ): Future[JsValue] = {
+    val queryString = iabdType match {
+      case Some(iabd) => s"?type=$iabd"
+      case None       => ""
+    }
+
     if (taxYear > TaxYear()) {
       Future.successful(JsArray(Seq.empty))
     } else {
-      featureFlagService.get(HipToggleIabds).flatMap { toggle =>
-        val (url, originatorId, extraInfo) =
-          if (toggle.isEnabled) {
-            (
-              s"${hipConfig.baseURL}/iabd/taxpayer/$nino/tax-year/${taxYear.year}",
-              hipConfig.originatorId,
-              Some(Tuple2(hipConfig.clientId, hipConfig.clientSecret))
-            )
-          } else {
-            (s"${npsConfig.baseURL}/person/${nino.nino}/iabds/${taxYear.year}", npsConfig.originatorId, None)
-          }
+      val (url, originatorId, extraInfo) = (
+        s"${hipConfig.baseURL}/iabd/taxpayer/$nino/tax-year/${taxYear.year}$queryString",
+        hipConfig.originatorId,
+        Some(Tuple2(hipConfig.clientId, hipConfig.clientSecret))
+      )
+      httpHandler.getFromApi(url, APITypes.NpsIabdAllAPI, headersForIabds(originatorId, hc, extraInfo))
 
-        httpHandler.getFromApi(url, APITypes.NpsIabdAllAPI, headersForIabds(originatorId, hc, extraInfo)).recover {
-          case _: NotFoundException =>
-            Json.toJson(Json.obj("error" -> "NOT_FOUND"))
-        }
-      }
     }
+  }
 
-  private def updateTaxCodeAmountHip(
+  override def updateTaxCodeAmount(
     nino: Nino,
     taxYear: TaxYear,
     empId: Int,
@@ -184,7 +174,6 @@ class DefaultIabdConnector @Inject() (
         "gov-uk-originator-id" -> hipConfig.originatorId,
         "correlationId"        -> getUuid
       )
-
     val iabdTypeArgument = URLEncoder.encode(hipMapping(iabdType), "UTF-8").replace("+", "%20")
 
     httpHandler
@@ -202,56 +191,6 @@ class DefaultIabdConnector @Inject() (
       .map(_ => HodUpdateSuccess)
       .recover { case _ => HodUpdateFailure }
   }
-
-  private def updateTaxCodeAmountSquid(
-    nino: Nino,
-    taxYear: TaxYear,
-    empId: Int,
-    version: Int,
-    iabdType: Int,
-    amount: Int
-  )(implicit hc: HeaderCarrier): Future[HodUpdateResponse] = {
-    val requestHeader: Seq[(String, String)] =
-      Seq(
-        HeaderNames.xSessionId -> hc.sessionId.fold("-")(_.value),
-        HeaderNames.xRequestId -> hc.requestId.fold("-")(_.value)
-      ) ++ Seq(
-        "ETag"                 -> version.toString,
-        "X-TXID"               -> sessionOrUUID,
-        "Gov-Uk-Originator-Id" -> npsConfig.originatorId,
-        "CorrelationId"        -> getUuid
-      )
-
-    httpHandler
-      .postToApi[IabdUpdateAmount](
-        url = iabdUrls.npsIabdEmploymentUrl(nino, taxYear, iabdType),
-        data = IabdUpdateAmount(employmentSequenceNumber = Some(empId), grossAmount = amount, source = Some(NpsSource)),
-        api = APITypes.NpsIabdUpdateEstPayManualAPI,
-        headers = requestHeader
-      )(
-        implicitly,
-        (updateAmount: IabdUpdateAmount) => Json.arr(Json.toJson(updateAmount))
-      )
-      .map(_ => HodUpdateSuccess)
-      .recover { case _ => HodUpdateFailure }
-  }
-
-  override def updateTaxCodeAmount(
-    nino: Nino,
-    taxYear: TaxYear,
-    empId: Int,
-    version: Int,
-    iabdType: Int,
-    amount: Int
-  )(implicit hc: HeaderCarrier, request: AuthenticatedRequest[_]): Future[HodUpdateResponse] =
-    featureFlagService.get(HipToggleEmploymentIabds).flatMap { toggle =>
-      if (toggle.isEnabled) {
-        updateTaxCodeAmountHip(nino, taxYear, empId, version, iabdType, amount)
-      } else {
-        updateTaxCodeAmountSquid(nino, taxYear, empId, version, iabdType, amount)
-      }
-
-    }
 
   override def getIabdsForType(nino: Nino, year: Int, iabdType: Int)(implicit
     hc: HeaderCarrier
@@ -276,18 +215,6 @@ class DefaultIabdConnector @Inject() (
       "ETag"                 -> version.toString
     )
 
-  private def headersForHipUpdateExpensesData(version: Int)(implicit hc: HeaderCarrier): Seq[(String, String)] =
-    Seq(
-      "Environment"          -> hipConfig.environment,
-      "Authorization"        -> hipConfig.authorization,
-      "Content-Type"         -> TaiConstants.contentType,
-      HeaderNames.xSessionId -> hc.sessionId.fold("-")(_.value),
-      HeaderNames.xRequestId -> hc.requestId.fold("-")(_.value),
-      "CorrelationId"        -> UUID.randomUUID().toString,
-      "Originator-Id"        -> hipConfig.originatorId,
-      "ETag"                 -> version.toString
-    )
-
   override def updateExpensesData(
     nino: Nino,
     year: Int,
@@ -295,14 +222,17 @@ class DefaultIabdConnector @Inject() (
     version: Int,
     expensesData: UpdateIabdEmployeeExpense,
     apiType: APITypes
-  )(implicit hc: HeaderCarrier, request: AuthenticatedRequest[_]): Future[HttpResponse] =
-    featureFlagService.get(HipToggleIabds).flatMap { toggle =>
+  )(implicit hc: HeaderCarrier): Future[HttpResponse] =
+    featureFlagService.get(HipIabdsUpdateExpensesToggle).flatMap { toggle =>
       if (toggle.isEnabled) {
-        httpHandler.putToApiHttpClientV1[UpdateHipIabdEmployeeExpense](
-          s"${hipConfig.baseURL}/iabd/taxpayer/$nino/tax-year/$year/type/${IabdType.hipMapping(iabdType)}",
+        val (baseUrl, originatorId, extraInfo) =
+          (hipConfig.baseURL, hipConfig.originatorId, Some(Tuple2(hipConfig.clientId, hipConfig.clientSecret)))
+
+        httpHandler.putToApiHttpClientV2[UpdateHipIabdEmployeeExpense](
+          s"$baseUrl/iabd/taxpayer/$nino/tax-year/$year/type/${IabdType.hipMapping(iabdType)}",
           UpdateHipIabdEmployeeExpense(version, expensesData.grossAmount),
           HipIabdUpdateEmployeeExpensesAPI,
-          headersForHipUpdateExpensesData(version)
+          HipHeaders.get(originatorId, hc, extraInfo) ++ Seq("ETag" -> version.toString)
         )
       } else {
         httpHandler.postToApi[List[UpdateIabdEmployeeExpense]](
@@ -317,12 +247,10 @@ class DefaultIabdConnector @Inject() (
 
 trait IabdConnector {
 
-  def iabds(nino: Nino, taxYear: TaxYear)(implicit hc: HeaderCarrier): Future[JsValue]
+  def iabds(nino: Nino, taxYear: TaxYear, iabdType: Option[String] = None)(implicit hc: HeaderCarrier): Future[JsValue]
 
   def updateTaxCodeAmount(nino: Nino, taxYear: TaxYear, employmentId: Int, version: Int, iabdType: Int, amount: Int)(
-    implicit
-    hc: HeaderCarrier,
-    request: AuthenticatedRequest[_]
+    implicit hc: HeaderCarrier
   ): Future[HodUpdateResponse]
 
   def getIabdsForType(nino: Nino, year: Int, iabdType: Int)(implicit hc: HeaderCarrier): Future[List[NpsIabdRoot]]
@@ -334,6 +262,6 @@ trait IabdConnector {
     version: Int,
     expensesData: UpdateIabdEmployeeExpense,
     apiType: APITypes
-  )(implicit hc: HeaderCarrier, request: AuthenticatedRequest[_]): Future[HttpResponse]
+  )(implicit hc: HeaderCarrier): Future[HttpResponse]
 
 }

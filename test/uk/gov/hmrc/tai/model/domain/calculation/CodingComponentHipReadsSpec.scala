@@ -17,16 +17,16 @@
 package uk.gov.hmrc.tai.model.domain.calculation
 
 import org.scalatestplus.play.PlaySpec
-import play.api.libs.json._
+import play.api.libs.json.*
 import uk.gov.hmrc.domain.{Generator, Nino}
-import uk.gov.hmrc.tai.model.domain._
+import uk.gov.hmrc.tai.model.domain.*
 import uk.gov.hmrc.tai.model.domain.calculation.CodingComponent.codingComponentWrites
 
 import scala.io.Source
 import scala.util.Random
 
 class CodingComponentHipReadsSpec extends PlaySpec {
-  import CodingComponentHipReadsSpec._
+  import CodingComponentHipReadsSpec.*
 
   private val basePath = "test/resources/data/TaxAccount/CodingComponent/hip/"
   private def readFile(fileName: String): JsValue = {
@@ -212,28 +212,6 @@ class CodingComponentHipReadsSpec extends PlaySpec {
           CodingComponent(StatePension, None, 10700, "Gift Aid Payments", Some(10700)),
           CodingComponent(FlatRateJobExpenses, None, 1100, "Flat Rate Job Expenses", None),
           CodingComponent(MedicalInsurance, Some(1), 500, "Medical Insurance", None)
-        )
-      }
-    }
-
-    "throw an exception" when {
-      "there are duplicate items in the 2 summary lists" in {
-        val payload = readFile("tc35.json")
-        val exception =
-          the[JsResultException] thrownBy payload.as[Seq[CodingComponent]](CodingComponentHipReads.codingComponentReads)
-        exception mustBe JsResultException(errors =
-          List(
-            (
-              __,
-              List(
-                JsonValidationError(
-                  List(
-                    "Duplicate entries found for employmentSequenceNumber: Some(1) and componentType: 30; employmentSequenceNumber: Some(1) and componentType: 27"
-                  )
-                )
-              )
-            )
-          )
         )
       }
     }

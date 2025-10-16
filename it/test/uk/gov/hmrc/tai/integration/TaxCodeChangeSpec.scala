@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2025 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,29 +16,48 @@
 
 package uk.gov.hmrc.tai.integration
 
-import com.github.tomakehurst.wiremock.client.WireMock.{aResponse, get, ok, urlEqualTo}
-import play.api.http.Status._
+import cats.data.EitherT
+import cats.instances.future.*
+import com.github.tomakehurst.wiremock.client.WireMock.{get, ok, urlEqualTo}
+import org.mockito.ArgumentMatchers.eq as eqTo
+import org.mockito.Mockito.{reset, when}
+import play.api.http.Status.*
 import play.api.libs.json.{JsArray, JsBoolean, Json}
+import play.api.mvc.AnyContentAsEmpty
 import play.api.test.FakeRequest
-import play.api.test.Helpers.{GET, contentAsJson, defaultAwaitTimeout, route, status => getStatus, writeableOf_AnyContentAsEmpty}
-import uk.gov.hmrc.http.HeaderNames
+import play.api.test.Helpers.{GET, contentAsJson, defaultAwaitTimeout, route, status as getStatus, writeableOf_AnyContentAsEmpty}
+import uk.gov.hmrc.http.{HeaderNames, HttpException}
+import uk.gov.hmrc.mongoFeatureToggles.model.{FeatureFlag, FeatureFlagName}
 import uk.gov.hmrc.tai.integration.utils.{FileHelper, IntegrationSpec}
+import uk.gov.hmrc.tai.model.admin.RtiCallToggle
 import uk.gov.hmrc.tai.model.domain.income.BasisOperation.Week1Month1
 import uk.gov.hmrc.tai.model.tai.TaxYear
 
 import java.time.format.DateTimeFormatter
+import scala.concurrent.Future
 
 class TaxCodeChangeSpec extends IntegrationSpec {
 
   val apiUrl = s"/tai/$nino/tax-account/tax-code-change"
-  def request = FakeRequest(GET, apiUrl)
+  def request: FakeRequest[AnyContentAsEmpty.type] = FakeRequest(GET, apiUrl)
     .withHeaders(HeaderNames.xSessionId -> generateSessionId)
     .withHeaders(HeaderNames.authorisation -> bearerToken)
 
   val apiUrlHasChanged = s"/tai/$nino/tax-account/tax-code-change/exists"
-  def requestHasChanged = FakeRequest(GET, apiUrlHasChanged)
+  def requestHasChanged: FakeRequest[AnyContentAsEmpty.type] = FakeRequest(GET, apiUrlHasChanged)
     .withHeaders(HeaderNames.xSessionId -> generateSessionId)
     .withHeaders(HeaderNames.authorisation -> bearerToken)
+
+  override def beforeEach(): Unit = {
+    super.beforeEach()
+
+    reset(mockFeatureFlagService)
+    when(mockFeatureFlagService.getAsEitherT(eqTo[FeatureFlagName](RtiCallToggle))).thenReturn(
+      EitherT.rightT(FeatureFlag(RtiCallToggle, isEnabled = false))
+    )
+    ()
+
+  }
 
   "TaxCodeChange" must {
     "return an OK response for a valid user" in {
@@ -47,27 +66,18 @@ class TaxCodeChangeSpec extends IntegrationSpec {
       result.map(getStatus) mustBe Some(OK)
     }
 
-    List(500, 501, 502, 503, 504).foreach { status =>
-      s"return $status when we receive $status downstream - desTaxCodeHistoryUrl" in {
-        server.stubFor(get(urlEqualTo(desTaxCodeHistoryUrl)).willReturn(aResponse().withStatus(status)))
-        val result = route(fakeApplication(), request)
-        result.map(getStatus) mustBe Some(BAD_GATEWAY)
-      }
-    }
+    behave like callWithErrorHandling(request, desTaxCodeHistoryUrl, 500, internalServerException, BAD_GATEWAY)
+    behave like callWithErrorHandling(request, desTaxCodeHistoryUrl, 501, new HttpException("", 501), BAD_GATEWAY)
+    behave like callWithErrorHandling(request, desTaxCodeHistoryUrl, 502, new HttpException("", 502), BAD_GATEWAY)
+    behave like callWithErrorHandling(request, desTaxCodeHistoryUrl, 503, new HttpException("", 503), BAD_GATEWAY)
+    behave like callWithErrorHandling(request, desTaxCodeHistoryUrl, 504, new HttpException("", 503), BAD_GATEWAY)
 
-    List(400, 401, 403, 409, 412).foreach { status =>
-      s"return $status when we receive $status downstream - desTaxCodeHistoryUrl" in {
-        server.stubFor(get(urlEqualTo(desTaxCodeHistoryUrl)).willReturn(aResponse().withStatus(status)))
-        val result = route(fakeApplication(), request)
-        result.map(getStatus) mustBe Some(INTERNAL_SERVER_ERROR)
-      }
-    }
-
-    "return 404 when we receive 404 from downstream - desTaxCodeHistoryUrl" in {
-      server.stubFor(get(urlEqualTo(desTaxCodeHistoryUrl)).willReturn(aResponse().withStatus(NOT_FOUND)))
-      val result = route(fakeApplication(), request)
-      result.map(getStatus) mustBe Some(NOT_FOUND)
-    }
+    behave like callWithErrorHandling(request, desTaxCodeHistoryUrl, 400, badRequestException, BAD_REQUEST)
+    behave like callWithErrorHandling(request, desTaxCodeHistoryUrl, 401, new HttpException("", 401), BAD_GATEWAY)
+    behave like callWithErrorHandling(request, desTaxCodeHistoryUrl, 403, new HttpException("", 403), BAD_GATEWAY)
+    behave like callWithErrorHandling(request, desTaxCodeHistoryUrl, 409, new HttpException("", 409), BAD_GATEWAY)
+    behave like callWithErrorHandling(request, desTaxCodeHistoryUrl, 412, new HttpException("", 412), BAD_GATEWAY)
+    behave like callWithErrorHandling(request, desTaxCodeHistoryUrl, 404, notFoundException, NOT_FOUND)
   }
 
   "hasTaxCodeChanged" must {
@@ -80,18 +90,19 @@ class TaxCodeChangeSpec extends IntegrationSpec {
           .replace("<cyYear>", TaxYear().start.getYear.toString)
 
         val taxAccount = FileHelper
+          .loadFile("nino1/tax-account-hip.json")
+          .replace("<cyDate>", TaxYear().start.plusMonths(1).toString)
+          .replace("<cyYear>", TaxYear().start.getYear.toString)
+
+        val taxAccountNps = FileHelper
           .loadFile("nino1/tax-account.json")
           .replace("<cyDate>", TaxYear().start.plusMonths(1).toString)
           .replace("<cyYear>", TaxYear().start.getYear.toString)
 
-        val iabds = FileHelper
-          .loadFile("nino1/iabdsNps.json")
-          .replace("<cyDate>", TaxYear().start.plusMonths(1).format(DateTimeFormatter.ofPattern("dd/MM/yyyy")))
-          .replace("<cyYear>", TaxYear().start.getYear.toString)
-
         server.stubFor(get(urlEqualTo(desTaxCodeHistoryUrl)).willReturn(ok(taxCodeHistory)))
-        server.stubFor(get(urlEqualTo(npsTaxAccountUrl)).willReturn(ok(taxAccount)))
-        server.stubFor(get(urlEqualTo(npsIabdsUrl)).willReturn(ok(iabds)))
+        server.stubFor(get(urlEqualTo(hipTaxAccountUrl)).willReturn(ok(taxAccount)))
+        server.stubFor(get(urlEqualTo(npsTaxAccountUrl)).willReturn(ok(taxAccountNps)))
+        server.stubFor(get(urlEqualTo(hipIabdsUrl)).willReturn(ok(hipIabdsJson)))
 
         val result = route(fakeApplication(), requestHasChanged).get
         getStatus(result) mustBe OK
@@ -107,19 +118,14 @@ class TaxCodeChangeSpec extends IntegrationSpec {
           .replace("Cumulative", Week1Month1)
 
         val taxAccount = FileHelper
-          .loadFile("nino1/tax-account.json")
+          .loadFile("nino1/tax-account-hip.json")
           .replace("<cyDate>", TaxYear().start.plusMonths(1).toString)
           .replace("<cyYear>", TaxYear().start.getYear.toString)
-          .replace(""""basisOperation": 2,""", """"basisOperation": 1,""")
-
-        val iabds = FileHelper
-          .loadFile("nino1/iabdsNps.json")
-          .replace("<cyDate>", TaxYear().start.plusMonths(1).format(DateTimeFormatter.ofPattern("dd/MM/yyyy")))
-          .replace("<cyYear>", TaxYear().start.getYear.toString)
+          .replace(""""basisOfOperation":"Cumulative",""", """"basisOfOperation":"Week1/Month1",""")
 
         server.stubFor(get(urlEqualTo(desTaxCodeHistoryUrl)).willReturn(ok(taxCodeHistory)))
-        server.stubFor(get(urlEqualTo(npsTaxAccountUrl)).willReturn(ok(taxAccount)))
-        server.stubFor(get(urlEqualTo(npsIabdsUrl)).willReturn(ok(iabds)))
+        server.stubFor(get(urlEqualTo(hipTaxAccountUrl)).willReturn(ok(taxAccount)))
+        server.stubFor(get(urlEqualTo(hipIabdsUrl)).willReturn(ok(hipIabdsJson)))
 
         val result = route(fakeApplication(), requestHasChanged).get
         getStatus(result) mustBe OK
@@ -145,18 +151,13 @@ class TaxCodeChangeSpec extends IntegrationSpec {
           .toString
 
         val taxAccount = FileHelper
-          .loadFile("nino1/tax-account.json")
+          .loadFile("nino1/tax-account-hip.json")
           .replace("<cyDate>", TaxYear().start.plusMonths(1).toString)
           .replace("<cyYear>", TaxYear().start.getYear.toString)
 
-        val iabds = FileHelper
-          .loadFile("nino1/iabdsNps.json")
-          .replace("<cyDate>", TaxYear().start.plusMonths(1).format(DateTimeFormatter.ofPattern("dd/MM/yyyy")))
-          .replace("<cyYear>", TaxYear().start.getYear.toString)
-
         server.stubFor(get(urlEqualTo(desTaxCodeHistoryUrl)).willReturn(ok(newTaxCodeHistory)))
-        server.stubFor(get(urlEqualTo(npsTaxAccountUrl)).willReturn(ok(taxAccount)))
-        server.stubFor(get(urlEqualTo(npsIabdsUrl)).willReturn(ok(iabds)))
+        server.stubFor(get(urlEqualTo(hipTaxAccountUrl)).willReturn(ok(taxAccount)))
+        server.stubFor(get(urlEqualTo(hipIabdsUrl)).willReturn(ok(hipIabdsJson)))
 
         val result = route(fakeApplication(), requestHasChanged).get
         getStatus(result) mustBe OK
@@ -172,18 +173,13 @@ class TaxCodeChangeSpec extends IntegrationSpec {
           .toString
 
         val taxAccount = FileHelper
-          .loadFile("nino1/tax-account.json")
+          .loadFile("nino1/tax-account-hip.json")
           .replace("<cyDate>", TaxYear().start.plusMonths(1).toString)
           .replace("<cyYear>", TaxYear().start.getYear.toString)
 
-        val iabds = FileHelper
-          .loadFile("nino1/iabdsNps.json")
-          .replace("<cyDate>", TaxYear().start.plusMonths(1).format(DateTimeFormatter.ofPattern("dd/MM/yyyy")))
-          .replace("<cyYear>", TaxYear().start.getYear.toString)
-
         server.stubFor(get(urlEqualTo(desTaxCodeHistoryUrl)).willReturn(ok(taxCodeHistory)))
-        server.stubFor(get(urlEqualTo(npsTaxAccountUrl)).willReturn(ok(taxAccount)))
-        server.stubFor(get(urlEqualTo(npsIabdsUrl)).willReturn(ok(iabds)))
+        server.stubFor(get(urlEqualTo(hipTaxAccountUrl)).willReturn(ok(taxAccount)))
+        server.stubFor(get(urlEqualTo(hipIabdsUrl)).willReturn(ok(hipIabdsJson)))
 
         val result = route(fakeApplication(), requestHasChanged).get
         getStatus(result) mustBe OK
@@ -198,7 +194,7 @@ class TaxCodeChangeSpec extends IntegrationSpec {
           .replace("<cyYear>", TaxYear().start.getYear.toString)
 
         val taxAccount = FileHelper
-          .loadFile("nino1/tax-account.json")
+          .loadFile("nino1/tax-account-hip.json")
           .replace("<cyDate>", TaxYear().start.plusMonths(1).toString)
           .replace("<cyYear>", TaxYear().start.getYear.toString)
           .replace("1257L", "1000L")
@@ -209,7 +205,7 @@ class TaxCodeChangeSpec extends IntegrationSpec {
           .replace("<cyYear>", TaxYear().start.getYear.toString)
 
         server.stubFor(get(urlEqualTo(desTaxCodeHistoryUrl)).willReturn(ok(taxCodeHistory)))
-        server.stubFor(get(urlEqualTo(npsTaxAccountUrl)).willReturn(ok(taxAccount)))
+        server.stubFor(get(urlEqualTo(hipTaxAccountUrl)).willReturn(ok(taxAccount)))
         server.stubFor(get(urlEqualTo(npsIabdsUrl)).willReturn(ok(iabds)))
 
         val result = route(fakeApplication(), requestHasChanged).get

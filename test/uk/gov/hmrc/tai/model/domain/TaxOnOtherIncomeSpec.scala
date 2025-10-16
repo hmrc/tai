@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.tai.model.domain
 
-import org.mockito.MockitoSugar
+import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
 import play.api.libs.json.{JsArray, JsNull, Json}
 
@@ -26,64 +26,64 @@ class TaxOnOtherIncomeSpec extends PlaySpec with MockitoSugar {
     "return the totalEstTax from the hods response" when {
       "totalLiability val is present in totalLiability section" in {
         val json = Json.obj(
-          "totalLiability" -> Json.obj(
+          "totalLiabilityDetails" -> Json.obj(
             "totalLiability" -> 1234.56
           )
         )
 
-        json.as[BigDecimal](TaxOnOtherIncomeSquidReads.taxAccountSummaryReads) mustBe BigDecimal(1234.56)
+        json.as[BigDecimal](TaxOnOtherIncomeHipReads.taxAccountSummaryReads) mustBe BigDecimal(1234.56)
       }
     }
     "return zero totalEstTax" when {
       "totalLiability section is NOT present" in {
         val json = Json.obj()
-        json.as[BigDecimal](TaxOnOtherIncomeSquidReads.taxAccountSummaryReads) mustBe BigDecimal(0)
+        json.as[BigDecimal](TaxOnOtherIncomeHipReads.taxAccountSummaryReads) mustBe BigDecimal(0)
       }
       "totalLiability section is null" in {
         val json = Json.obj(
-          "totalLiability" -> JsNull
+          "totalLiabilityDetails" -> JsNull
         )
-        json.as[BigDecimal](TaxOnOtherIncomeSquidReads.taxAccountSummaryReads) mustBe BigDecimal(0)
+        json.as[BigDecimal](TaxOnOtherIncomeHipReads.taxAccountSummaryReads) mustBe BigDecimal(0)
       }
       "totalLiability section is present but the totalLiability value is not present inside" in {
         val json = Json.obj(
-          "totalLiability" -> Json.obj()
+          "totalLiabilityDetails" -> Json.obj()
         )
-        json.as[BigDecimal](TaxOnOtherIncomeSquidReads.taxAccountSummaryReads) mustBe BigDecimal(0)
+        json.as[BigDecimal](TaxOnOtherIncomeHipReads.taxAccountSummaryReads) mustBe BigDecimal(0)
       }
       "totalLiability section is present but the totalLiability value is null inside" in {
         val json = Json.obj(
-          "totalLiability" -> JsNull
+          "totalLiabilityDetails" -> JsNull
         )
-        json.as[BigDecimal](TaxOnOtherIncomeSquidReads.taxAccountSummaryReads) mustBe BigDecimal(0)
+        json.as[BigDecimal](TaxOnOtherIncomeHipReads.taxAccountSummaryReads) mustBe BigDecimal(0)
       }
     }
 
     "return totalEstTax" when {
       "tax on other income is present" in {
         val json = Json.obj(
-          "totalLiability" -> Json.obj(
+          "totalLiabilityDetails" -> Json.obj(
             "totalLiability" -> 1234.56,
             "nonSavings" -> Json.obj(
-              "totalIncome" -> Json.obj(
-                "iabdSummaries" -> JsArray(
+              "totalIncomeDetails" -> Json.obj(
+                "summaryIABDEstimatedPayDetailsList" -> JsArray(
                   Seq(
                     Json.obj(
                       "amount"         -> 100,
-                      "type"           -> 19,
+                      "type"           -> "Non-Coded Income (019)",
                       "npsDescription" -> "Non-Coded Income",
                       "employmentId"   -> JsNull
                     ),
                     Json.obj(
                       "amount"         -> 100,
-                      "type"           -> 84,
+                      "type"           -> "Job Seekers Allowance (084)",
                       "npsDescription" -> "Job-Seeker Allowance",
                       "employmentId"   -> JsNull
                     )
                   )
                 )
               ),
-              "taxBands" -> JsArray(
+              "taxBandDetails" -> JsArray(
                 Seq(
                   Json.obj(
                     "bandType" -> "B",
@@ -103,7 +103,7 @@ class TaxOnOtherIncomeSpec extends PlaySpec with MockitoSugar {
           )
         )
 
-        json.as[BigDecimal](TaxOnOtherIncomeSquidReads.taxAccountSummaryReads) mustBe BigDecimal(1194.56)
+        json.as[BigDecimal](TaxOnOtherIncomeHipReads.taxAccountSummaryReads) mustBe BigDecimal(1194.56)
       }
 
     }
@@ -113,27 +113,27 @@ class TaxOnOtherIncomeSpec extends PlaySpec with MockitoSugar {
     "return tax on other income" when {
       "non-coded income is present and highest rate is 40%" in {
         val json = Json.obj(
-          "totalLiability" -> Json.obj(
+          "totalLiabilityDetails" -> Json.obj(
             "nonSavings" -> Json.obj(
-              "totalIncome" -> Json.obj(
-                "iabdSummaries" -> JsArray(
+              "totalIncomeDetails" -> Json.obj(
+                "summaryIABDEstimatedPayDetailsList" -> JsArray(
                   Seq(
                     Json.obj(
                       "amount"         -> 100,
-                      "type"           -> 19,
+                      "type"           -> "Non-Coded Income (019)",
                       "npsDescription" -> "Non-Coded Income",
                       "employmentId"   -> JsNull
                     ),
                     Json.obj(
                       "amount"         -> 100,
-                      "type"           -> 84,
+                      "type"           -> "Job Seekers Allowance (084)",
                       "npsDescription" -> "Job-Seeker Allowance",
                       "employmentId"   -> JsNull
                     )
                   )
                 )
               ),
-              "taxBands" -> JsArray(
+              "taxBandDetails" -> JsArray(
                 Seq(
                   Json.obj(
                     "bandType" -> "B",
@@ -153,32 +153,32 @@ class TaxOnOtherIncomeSpec extends PlaySpec with MockitoSugar {
           )
         )
 
-        json.as[Option[BigDecimal]](TaxOnOtherIncomeSquidReads.taxOnOtherIncomeTaxValueReads) mustBe Some(40)
+        json.as[Option[BigDecimal]](TaxOnOtherIncomeHipReads.taxOnOtherIncomeTaxValueReads) mustBe Some(40)
       }
 
       "non-coded income is present and equal to highest rate income " in {
         val json = Json.obj(
-          "totalLiability" -> Json.obj(
+          "totalLiabilityDetails" -> Json.obj(
             "nonSavings" -> Json.obj(
-              "totalIncome" -> Json.obj(
-                "iabdSummaries" -> JsArray(
+              "totalIncomeDetails" -> Json.obj(
+                "summaryIABDEstimatedPayDetailsList" -> JsArray(
                   Seq(
                     Json.obj(
                       "amount"         -> 1000,
-                      "type"           -> 19,
+                      "type"           -> "Non-Coded Income (019)",
                       "npsDescription" -> "Non-Coded Income",
                       "employmentId"   -> JsNull
                     ),
                     Json.obj(
                       "amount"         -> 100,
-                      "type"           -> 84,
+                      "type"           -> "Job Seekers Allowance (084)",
                       "npsDescription" -> "Job-Seeker Allowance",
                       "employmentId"   -> JsNull
                     )
                   )
                 )
               ),
-              "taxBands" -> JsArray(
+              "taxBandDetails" -> JsArray(
                 Seq(
                   Json.obj(
                     "bandType" -> "B",
@@ -198,32 +198,32 @@ class TaxOnOtherIncomeSpec extends PlaySpec with MockitoSugar {
           )
         )
 
-        json.as[Option[BigDecimal]](TaxOnOtherIncomeSquidReads.taxOnOtherIncomeTaxValueReads) mustBe Some(400)
+        json.as[Option[BigDecimal]](TaxOnOtherIncomeHipReads.taxOnOtherIncomeTaxValueReads) mustBe Some(400)
       }
 
       "non-coded income is present and scattered in multiple rate bands " in {
         val json = Json.obj(
-          "totalLiability" -> Json.obj(
+          "totalLiabilityDetails" -> Json.obj(
             "nonSavings" -> Json.obj(
-              "totalIncome" -> Json.obj(
-                "iabdSummaries" -> JsArray(
+              "totalIncomeDetails" -> Json.obj(
+                "summaryIABDEstimatedPayDetailsList" -> JsArray(
                   Seq(
                     Json.obj(
                       "amount"         -> 10000,
-                      "type"           -> 19,
+                      "type"           -> "Non-Coded Income (019)",
                       "npsDescription" -> "Non-Coded Income",
                       "employmentId"   -> JsNull
                     ),
                     Json.obj(
                       "amount"         -> 100,
-                      "type"           -> 84,
+                      "type"           -> "Job Seekers Allowance (084)",
                       "npsDescription" -> "Job-Seeker Allowance",
                       "employmentId"   -> JsNull
                     )
                   )
                 )
               ),
-              "taxBands" -> JsArray(
+              "taxBandDetails" -> JsArray(
                 Seq(
                   Json.obj(
                     "bandType" -> "B",
@@ -249,32 +249,32 @@ class TaxOnOtherIncomeSpec extends PlaySpec with MockitoSugar {
           )
         )
 
-        json.as[Option[BigDecimal]](TaxOnOtherIncomeSquidReads.taxOnOtherIncomeTaxValueReads) mustBe Some(2600)
+        json.as[Option[BigDecimal]](TaxOnOtherIncomeHipReads.taxOnOtherIncomeTaxValueReads) mustBe Some(2600)
       }
 
       "non-coded income is present and highest rate is 20%" in {
         val json = Json.obj(
-          "totalLiability" -> Json.obj(
+          "totalLiabilityDetails" -> Json.obj(
             "nonSavings" -> Json.obj(
-              "totalIncome" -> Json.obj(
-                "iabdSummaries" -> JsArray(
+              "totalIncomeDetails" -> Json.obj(
+                "summaryIABDEstimatedPayDetailsList" -> JsArray(
                   Seq(
                     Json.obj(
                       "amount"         -> 100,
-                      "type"           -> 19,
+                      "type"           -> "Non-Coded Income (019)",
                       "npsDescription" -> "Non-Coded Income",
                       "employmentId"   -> JsNull
                     ),
                     Json.obj(
                       "amount"         -> 100,
-                      "type"           -> 84,
+                      "type"           -> "Job Seekers Allowance (084)",
                       "npsDescription" -> "Job-Seeker Allowance",
                       "employmentId"   -> JsNull
                     )
                   )
                 )
               ),
-              "taxBands" -> JsArray(
+              "taxBandDetails" -> JsArray(
                 Seq(
                   Json.obj(
                     "bandType" -> "B",
@@ -288,26 +288,26 @@ class TaxOnOtherIncomeSpec extends PlaySpec with MockitoSugar {
           )
         )
 
-        json.as[Option[BigDecimal]](TaxOnOtherIncomeSquidReads.taxOnOtherIncomeTaxValueReads) mustBe Some(20)
+        json.as[Option[BigDecimal]](TaxOnOtherIncomeHipReads.taxOnOtherIncomeTaxValueReads) mustBe Some(20)
       }
 
       "non-coded income is not present" in {
         val json = Json.obj(
-          "totalLiability" -> Json.obj(
+          "totalLiabilityDetails" -> Json.obj(
             "nonSavings" -> Json.obj(
-              "totalIncome" -> Json.obj(
-                "iabdSummaries" -> JsArray(
+              "totalIncomeDetails" -> Json.obj(
+                "summaryIABDEstimatedPayDetailsList" -> JsArray(
                   Seq(
                     Json.obj(
                       "amount"         -> 100,
-                      "type"           -> 84,
+                      "type"           -> "Job Seekers Allowance (084)",
                       "npsDescription" -> "Job-Seeker Allowance",
                       "employmentId"   -> JsNull
                     )
                   )
                 )
               ),
-              "taxBands" -> JsArray(
+              "taxBandDetails" -> JsArray(
                 Seq(
                   Json.obj(
                     "bandType" -> "B",
@@ -320,62 +320,62 @@ class TaxOnOtherIncomeSpec extends PlaySpec with MockitoSugar {
             )
           )
         )
-        json.as[Option[BigDecimal]](TaxOnOtherIncomeSquidReads.taxOnOtherIncomeTaxValueReads) mustBe None
+        json.as[Option[BigDecimal]](TaxOnOtherIncomeHipReads.taxOnOtherIncomeTaxValueReads) mustBe None
       }
 
       "non-coded income is present and tax bands are not present" in {
         val json = Json.obj(
-          "totalLiability" -> Json.obj(
+          "totalLiabilityDetails" -> Json.obj(
             "nonSavings" -> Json.obj(
-              "totalIncome" -> Json.obj(
-                "iabdSummaries" -> JsArray(
+              "totalIncomeDetails" -> Json.obj(
+                "summaryIABDEstimatedPayDetailsList" -> JsArray(
                   Seq(
                     Json.obj(
                       "amount"         -> 100,
-                      "type"           -> 19,
+                      "type"           -> "Non-Coded Income (019)",
                       "npsDescription" -> "Non-Coded Income",
                       "employmentId"   -> JsNull
                     ),
                     Json.obj(
                       "amount"         -> 100,
-                      "type"           -> 84,
+                      "type"           -> "Job Seekers Allowance (084)",
                       "npsDescription" -> "Job-Seeker Allowance",
                       "employmentId"   -> JsNull
                     )
                   )
                 )
               ),
-              "taxBands" -> JsNull
+              "taxBandDetails" -> JsNull
             )
           )
         )
 
-        json.as[Option[BigDecimal]](TaxOnOtherIncomeSquidReads.taxOnOtherIncomeTaxValueReads) mustBe None
+        json.as[Option[BigDecimal]](TaxOnOtherIncomeHipReads.taxOnOtherIncomeTaxValueReads) mustBe None
       }
 
       "non-coded income is present but tax bands income is null" in {
         val json = Json.obj(
-          "totalLiability" -> Json.obj(
+          "totalLiabilityDetails" -> Json.obj(
             "nonSavings" -> Json.obj(
-              "totalIncome" -> Json.obj(
-                "iabdSummaries" -> JsArray(
+              "totalIncomeDetails" -> Json.obj(
+                "summaryIABDEstimatedPayDetailsList" -> JsArray(
                   Seq(
                     Json.obj(
                       "amount"         -> 100,
-                      "type"           -> 19,
+                      "type"           -> "Non-Coded Income (019)",
                       "npsDescription" -> "Non-Coded Income",
                       "employmentId"   -> JsNull
                     ),
                     Json.obj(
                       "amount"         -> 100,
-                      "type"           -> 84,
+                      "type"           -> "Job Seekers Allowance (084)",
                       "npsDescription" -> "Job-Seeker Allowance",
                       "employmentId"   -> JsNull
                     )
                   )
                 )
               ),
-              "taxBands" -> JsArray(
+              "taxBandDetails" -> JsArray(
                 Seq(
                   Json.obj(
                     "bandType" -> "B",
@@ -388,7 +388,7 @@ class TaxOnOtherIncomeSpec extends PlaySpec with MockitoSugar {
             )
           )
         )
-        json.as[Option[BigDecimal]](TaxOnOtherIncomeSquidReads.taxOnOtherIncomeTaxValueReads) mustBe None
+        json.as[Option[BigDecimal]](TaxOnOtherIncomeHipReads.taxOnOtherIncomeTaxValueReads) mustBe None
       }
     }
   }
@@ -397,27 +397,27 @@ class TaxOnOtherIncomeSpec extends PlaySpec with MockitoSugar {
     "return income" when {
       "non-coded income is present" in {
         val json = Json.obj(
-          "totalLiability" -> Json.obj(
+          "totalLiabilityDetails" -> Json.obj(
             "nonSavings" -> Json.obj(
-              "totalIncome" -> Json.obj(
-                "iabdSummaries" -> JsArray(
+              "totalIncomeDetails" -> Json.obj(
+                "summaryIABDEstimatedPayDetailsList" -> JsArray(
                   Seq(
                     Json.obj(
                       "amount"         -> 100,
-                      "type"           -> 19,
+                      "type"           -> "Non-Coded Income (019)",
                       "npsDescription" -> "Non-Coded Income",
                       "employmentId"   -> JsNull
                     ),
                     Json.obj(
                       "amount"         -> 100,
-                      "type"           -> 84,
+                      "type"           -> "Job Seekers Allowance (084)",
                       "npsDescription" -> "Job-Seeker Allowance",
                       "employmentId"   -> JsNull
                     )
                   )
                 )
               ),
-              "taxBands" -> JsArray(
+              "taxBandDetails" -> JsArray(
                 Seq(
                   Json.obj(
                     "bandType" -> "B",
@@ -436,19 +436,19 @@ class TaxOnOtherIncomeSpec extends PlaySpec with MockitoSugar {
             )
           )
         )
-        json.as[Option[BigDecimal]](TaxOnOtherIncomeSquidReads.taxOnOtherIncomeTaxValueReads) mustBe Some(40)
+        json.as[Option[BigDecimal]](TaxOnOtherIncomeHipReads.taxOnOtherIncomeTaxValueReads) mustBe Some(40)
       }
     }
 
     "return none" when {
       "details are not present" in {
         val json = Json.obj(
-          "totalLiability" -> Json.obj(
+          "totalLiabilityDetails" -> Json.obj(
             "nonSavings" -> Json.obj(
-              "totalIncome" -> Json.obj(
-                "iabdSummaries" -> JsArray()
+              "totalIncomeDetails" -> Json.obj(
+                "summaryIABDEstimatedPayDetailsList" -> JsArray()
               ),
-              "taxBands" -> JsArray(
+              "taxBandDetails" -> JsArray(
                 Seq(
                   Json.obj(
                     "bandType" -> "B",
@@ -467,7 +467,7 @@ class TaxOnOtherIncomeSpec extends PlaySpec with MockitoSugar {
             )
           )
         )
-        json.as[Option[BigDecimal]](TaxOnOtherIncomeSquidReads.taxOnOtherIncomeTaxValueReads) mustBe None
+        json.as[Option[BigDecimal]](TaxOnOtherIncomeHipReads.taxOnOtherIncomeTaxValueReads) mustBe None
       }
     }
   }

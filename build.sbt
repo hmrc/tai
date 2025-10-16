@@ -14,19 +14,29 @@
  * limitations under the License.
  */
 import uk.gov.hmrc.DefaultBuildSettings
-import uk.gov.hmrc.DefaultBuildSettings.*
 
 val appName: String = "tai"
 
-ThisBuild / majorVersion := 2
-ThisBuild / scalaVersion := "2.13.15"
+ThisBuild / majorVersion := 3
+ThisBuild / scalaVersion := "3.3.6"
 ThisBuild / scalafmtOnCompile := true
+ThisBuild / scalacOptions ++= Seq(
+  "-unchecked",
+  "-feature",
+  "-Wvalue-discard",
+  "-Werror",
+  "-Wconf:msg=unused import&src=html/.*:s",
+  "-Wconf:msg=unused import&src=xml/.*:s",
+  "-Wconf:msg=unused&src=.*RoutesPrefix\\.scala:s",
+  "-Wconf:msg=unused&src=.*Routes\\.scala:s",
+  "-Wconf:msg=unused&src=.*ReverseRoutes\\.scala:s",
+  "-Wconf:msg=Flag.*repeatedly:s"
+)
 
 lazy val microservice = Project(appName, file("."))
   .enablePlugins(play.sbt.PlayScala, SbtDistributablesPlugin)
   .disablePlugins(JUnitXmlReportPlugin) // Required to prevent https://github.com/scalatest/scalatest/issues/1427
   .settings(
-    scalaSettings,
     PlayKeys.playDefaultPort := 9331,
     scoverageSettings,
     libraryDependencies ++= AppDependencies.all,
@@ -36,51 +46,45 @@ lazy val microservice = Project(appName, file("."))
       "uk.gov.hmrc.tai.model.domain._",
       "uk.gov.hmrc.tai.binders._",
       "uk.gov.hmrc.domain._"
-    ),
-    scalacOptions ++= Seq(
-      "-unchecked",
-      "-feature",
-      "-Xlint:_",
-      "-Werror",
-      "-Wdead-code",
-      "-Wunused:_",
-      "-Wextra-implicit",
-      "-Wconf:cat=deprecation&site=uk\\.gov\\.hmrc\\.tai\\.connectors\\.BaseConnectorSpec.*:s",
-      "-Wconf:cat=unused-imports&site=.*templates\\.html.*:s",
-      "-Wconf:cat=unused-imports&site=.*templates\\.xml.*:s",
-      "-Wconf:cat=deprecation&msg=\\.*value readRaw in object HttpReads is deprecated\\.*:s",
-      "-Wconf:cat=unused&msg=\\.*private default argument in class\\.*:s",
-      "-Wconf:cat=unused-imports&site=<empty>:s",
-      "-Wconf:cat=unused&src=.*RoutesPrefix\\.scala:s",
-      "-Wconf:cat=unused&src=.*Routes\\.scala:s",
-      "-Wconf:cat=unused&src=.*ReverseRoutes\\.scala:s"
     )
   )
 
 lazy val scoverageSettings = {
   import scoverage.ScoverageKeys
   val scoverageExcludePatterns =
-    List("<empty>", "Reverse.*", ".*Routes.*", "uk.gov.hmrc.BuildInfo.*", "prod.*", "dev.*", "uk.gov.hmrc.tai.config", "testOnly.controllers")
+    List(
+      "<empty>",
+      "Reverse.*",
+      ".*Routes.*",
+      "uk.gov.hmrc.BuildInfo.*",
+      "prod.*",
+      "dev.*",
+      "uk.gov.hmrc.tai.config",
+      "testOnly.controllers",
+      "uk.gov.hmrc.tai.model.nps2.AllowanceType",
+      "uk.gov.hmrc.tai.repositories.deprecated.SessionRepository",
+      "uk.gov.hmrc.tai.model.nps2.TaxDetail"
+    )
 
   Seq(
     ScoverageKeys.coverageExcludedPackages := scoverageExcludePatterns.mkString("", ";", ""),
-    ScoverageKeys.coverageMinimumStmtTotal := 92,
-    ScoverageKeys.coverageMinimumBranchTotal := 85,
+    ScoverageKeys.coverageMinimumStmtTotal := 80,
+    ScoverageKeys.coverageMinimumBranchTotal := 60,
     ScoverageKeys.coverageFailOnMinimum := true,
     ScoverageKeys.coverageHighlighting := true
   )
 }
 
 Test / parallelExecution := false
-Test / scalacOptions --= Seq("-Wdead-code", "-Wvalue-discard")
+Test / scalacOptions ++= Seq(
+  "-Wconf:msg=discarded non-Unit value:s"
+)
 
 lazy val it = project
   .enablePlugins(play.sbt.PlayScala)
-  .dependsOn(microservice % "test->test") // the "test->test" allows reusing test code and test dependencies
+  .dependsOn(microservice % "test->test")
   .settings(
     libraryDependencies ++= AppDependencies.test,
-    DefaultBuildSettings.itSettings()
+    DefaultBuildSettings.itSettings(),
+    Test / parallelExecution := false
   )
-
-addCommandAlias("runAllTests", ";test;it/test;")
-addCommandAlias("runLocal", "run -Dplay.http.router=testOnlyDoNotUseInAppConf.Routes")

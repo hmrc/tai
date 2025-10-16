@@ -17,11 +17,13 @@
 package uk.gov.hmrc.tai.connectors
 
 import cats.data.EitherT
-import org.mockito.ArgumentMatchersSugar.eqTo
-import org.mockito.MockitoSugar
+import cats.instances.future.*
+import org.mockito.ArgumentMatchers.eq as eqTo
+import org.mockito.Mockito.{reset, when}
 import org.scalactic.source.Position
 import org.scalatest.Assertion
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
+import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
 import play.api.Application
 import play.api.cache.AsyncCacheApi
@@ -32,8 +34,7 @@ import uk.gov.hmrc.domain.{Generator, Nino}
 import uk.gov.hmrc.http.{HeaderCarrier, HttpException, RequestId, SessionId}
 import uk.gov.hmrc.mongoFeatureToggles.model.{FeatureFlag, FeatureFlagName}
 import uk.gov.hmrc.mongoFeatureToggles.services.FeatureFlagService
-import uk.gov.hmrc.tai.model.admin.{HipToggleEmploymentDetails, HipToggleIabds, RtiCallToggle}
-import uk.gov.hmrc.tai.service.LockService
+import uk.gov.hmrc.tai.model.admin.{HipIabdsUpdateExpensesToggle, RtiCallToggle}
 import uk.gov.hmrc.tai.util.{FakeAsyncCacheApi, WireMockHelper}
 
 import scala.concurrent.duration.DurationInt
@@ -90,12 +91,10 @@ trait ConnectorBaseSpec
     when(mockFeatureFlagService.getAsEitherT(eqTo[FeatureFlagName](RtiCallToggle))).thenReturn(
       EitherT.rightT(FeatureFlag(RtiCallToggle, isEnabled = false))
     )
-    when(mockFeatureFlagService.get(eqTo[FeatureFlagName](HipToggleEmploymentDetails))).thenReturn(
-      Future.successful(FeatureFlag(HipToggleEmploymentDetails, isEnabled = false))
+    when(mockFeatureFlagService.get(eqTo[FeatureFlagName](HipIabdsUpdateExpensesToggle))).thenReturn(
+      Future.successful(FeatureFlag(HipIabdsUpdateExpensesToggle, isEnabled = false))
     )
-    when(mockFeatureFlagService.get(eqTo[FeatureFlagName](HipToggleIabds))).thenReturn(
-      Future.successful(FeatureFlag(HipToggleIabds, isEnabled = false))
-    )
+    ()
   }
 
   implicit val hc: HeaderCarrier = HeaderCarrier(
@@ -112,16 +111,5 @@ trait ConnectorBaseSpec
     val ex = intercept[A](Await.result(call, 5.seconds))
     ex.responseCode mustBe code
     ex.message mustBe message
-  }
-
-  class FakeLockService extends LockService {
-    override def sessionId(implicit hc: HeaderCarrier): String =
-      "some session id"
-
-    override def takeLock[L](owner: String)(implicit hc: HeaderCarrier): EitherT[Future, L, Boolean] =
-      EitherT.rightT(true)
-
-    override def releaseLock[L](owner: String)(implicit hc: HeaderCarrier): Future[Unit] =
-      Future.successful(())
   }
 }

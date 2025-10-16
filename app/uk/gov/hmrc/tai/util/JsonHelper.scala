@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.tai.util
 
-import play.api.libs.json._
+import play.api.libs.json.*
 
 import scala.util.{Failure, Success, Try}
 
@@ -53,14 +53,14 @@ object JsonHelper {
 
   /*
     Same as orElse but if the second reads fails then return the first reads' errors instead of the second.
-    Otherwise we wouldn't know what had failed.
+    Otherwise, we wouldn't know what had failed.
    */
   implicit class OrElseTry[A](reads: Reads[A]) {
     def orElseTry(bReads: Reads[A]): Reads[A] =
       combineReads(reads, bReads)
   }
 
-  private def parseType(fullType: String): Option[(String, Int)] = {
+  def parseType(fullType: String): Option[(String, Int)] = {
     val trimmedValue = fullType.trim
     if (trimmedValue.endsWith(")")) {
       val reversedValue = trimmedValue.reverse
@@ -87,25 +87,4 @@ object JsonHelper {
       case None    => JsError(JsonValidationError(s"Invalid type: $fullType"))
     }
   }
-
-  def selectIabdsReads[A](
-    readsSquid: Reads[A],
-    readsHip: Reads[A]
-  ): Reads[A] =
-    Reads[A] {
-      case jsValue @ (_: JsArray) => readsSquid.reads(jsValue)
-      case jsValue                => readsHip.reads(jsValue)
-    }
-
-  def selectReads[A](
-    readsSquid: Reads[A],
-    readsHip: Reads[A]
-  ): Reads[A] =
-    Reads[A] { jsValue =>
-      if ((jsValue \ "nationalInsuranceNumber").isDefined) {
-        readsHip.reads(jsValue)
-      } else {
-        readsSquid.reads(jsValue)
-      }
-    }
 }

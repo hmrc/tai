@@ -66,7 +66,7 @@ object EstimatedPayCalculator {
     }
   }
 
-  def calculatePay(pay: BigDecimal, frequency: PayFreq, days: Int): BigDecimal = {
+  private def calculatePay(pay: BigDecimal, frequency: PayFreq, days: Int): BigDecimal = {
     val freqMonthly = 12
     val freqWeekly = 52
     val freqBiWeekly = 26
@@ -85,7 +85,7 @@ object EstimatedPayCalculator {
     }
   }
 
-  def apportion(annualAmount: BigDecimal, startDate: LocalDate): BigDecimal = {
+  private def apportion(annualAmount: BigDecimal, startDate: LocalDate): BigDecimal = {
     val startDateCY = TaxYear().start
     val startDateNY = startDateCY.plusDays(TaiConstants.DAYS_IN_YEAR)
     val workingStartDate = TaxCalculator.getStartDateInCurrentFinancialYear(startDate)

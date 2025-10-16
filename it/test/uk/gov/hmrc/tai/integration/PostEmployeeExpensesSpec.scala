@@ -17,9 +17,10 @@
 package uk.gov.hmrc.tai.integration
 
 import com.github.tomakehurst.wiremock.client.WireMock.{aResponse, ok, post, urlEqualTo}
-import play.api.libs.json.Json
+import play.api.libs.json.{JsValue, Json}
+import play.api.mvc.AnyContentAsJson
 import play.api.test.FakeRequest
-import play.api.test.Helpers.{status => getStatus, _}
+import play.api.test.Helpers.{status as getStatus, *}
 import uk.gov.hmrc.http.{HeaderNames, HttpException}
 import uk.gov.hmrc.tai.integration.utils.IntegrationSpec
 import uk.gov.hmrc.tai.model.IabdUpdateExpensesRequest
@@ -28,9 +29,9 @@ class PostEmployeeExpensesSpec extends IntegrationSpec {
 
   val apiUrl = s"/tai/$nino/tax-account/$year/expenses/employee-expenses/59"
 
-  val postRequest = Json.toJson(IabdUpdateExpensesRequest(etag.toInt, 123456))
+  val postRequest: JsValue = Json.toJson(IabdUpdateExpensesRequest(etag.toInt, 123456))
 
-  def request = FakeRequest(POST, apiUrl)
+  def request: FakeRequest[AnyContentAsJson] = FakeRequest(POST, apiUrl)
     .withJsonBody(postRequest)
     .withHeaders(HeaderNames.authorisation -> bearerToken, HeaderNames.xSessionId -> "sessionId")
 

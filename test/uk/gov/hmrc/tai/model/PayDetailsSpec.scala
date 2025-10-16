@@ -16,10 +16,11 @@
 
 package uk.gov.hmrc.tai.model
 
-import java.time.LocalDate
 import org.scalatestplus.play.PlaySpec
 import play.api.libs.json.Json
 import uk.gov.hmrc.tai.model.enums.PayFreq
+
+import java.time.LocalDate
 
 class PayDetailsSpec extends PlaySpec {
 

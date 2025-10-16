@@ -19,6 +19,7 @@ package uk.gov.hmrc.tai.connectors
 import com.google.inject.{Inject, Singleton}
 import play.api.Logger
 import play.api.http.Status
+import play.api.libs.ws.WSBodyWritables.writeableOf_urlEncodedForm
 import play.api.libs.ws.WSClient
 import uk.gov.hmrc.http.HttpException
 import uk.gov.hmrc.tai.metrics.Metrics
@@ -45,6 +46,7 @@ class PdfConnector @Inject() (metrics: Metrics, wsClient: WSClient, urls: PdfUrl
         case _ =>
           logger.warn(s"PdfConnector - A Server error was received from ${APITypes.PdfServiceAPI}")
           metrics.incrementFailedCounter(APITypes.PdfServiceAPI)
+
           throw new HttpException(response.body, response.status)
       }
     }

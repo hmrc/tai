@@ -16,25 +16,21 @@
 
 package uk.gov.hmrc.tai.connectors
 
-import com.github.tomakehurst.wiremock.client.WireMock._
+import com.github.tomakehurst.wiremock.client.WireMock.*
 import com.github.tomakehurst.wiremock.matching.RequestPatternBuilder
-import org.mockito.ArgumentMatchersSugar.eqTo
 import play.api.Application
-import play.api.http.Status._
+import play.api.http.Status.*
 import play.api.inject.bind
 import play.api.libs.json.{JsArray, JsValue, Json}
 import uk.gov.hmrc.auth.core.AuthorisedFunctions
-import uk.gov.hmrc.http._
-import uk.gov.hmrc.mongoFeatureToggles.model.{FeatureFlag, FeatureFlagName}
+import uk.gov.hmrc.http.*
 import uk.gov.hmrc.tai.auth.MicroserviceAuthorisedFunctions
 import uk.gov.hmrc.tai.model.HodResponse
-import uk.gov.hmrc.tai.model.admin.HipToggleEmploymentDetails
 import uk.gov.hmrc.tai.model.nps2.NpsFormatter
 import uk.gov.hmrc.tai.model.tai.TaxYear
 
 import java.nio.charset.StandardCharsets
 import java.util.Base64
-import scala.concurrent.Future
 import scala.util.Random
 
 class DefaultEmploymentDetailsConnectorSpec extends ConnectorBaseSpec with NpsFormatter {
@@ -76,24 +72,22 @@ class DefaultEmploymentDetailsConnectorSpec extends ConnectorBaseSpec with NpsFo
         )
     )
 
-  val employment = s"""{
-                      |  "sequenceNumber": $intGen,
-                      |  "startDate": "28/02/2023",
-                      |  "taxDistrictNumber": "${intGen.toString}",
-                      |  "payeNumber": "${intGen.toString}",
-                      |  "employerName": "Big corp",
-                      |  "employmentType": 1,
-                      |  "worksNumber": "${intGen.toString}",
-                      |  "cessationPayThisEmployment": $intGen
-                      |}""".stripMargin
+  val employment: String = s"""{
+                              |  "sequenceNumber": $intGen,
+                              |  "startDate": "28/02/2023",
+                              |  "taxDistrictNumber": "${intGen.toString}",
+                              |  "payeNumber": "${intGen.toString}",
+                              |  "employerName": "Big corp",
+                              |  "employmentType": 1,
+                              |  "worksNumber": "${intGen.toString}",
+                              |  "cessationPayThisEmployment": $intGen
+                              |}""".stripMargin
 
   val employmentAsJson: JsValue = Json.toJson(employment)
 
   override def beforeEach(): Unit = {
     super.beforeEach()
-    when(mockFeatureFlagService.get(eqTo[FeatureFlagName](HipToggleEmploymentDetails))).thenReturn(
-      Future.successful(FeatureFlag(HipToggleEmploymentDetails, isEnabled = true))
-    )
+    ()
   }
 
   "DefaultEmploymentDetailsConnector" when {

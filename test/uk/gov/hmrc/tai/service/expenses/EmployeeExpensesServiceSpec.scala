@@ -17,23 +17,30 @@
 package uk.gov.hmrc.tai.service.expenses
 
 import org.mockito.ArgumentMatchers.any
+import org.mockito.Mockito.{reset, times, verify, when}
 import play.api.mvc.AnyContentAsEmpty
 import play.api.test.FakeRequest
 import uk.gov.hmrc.http.{BadRequestException, HttpResponse}
-import uk.gov.hmrc.tai.connectors._
-import uk.gov.hmrc.tai.controllers.auth.AuthenticatedRequest
+import uk.gov.hmrc.tai.connectors.*
 import uk.gov.hmrc.tai.model.UpdateIabdEmployeeExpense
 import uk.gov.hmrc.tai.model.nps.NpsIabdRoot
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.util.BaseSpec
+import uk.gov.hmrc.mongoFeatureToggles.services.FeatureFlagService
+import uk.gov.hmrc.tai.model.admin.HipGetIabdsExpensesToggle
+import uk.gov.hmrc.mongoFeatureToggles.model.{FeatureFlag, FeatureFlagName}
+import org.mockito.ArgumentMatchers.eq as eqTo
+import play.api.libs.json._
 
 import scala.concurrent.Future
 
 class EmployeeExpensesServiceSpec extends BaseSpec {
 
   private val mockIabdConnector = mock[IabdConnector]
+  private val mockFeatureFlagService = mock[FeatureFlagService]
 
-  private val service = new EmployeeExpensesService(iabdConnector = mockIabdConnector)
+  private val service =
+    new EmployeeExpensesService(iabdConnector = mockIabdConnector, featureFlagService = mockFeatureFlagService)
 
   private val updateIabdEmployeeExpense = UpdateIabdEmployeeExpense(100, None)
   private val iabd = 56
@@ -46,16 +53,35 @@ class EmployeeExpensesServiceSpec extends BaseSpec {
     )
   )
 
+  private val validNpsIabdJson =
+    s"""
+       |{
+       |  "iabdDetails": [
+       |    {
+       |      "nationalInsuranceNumber": "$nino",
+       |      "iabdSequenceNumber": 201700002,
+       |      "taxYear": $taxYear,
+       |      "type": "New Estimated Pay ($iabd)",
+       |      "grossAmount": 100.00
+       |    }
+       |  ]
+       |}
+       |""".stripMargin
+
   private val taxYear = 2017
 
-  implicit val authenticatedRequest: AuthenticatedRequest[AnyContentAsEmpty.type] =
-    AuthenticatedRequest(FakeRequest(), nino)
+  override def beforeEach(): Unit = {
+    super.beforeEach()
+    reset(mockIabdConnector, mockFeatureFlagService)
+  }
+
+  implicit val fakeRequest: FakeRequest[AnyContentAsEmpty.type] = FakeRequest()
 
   "updateEmployeeExpensesData" must {
 
     "return 200" when {
       "success response from des connector" in {
-        when(mockIabdConnector.updateExpensesData(any(), any(), any(), any(), any(), any())(any(), any()))
+        when(mockIabdConnector.updateExpensesData(any(), any(), any(), any(), any(), any())(any()))
           .thenReturn(Future.successful(HttpResponse(200, responseBody)))
 
         service
@@ -67,7 +93,7 @@ class EmployeeExpensesServiceSpec extends BaseSpec {
 
     "return 500" when {
       "failure response from des connector" in {
-        when(mockIabdConnector.updateExpensesData(any(), any(), any(), any(), any(), any())(any(), any()))
+        when(mockIabdConnector.updateExpensesData(any(), any(), any(), any(), any(), any())(any()))
           .thenReturn(Future.successful(HttpResponse(500, responseBody)))
 
         service
@@ -78,7 +104,7 @@ class EmployeeExpensesServiceSpec extends BaseSpec {
     }
   }
 
-  "getEmployeeExpensesData" must {
+  "getEmployeeExpensesData for DES" must {
 
     "return a list of NpsIabds" when {
 
@@ -86,8 +112,12 @@ class EmployeeExpensesServiceSpec extends BaseSpec {
         val mockIabdConnector = mock[IabdConnector]
         when(mockIabdConnector.getIabdsForType(any(), any(), any())(any()))
           .thenReturn(Future.successful(validNpsIabd))
+        when(mockFeatureFlagService.get(eqTo[FeatureFlagName](HipGetIabdsExpensesToggle))).thenReturn(
+          Future.successful(FeatureFlag(HipGetIabdsExpensesToggle, isEnabled = false))
+        )
 
-        val service = new EmployeeExpensesService(iabdConnector = mockIabdConnector)
+        val service =
+          new EmployeeExpensesService(iabdConnector = mockIabdConnector, featureFlagService = mockFeatureFlagService)
 
         val result = service.getEmployeeExpenses(nino, taxYear, iabd)
 
@@ -101,6 +131,88 @@ class EmployeeExpensesServiceSpec extends BaseSpec {
         "failed response from des connector" in {
           when(mockIabdConnector.getIabdsForType(any(), any(), any())(any()))
             .thenReturn(Future.failed(new BadRequestException("")))
+          when(mockFeatureFlagService.get(eqTo[FeatureFlagName](HipGetIabdsExpensesToggle))).thenReturn(
+            Future.successful(FeatureFlag(HipGetIabdsExpensesToggle, isEnabled = false))
+          )
+
+          val result = service.getEmployeeExpenses(nino, taxYear, iabd)
+
+          intercept[Exception] {
+            result.futureValue
+          }
+        }
+      }
+    }
+  }
+
+  "getEmployeeExpensesData for HIP" must {
+
+    "return a list of NpsIabds" when {
+
+      "success response from hip connector when HipGetIabdsExpensesToggle is true" in {
+        val mockIabdConnector = mock[IabdConnector]
+        when(mockIabdConnector.iabds(any(), any(), any())(any()))
+          .thenReturn(Future.successful(Json.parse(validNpsIabdJson)))
+        when(mockFeatureFlagService.get(eqTo[FeatureFlagName](HipGetIabdsExpensesToggle))).thenReturn(
+          Future.successful(FeatureFlag(HipGetIabdsExpensesToggle, isEnabled = true))
+        )
+
+        val service =
+          new EmployeeExpensesService(iabdConnector = mockIabdConnector, featureFlagService = mockFeatureFlagService)
+
+        val result: Future[List[NpsIabdRoot]] = service.getEmployeeExpenses(nino, taxYear, iabd)
+
+        result.futureValue mustBe validNpsIabd
+
+        verify(mockIabdConnector, times(1))
+          .iabds(nino, TaxYear(taxYear), Some(s"Flat Rate Job Expenses (0$iabd)"))
+      }
+
+      "success response from hip connector when iabdDetails is missing" in {
+        val mockIabdConnector = mock[IabdConnector]
+        when(mockIabdConnector.iabds(any(), any(), any())(any()))
+          .thenReturn(Future.successful(Json.parse("{}")))
+        when(mockFeatureFlagService.get(eqTo[FeatureFlagName](HipGetIabdsExpensesToggle))).thenReturn(
+          Future.successful(FeatureFlag(HipGetIabdsExpensesToggle, isEnabled = true))
+        )
+
+        val service =
+          new EmployeeExpensesService(iabdConnector = mockIabdConnector, featureFlagService = mockFeatureFlagService)
+
+        val result: Future[List[NpsIabdRoot]] = service.getEmployeeExpenses(nino, taxYear, iabd)
+
+        result.futureValue mustBe List.empty
+
+        verify(mockIabdConnector, times(1))
+          .iabds(nino, TaxYear(taxYear), Some(s"Flat Rate Job Expenses (0$iabd)"))
+      }
+
+      "success response from hip connector when iabdDetails is empty" in {
+        val mockIabdConnector = mock[IabdConnector]
+        when(mockIabdConnector.iabds(any(), any(), any())(any()))
+          .thenReturn(Future.successful(Json.parse("""{"iabdDetails": []}""")))
+        when(mockFeatureFlagService.get(eqTo[FeatureFlagName](HipGetIabdsExpensesToggle))).thenReturn(
+          Future.successful(FeatureFlag(HipGetIabdsExpensesToggle, isEnabled = true))
+        )
+
+        val service =
+          new EmployeeExpensesService(iabdConnector = mockIabdConnector, featureFlagService = mockFeatureFlagService)
+
+        val result: Future[List[NpsIabdRoot]] = service.getEmployeeExpenses(nino, taxYear, iabd)
+
+        result.futureValue mustBe List.empty
+
+        verify(mockIabdConnector, times(1))
+          .iabds(nino, TaxYear(taxYear), Some(s"Flat Rate Job Expenses (0$iabd)"))
+      }
+
+      "return exception" when {
+        "failed response from des connector" in {
+          when(mockIabdConnector.iabds(any(), any(), any())(any()))
+            .thenReturn(Future.failed(new BadRequestException("")))
+          when(mockFeatureFlagService.get(eqTo[FeatureFlagName](HipGetIabdsExpensesToggle))).thenReturn(
+            Future.successful(FeatureFlag(HipGetIabdsExpensesToggle, isEnabled = true))
+          )
 
           val result = service.getEmployeeExpenses(nino, taxYear, iabd)
 

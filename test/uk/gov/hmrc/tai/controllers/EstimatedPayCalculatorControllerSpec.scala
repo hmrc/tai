@@ -17,7 +17,7 @@
 package uk.gov.hmrc.tai.controllers
 
 import play.api.libs.json.{JsValue, Json, Writes}
-import play.api.test.Helpers._
+import play.api.test.Helpers.*
 import play.api.test.{FakeHeaders, FakeRequest}
 import uk.gov.hmrc.tai.calculators.EstimatedPayCalculator
 import uk.gov.hmrc.tai.controllers.auth.AuthJourney

@@ -16,41 +16,38 @@
 
 package uk.gov.hmrc.tai.model.admin
 
+import uk.gov.hmrc.mongoFeatureToggles.model.Environment.{Environment, Local, Production, Qa, Staging}
 import uk.gov.hmrc.mongoFeatureToggles.model.FeatureFlagName
 
 case object RtiCallToggle extends FeatureFlagName {
   override val name: String = "rti-call-toggle"
   override val description: Option[String] = Some(
-    "Enable/disable toggle for RTI in the RtiConnector, controlling access to the API: '/rti/individual/payments/nino/:nino'"
+    "Enable/disable calls to the RTI API for individual payment information: '/rti/individual/payments/nino/:nino'"
   )
 }
 
-case object HipToggleEmploymentDetails extends FeatureFlagName {
-  override val name: String = "hip-toggle-employment-details"
+case object HipIabdsUpdateExpensesToggle extends FeatureFlagName {
+  override val name: String = "hip-iabds-update-expenses-toggle"
   override val description: Option[String] = Some(
-    "Enable/disable use of HIP instead of Squid for the employment details API"
+    "Enable/disable routing of PUT calls for IABDS employee expenses to HIP instead of DES."
   )
+  override val lockedEnvironments: Seq[Environment] = Seq(Local, Staging, Qa, Production)
 }
 
-case object HipToggleTaxAccount extends FeatureFlagName {
-  override val name: String = "hip-toggle-tax-account"
+case object HipGetIabdsExpensesToggle extends FeatureFlagName {
+  override val name: String = "hip-get-iabds-expenses-toggle"
   override val description: Option[String] = Some(
-    "Enable/disable use of HIP instead of Squid for the tax account API"
+    "Enable/disable routing of GET calls for IABDS employee expenses to HIP instead of DES."
   )
+  override val lockedEnvironments: Seq[Environment] = Seq(Local, Staging, Qa, Production)
 }
 
-case object HipToggleIabds extends FeatureFlagName {
-  override val name: String = "hip-toggle-iabds"
+case object HipTaxAccountHistoryToggle extends FeatureFlagName {
+  override val name: String = "hip-tax-account-history-toggle"
   override val description: Option[String] = Some(
-    "Enable/disable use of HIP instead of Squid for the Iabds details API"
+    "Enable/disable the GET call for tax account history via HIP instead of DES."
   )
-}
-
-case object HipToggleEmploymentIabds extends FeatureFlagName {
-  override val name: String = "hip-toggle-employment-iabds"
-  override val description: Option[String] = Some(
-    "Enable/disable use of HIP instead of Squid for the update Iabds employment API"
-  )
+  override val lockedEnvironments: Seq[Environment] = Seq(Local, Staging, Qa, Production)
 }
 
 case object UseApacheFopLibrary extends FeatureFlagName {

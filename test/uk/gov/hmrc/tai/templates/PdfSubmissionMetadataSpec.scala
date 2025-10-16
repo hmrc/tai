@@ -16,7 +16,6 @@
 
 package uk.gov.hmrc.tai.templates
 
-import java.time.LocalDateTime
 import org.jsoup.Jsoup
 import org.jsoup.parser.Parser
 import org.scalatestplus.play.PlaySpec
@@ -24,10 +23,27 @@ import play.twirl.api.Xml
 import uk.gov.hmrc.domain.{Generator, Nino}
 import uk.gov.hmrc.tai.model.templates.PdfSubmission
 
+import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import scala.util.Random
 
 class PdfSubmissionMetadataSpec extends PlaySpec {
+  private val nino: Nino = new Generator(new Random).nextNino
+  val received: LocalDateTime = LocalDateTime.now()
+
+  val pdfSubmission: PdfSubmission = PdfSubmission(
+    customerId = nino.nino,
+    formId = "TES1",
+    numberOfPages = 2,
+    hmrcReceivedAt = received,
+    submissionMark = "subMark1",
+    casKey = "casKey1"
+  )
+
+  private def createSUT(pdfSubmission: PdfSubmission): Xml =
+    uk.gov.hmrc.tai.templates.xml.PdfSubmissionMetadata(pdfSubmission)
+
+  private val formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss")
 
   "pdfSubmissionMetadata" should {
 
@@ -254,20 +270,4 @@ class PdfSubmissionMetadataSpec extends PlaySpec {
       }
     }
   }
-  private val nino: Nino = new Generator(new Random).nextNino
-  val received: LocalDateTime = LocalDateTime.now()
-
-  val pdfSubmission: PdfSubmission = PdfSubmission(
-    customerId = nino.nino,
-    formId = "TES1",
-    numberOfPages = 2,
-    hmrcReceivedAt = received,
-    submissionMark = "subMark1",
-    casKey = "casKey1"
-  )
-
-  private def createSUT(pdfSubmission: PdfSubmission): Xml =
-    uk.gov.hmrc.tai.templates.xml.PdfSubmissionMetadata(pdfSubmission)
-
-  private val formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss")
 }

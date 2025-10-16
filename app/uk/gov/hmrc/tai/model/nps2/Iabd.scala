@@ -23,3 +23,8 @@ case class Iabd(
   description: String,
   employmentSequence: Option[Int]
 )
+
+object Iabd {
+  def unapply(i: Iabd): Option[(BigDecimal, IabdType, IabdUpdateSource, String, Option[Int])] =
+    Some((i.amount, i.iabdType, i.source, i.description, i.employmentSequence))
+}

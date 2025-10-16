@@ -26,6 +26,29 @@ import scala.util.Random
 
 class RemoveCompanyBenefitIFormSpec extends PlaySpec {
 
+  private val nino = new Generator(new Random()).nextNino
+  private val removeCompanyBenefitModel: RemoveCompanyBenefitViewModel =
+    RemoveCompanyBenefitViewModel(
+      nino.nino,
+      "firstname",
+      "lastname",
+      "3 April 1984",
+      "Yes",
+      "1234567889",
+      "addressLine1",
+      "addressLine2",
+      "addressLine3",
+      "postcode",
+      "No",
+      "No",
+      "Yes",
+      "Mileage",
+      "10030",
+      "On or after 6 April 2017"
+    )
+  private def createSUT(viewModel: RemoveCompanyBenefitViewModel): Html =
+    uk.gov.hmrc.tai.templates.html.RemoveCompanyBenefitIForm(viewModel)
+
   "RemoveCompanyBenefitIForm" must {
     "display the correct static content of remove company benefit iform" when {
       "the html document is created" in {
@@ -152,28 +175,4 @@ class RemoveCompanyBenefitIFormSpec extends PlaySpec {
       }
     }
   }
-
-  private val nino = new Generator(new Random()).nextNino
-  private val removeCompanyBenefitModel: RemoveCompanyBenefitViewModel =
-    RemoveCompanyBenefitViewModel(
-      nino.nino,
-      "firstname",
-      "lastname",
-      "3 April 1984",
-      "Yes",
-      "1234567889",
-      "addressLine1",
-      "addressLine2",
-      "addressLine3",
-      "postcode",
-      "No",
-      "No",
-      "Yes",
-      "Mileage",
-      "10030",
-      "On or after 6 April 2017"
-    )
-  private def createSUT(viewModel: RemoveCompanyBenefitViewModel): Html =
-    uk.gov.hmrc.tai.templates.html.RemoveCompanyBenefitIForm(viewModel)
-
 }

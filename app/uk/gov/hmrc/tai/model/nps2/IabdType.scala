@@ -162,9 +162,10 @@ object IabdType {
   object BereavementAllowance extends IabdType { val code = 125 }
   object MarriageAllowance extends IabdType { val code = 126 }
   object PersonalSavingsAllowance extends IabdType { val code = 128 }
+  object HICBCPaye extends IabdType { val code = 131 }
   case class Unknown(code: Int) extends IabdType
 
-  val set = Seq(
+  val set: Seq[IabdType] = Seq(
     GiftAidPayments,
     GiftAidTreatedAsPaidInPreviousTaxYear,
     OneOffGiftAidPayments,
@@ -262,10 +263,11 @@ object IabdType {
     PersonalAllowancePA,
     PersonalAllowanceAgedPAA,
     PersonalAllowanceElderlyPAE,
-    EmploymentAndSupportAllowance
+    EmploymentAndSupportAllowance,
+    HICBCPaye
   )
 
-  lazy val hipMapping = Map[Int, String](
+  lazy val hipMapping: Map[Int, String] = Map[Int, String](
     1   -> "Gift-Aid-Payments-(001)",
     2   -> "Gift-Aid-treated-as-paid-in-previous-tax-year-(002)",
     3   -> "One-off-Gift-Aid-Payments-(003)",
@@ -394,7 +396,8 @@ object IabdType {
     127 -> "PA-received-from-spouse/civil-partner-(127)",
     128 -> "Personal-Savings-Allowance-(128)",
     129 -> "Dividend-Tax-(129)",
-    130 -> "Relief-At-Source-(RAS)-(130)"
+    130 -> "Relief-At-Source-(RAS)-(130)",
+    131 -> "HICBC-PAYE-(131)"
   )
 
   def apply(i: Int): IabdType = set.find(_.code == i).getOrElse(Unknown(i))

@@ -22,7 +22,7 @@ import uk.gov.hmrc.tai.model.nps2.{NpsFormatter, TaxAccount}
 
 import java.io.File
 import scala.io.Source.fromFile
-import util._
+import scala.util.*
 
 class TaxAccountTest extends PlaySpec with NpsFormatter {
 
@@ -33,10 +33,10 @@ class TaxAccountTest extends PlaySpec with NpsFormatter {
       obj  <- Try(json.as[TaxAccount])
     } yield obj
 
-  val qaData =
+  val qaData: Map[String, Try[TaxAccount]] =
     new java.io.File("test/data/QAData").listFiles.map(f => f.getAbsolutePath -> parseNpsTaxAccount(f)).toMap
 
-  val otherData = {
+  val otherData: Map[String, Try[TaxAccount]] = {
     val files =
       new java.io.File("test/data").listFiles
         .collect {

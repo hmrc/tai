@@ -16,7 +16,8 @@
 
 package uk.gov.hmrc.tai.audit
 
-import org.mockito.ArgumentMatchers.{any, eq => meq}
+import org.mockito.ArgumentMatchers.{any, eq as meq}
+import org.mockito.Mockito.{times, verify}
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 import uk.gov.hmrc.tai.util.BaseSpec
 

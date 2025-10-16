@@ -16,9 +16,10 @@
 
 package uk.gov.hmrc.tai.model.nps
 
-import java.time.LocalDate
 import org.scalatestplus.play.PlaySpec
-import play.api.libs.json._
+import play.api.libs.json.*
+
+import java.time.LocalDate
 
 class NpsDateSpec extends PlaySpec {
 
@@ -121,8 +122,8 @@ class NpsDateSpec extends PlaySpec {
 
   private def extractErrorsPerPath(exception: JsResultException): Seq[String] =
     for {
-      (_: JsPath, errors: Seq[JsonValidationError]) <- exception.errors.toSeq
-      error: JsonValidationError                    <- errors.toSeq
-      message: String                               <- error.messages
+      case (_: JsPath, errors: Seq[JsonValidationError]) <- exception.errors.toSeq
+      error: JsonValidationError <- errors
+      message: String            <- error.messages
     } yield message
 }

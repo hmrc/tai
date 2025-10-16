@@ -16,10 +16,11 @@
 
 package uk.gov.hmrc.tai.service
 
-import org.mockito.ArgumentMatchers.{any, eq => meq}
+import org.mockito.ArgumentMatchers.{any, eq as meq}
+import org.mockito.Mockito.when
 import play.api.test.FakeRequest
-import uk.gov.hmrc.tai.model.domain._
-import uk.gov.hmrc.tai.model.domain.calculation._
+import uk.gov.hmrc.tai.model.domain.*
+import uk.gov.hmrc.tai.model.domain.calculation.*
 import uk.gov.hmrc.tai.model.domain.income.{Live, OtherBasisOperation, TaxCodeIncome}
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.service.helper.TaxAccountHelper
@@ -30,11 +31,11 @@ import scala.concurrent.Future
 class TaxAccountSummaryServiceSpec extends BaseSpec {
   private val codingComponents: Seq[CodingComponent] =
     Seq(
-      CodingComponent(GiftAidPayments, None, 1000, "GiftAidPayments description"),
-      CodingComponent(PersonalPensionPayments, None, 1000, "PersonalPensionPayments description")
+      CodingComponent(GiftAidPayments, None, BigDecimal(1000), "GiftAidPayments description"),
+      CodingComponent(PersonalPensionPayments, None, BigDecimal(1000), "PersonalPensionPayments description")
     )
 
-  private val totalTaxDetails = TotalTax(0, Seq.empty[IncomeCategory], None, None, None)
+  val totalTaxDetails: TotalTax = TotalTax(BigDecimal(0), Seq.empty[IncomeCategory], None, None, None)
 
   private val mockCodingComponentService = mock[CodingComponentService]
   private val mockIncomeService = mock[IncomeService]
@@ -58,40 +59,40 @@ class TaxAccountSummaryServiceSpec extends BaseSpec {
     "add allowances to taxFreeAmount value" when {
       "there are allowances in the coding component list" in {
         val codingComponents = Seq(
-          CodingComponent(PersonalAllowancePA, Some(234), 11500, "PersonalAllowancePA"),
-          CodingComponent(MarriageAllowanceReceived, Some(234), 200, "MarriageAllowanceReceived")
+          CodingComponent(PersonalAllowancePA, Some(234), BigDecimal(11500), "PersonalAllowancePA"),
+          CodingComponent(MarriageAllowanceReceived, Some(234), BigDecimal(200), "MarriageAllowanceReceived")
         )
 
-        createSUT().taxFreeAmountCalculation(codingComponents) mustBe 11700
+        createSUT().taxFreeAmountCalculation(codingComponents) mustBe BigDecimal(11700)
       }
     }
 
     "subtract all the other coding componentTypes from taxFreeAmount value" when {
       "there are other Coding Components in the coding component list" in {
         val codingComponents = Seq(
-          CodingComponent(PersonalAllowancePA, Some(234), 10000, "PersonalAllowancePA"),
-          CodingComponent(EmployerProvidedServices, Some(12), 10000, "EmployerProvidedServices"),
-          CodingComponent(BenefitInKind, Some(12), 100, "EmployerProvidedServices"),
-          CodingComponent(ForeignDividendIncome, Some(12), 200, "ForeignDividendIncome"),
-          CodingComponent(Commission, Some(12), 300, "ForeignDividendIncome"),
-          CodingComponent(MarriageAllowanceTransferred, Some(31), 10, "MarriageAllowanceTransferred"),
-          CodingComponent(UnderPaymentFromPreviousYear, Some(31), 10, "MarriageAllowanceTransferred")
+          CodingComponent(PersonalAllowancePA, Some(234), BigDecimal(10000), "PersonalAllowancePA"),
+          CodingComponent(EmployerProvidedServices, Some(12), BigDecimal(10000), "EmployerProvidedServices"),
+          CodingComponent(BenefitInKind, Some(12), BigDecimal(100), "EmployerProvidedServices"),
+          CodingComponent(ForeignDividendIncome, Some(12), BigDecimal(200), "ForeignDividendIncome"),
+          CodingComponent(Commission, Some(12), BigDecimal(300), "ForeignDividendIncome"),
+          CodingComponent(MarriageAllowanceTransferred, Some(31), BigDecimal(10), "MarriageAllowanceTransferred"),
+          CodingComponent(UnderPaymentFromPreviousYear, Some(31), BigDecimal(10), "MarriageAllowanceTransferred")
         )
 
-        createSUT().taxFreeAmountCalculation(codingComponents) mustBe -620
+        createSUT().taxFreeAmountCalculation(codingComponents) mustBe BigDecimal(-620)
       }
     }
 
     "add allowance and subtract other coding components" when {
       "even provided with negative allowance or deductions" in {
         val codingComponents = Seq(
-          CodingComponent(PersonalAllowancePA, Some(234), -10300, "PersonalAllowancePA"),
-          CodingComponent(EmployerProvidedServices, Some(12), -10000, "EmployerProvidedServices"),
-          CodingComponent(ForeignDividendIncome, Some(12), 200, "ForeignDividendIncome"),
-          CodingComponent(UnderPaymentFromPreviousYear, Some(31), -10, "MarriageAllowanceTransferred")
+          CodingComponent(PersonalAllowancePA, Some(234), BigDecimal(-10300), "PersonalAllowancePA"),
+          CodingComponent(EmployerProvidedServices, Some(12), BigDecimal(-10000), "EmployerProvidedServices"),
+          CodingComponent(ForeignDividendIncome, Some(12), BigDecimal(200), "ForeignDividendIncome"),
+          CodingComponent(UnderPaymentFromPreviousYear, Some(31), BigDecimal(-10), "MarriageAllowanceTransferred")
         )
 
-        createSUT().taxFreeAmountCalculation(codingComponents) mustBe 90
+        createSUT().taxFreeAmountCalculation(codingComponents) mustBe BigDecimal(90)
       }
     }
   }
@@ -134,7 +135,8 @@ class TaxAccountSummaryServiceSpec extends BaseSpec {
         when(mockIncomeService.taxCodeIncomes(meq(nino), any())(any(), any()))
           .thenReturn(Future.successful(taxCodeIncomes))
 
-        when(mockTaxAccountHelper.totalEstimatedTax(meq(nino), any())(any())).thenReturn(Future.successful(1111))
+        when(mockTaxAccountHelper.totalEstimatedTax(meq(nino), any())(any()))
+          .thenReturn(Future.successful(BigDecimal(1111)))
         when(mockTotalTaxService.totalTax(any(), any())(any())).thenReturn(Future.successful(totalTaxDetails))
         when(mockTotalTaxService.taxFreeAllowance(any(), any())(any())).thenReturn(Future.successful(BigDecimal(100)))
 
@@ -192,7 +194,8 @@ class TaxAccountSummaryServiceSpec extends BaseSpec {
 
         when(mockIncomeService.taxCodeIncomes(meq(nino), any())(any(), any()))
           .thenReturn(Future.successful(taxCodeIncomes))
-        when(mockTaxAccountHelper.totalEstimatedTax(meq(nino), any())(any())).thenReturn(Future.successful(1111))
+        when(mockTaxAccountHelper.totalEstimatedTax(meq(nino), any())(any()))
+          .thenReturn(Future.successful(BigDecimal(1111)))
         when(mockTotalTaxService.totalTax(any(), any())(any())).thenReturn(Future.successful(totalTaxDetails))
         when(mockTotalTaxService.taxFreeAllowance(any(), any())(any())).thenReturn(Future.successful(BigDecimal(100)))
 
@@ -241,7 +244,8 @@ class TaxAccountSummaryServiceSpec extends BaseSpec {
         when(mockIncomeService.taxCodeIncomes(meq(nino), any())(any(), any()))
           .thenReturn(Future.successful(taxCodeIncomes))
 
-        when(mockTaxAccountHelper.totalEstimatedTax(meq(nino), any())(any())).thenReturn(Future.successful(1111))
+        when(mockTaxAccountHelper.totalEstimatedTax(meq(nino), any())(any()))
+          .thenReturn(Future.successful(BigDecimal(1111)))
         when(mockTotalTaxService.totalTax(any(), any())(any())).thenReturn(Future.successful(totalTaxDetails))
         when(mockTotalTaxService.taxFreeAllowance(any(), any())(any())).thenReturn(Future.successful(BigDecimal(100)))
 
@@ -256,13 +260,13 @@ class TaxAccountSummaryServiceSpec extends BaseSpec {
     "return correctly generated TaxAccountSummary object" when {
       "receiving a range of components" in {
         val taxFreeAmountComponents = Seq(
-          CodingComponent(PersonalAllowancePA, Some(234), 10000, "PersonalAllowancePA"),
-          CodingComponent(EmployerProvidedServices, Some(12), 10000, "EmployerProvidedServices"),
-          CodingComponent(BenefitInKind, Some(12), 100, "EmployerProvidedServices"),
-          CodingComponent(ForeignDividendIncome, Some(12), 200, "ForeignDividendIncome"),
-          CodingComponent(Commission, Some(12), 300, "ForeignDividendIncome"),
-          CodingComponent(MarriageAllowanceTransferred, Some(31), 10, "MarriageAllowanceTransferred"),
-          CodingComponent(UnderPaymentFromPreviousYear, Some(31), 10, "MarriageAllowanceTransferred")
+          CodingComponent(PersonalAllowancePA, Some(234), BigDecimal(10000), "PersonalAllowancePA"),
+          CodingComponent(EmployerProvidedServices, Some(12), BigDecimal(10000), "EmployerProvidedServices"),
+          CodingComponent(BenefitInKind, Some(12), BigDecimal(100), "EmployerProvidedServices"),
+          CodingComponent(ForeignDividendIncome, Some(12), BigDecimal(200), "ForeignDividendIncome"),
+          CodingComponent(Commission, Some(12), BigDecimal(300), "ForeignDividendIncome"),
+          CodingComponent(MarriageAllowanceTransferred, Some(31), BigDecimal(10), "MarriageAllowanceTransferred"),
+          CodingComponent(UnderPaymentFromPreviousYear, Some(31), BigDecimal(10), "MarriageAllowanceTransferred")
         )
 
         val taxCodeIncomes = Seq(
@@ -294,7 +298,8 @@ class TaxAccountSummaryServiceSpec extends BaseSpec {
           )
         )
 
-        when(mockTaxAccountHelper.totalEstimatedTax(meq(nino), any())(any())).thenReturn(Future.successful(1111))
+        when(mockTaxAccountHelper.totalEstimatedTax(meq(nino), any())(any()))
+          .thenReturn(Future.successful(BigDecimal(1111)))
 
         when(mockCodingComponentService.codingComponents(meq(nino), any())(any()))
           .thenReturn(Future.successful(taxFreeAmountComponents))
@@ -307,14 +312,22 @@ class TaxAccountSummaryServiceSpec extends BaseSpec {
 
         val result = createSUT().taxAccountSummary(nino, TaxYear())(implicitly, FakeRequest()).futureValue
 
-        result mustBe TaxAccountSummary(1111, -620, 67.46, 0, 0, 0, 10000)
+        result mustBe TaxAccountSummary(
+          BigDecimal(1111),
+          BigDecimal(-620),
+          BigDecimal(67.46),
+          BigDecimal(0),
+          BigDecimal(0),
+          BigDecimal(0),
+          BigDecimal(10000)
+        )
       }
     }
 
     "return TaxAccount summary with tax free allowance and taxableIncome" when {
       "liability sections are present" in {
         val taxFreeAmountComponents = Seq(
-          CodingComponent(PersonalAllowancePA, Some(234), 5000, "PersonalAllowancePA")
+          CodingComponent(PersonalAllowancePA, Some(234), BigDecimal(5000), "PersonalAllowancePA")
         )
         when(mockCodingComponentService.codingComponents(meq(nino), any())(any()))
           .thenReturn(Future.successful(taxFreeAmountComponents))
@@ -322,15 +335,40 @@ class TaxAccountSummaryServiceSpec extends BaseSpec {
         when(mockIncomeService.taxCodeIncomes(meq(nino), any())(any(), any()))
           .thenReturn(Future.successful(Seq.empty[TaxCodeIncome]))
 
-        when(mockTaxAccountHelper.totalEstimatedTax(meq(nino), any())(any())).thenReturn(Future.successful(1111))
+        when(mockTaxAccountHelper.totalEstimatedTax(meq(nino), any())(any()))
+          .thenReturn(Future.successful(BigDecimal(1111)))
 
         val incomeCategories = Seq(
-          IncomeCategory(NonSavingsIncomeCategory, 0, 1000, 0, Seq.empty[TaxBand]),
-          IncomeCategory(UntaxedInterestIncomeCategory, 0, 2000, 0, Seq.empty[TaxBand]),
-          IncomeCategory(ForeignDividendsIncomeCategory, 0, 3000, 0, Seq.empty[TaxBand]),
-          IncomeCategory(ForeignInterestIncomeCategory, 0, 4000, 0, Seq.empty[TaxBand]),
-          IncomeCategory(BankInterestIncomeCategory, 0, 5000, 0, Seq.empty[TaxBand]),
-          IncomeCategory(UkDividendsIncomeCategory, 0, 6000, 0, Seq.empty[TaxBand])
+          IncomeCategory(NonSavingsIncomeCategory, BigDecimal(0), BigDecimal(1000), BigDecimal(0), Seq.empty[TaxBand]),
+          IncomeCategory(
+            UntaxedInterestIncomeCategory,
+            BigDecimal(0),
+            BigDecimal(2000),
+            BigDecimal(0),
+            Seq.empty[TaxBand]
+          ),
+          IncomeCategory(
+            ForeignDividendsIncomeCategory,
+            BigDecimal(0),
+            BigDecimal(3000),
+            BigDecimal(0),
+            Seq.empty[TaxBand]
+          ),
+          IncomeCategory(
+            ForeignInterestIncomeCategory,
+            BigDecimal(0),
+            BigDecimal(4000),
+            BigDecimal(0),
+            Seq.empty[TaxBand]
+          ),
+          IncomeCategory(
+            BankInterestIncomeCategory,
+            BigDecimal(0),
+            BigDecimal(5000),
+            BigDecimal(0),
+            Seq.empty[TaxBand]
+          ),
+          IncomeCategory(UkDividendsIncomeCategory, BigDecimal(0), BigDecimal(6000), BigDecimal(0), Seq.empty[TaxBand])
         )
         val totalTax = TotalTax(0, incomeCategories, None, None, None)
         when(mockTotalTaxService.totalTax(any(), any())(any())).thenReturn(Future.successful(totalTax))
@@ -344,8 +382,8 @@ class TaxAccountSummaryServiceSpec extends BaseSpec {
 
       "tax free allowance is zero" in {
         val taxFreeAmountComponents = Seq(
-          CodingComponent(PersonalPensionPayments, Some(234), 5000, "PersonalPensionPayments"),
-          CodingComponent(GiftAidPayments, Some(234), 5000, "GiftAid")
+          CodingComponent(PersonalPensionPayments, Some(234), BigDecimal(5000), "PersonalPensionPayments"),
+          CodingComponent(GiftAidPayments, Some(234), BigDecimal(5000), "GiftAid")
         )
 
         when(mockCodingComponentService.codingComponents(meq(nino), any())(any()))
@@ -354,25 +392,26 @@ class TaxAccountSummaryServiceSpec extends BaseSpec {
         when(mockIncomeService.taxCodeIncomes(meq(nino), any())(any(), any()))
           .thenReturn(Future.successful(Seq.empty[TaxCodeIncome]))
 
-        when(mockTaxAccountHelper.totalEstimatedTax(meq(nino), any())(any())).thenReturn(Future.successful(1111))
+        when(mockTaxAccountHelper.totalEstimatedTax(meq(nino), any())(any()))
+          .thenReturn(Future.successful(BigDecimal(1111)))
 
         val incomeCategories = Seq(
-          IncomeCategory(NonSavingsIncomeCategory, 0, 1000, 0, Seq.empty[TaxBand])
+          IncomeCategory(NonSavingsIncomeCategory, BigDecimal(0), BigDecimal(1000), BigDecimal(0), Seq.empty[TaxBand])
         )
-        val totalTax = TotalTax(0, incomeCategories, None, None, None)
+        val totalTax = TotalTax(BigDecimal(0), incomeCategories, None, None, None)
         when(mockTotalTaxService.totalTax(any(), any())(any())).thenReturn(Future.successful(totalTax))
         when(mockTotalTaxService.taxFreeAllowance(any(), any())(any())).thenReturn(Future.successful(BigDecimal(0)))
 
         val result = createSUT().taxAccountSummary(nino, TaxYear())(implicitly, FakeRequest()).futureValue
 
-        result.totalEstimatedIncome mustBe 1000
-        result.taxFreeAllowance mustBe 0
+        result.totalEstimatedIncome mustBe BigDecimal(1000)
+        result.taxFreeAllowance mustBe BigDecimal(0)
       }
     }
     "return TaxAccount summary with total estimated income and total estimated tax" when {
       "total estimated tax is zero" in {
         val taxFreeAmountComponents = Seq(
-          CodingComponent(PersonalAllowancePA, Some(234), 11500, "PersonalAllowancePA")
+          CodingComponent(PersonalAllowancePA, Some(234), BigDecimal(11500), "PersonalAllowancePA")
         )
         when(mockCodingComponentService.codingComponents(meq(nino), any())(any()))
           .thenReturn(Future.successful(taxFreeAmountComponents))
@@ -380,10 +419,11 @@ class TaxAccountSummaryServiceSpec extends BaseSpec {
         when(mockIncomeService.taxCodeIncomes(meq(nino), any())(any(), any()))
           .thenReturn(Future.successful(Seq.empty[TaxCodeIncome]))
 
-        when(mockTaxAccountHelper.totalEstimatedTax(meq(nino), any())(any())).thenReturn(Future.successful(0))
+        when(mockTaxAccountHelper.totalEstimatedTax(meq(nino), any())(any()))
+          .thenReturn(Future.successful(BigDecimal(0)))
 
         val incomeCategories = Seq(
-          IncomeCategory(NonSavingsIncomeCategory, 0, 0, 8000, Seq.empty[TaxBand])
+          IncomeCategory(NonSavingsIncomeCategory, BigDecimal(0), BigDecimal(0), BigDecimal(8000), Seq.empty[TaxBand])
         )
         val totalTax = TotalTax(0, incomeCategories, None, None, None)
         when(mockTotalTaxService.totalTax(any(), any())(any())).thenReturn(Future.successful(totalTax))
@@ -391,8 +431,8 @@ class TaxAccountSummaryServiceSpec extends BaseSpec {
 
         val result = createSUT().taxAccountSummary(nino, TaxYear())(implicitly, FakeRequest()).futureValue
 
-        result.totalEstimatedIncome mustBe 8000
-        result.taxFreeAllowance mustBe 11500
+        result.totalEstimatedIncome mustBe BigDecimal(8000)
+        result.taxFreeAllowance mustBe BigDecimal(11500)
       }
     }
   }

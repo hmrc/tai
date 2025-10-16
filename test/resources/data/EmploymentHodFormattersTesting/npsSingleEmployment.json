@@ -32,6 +32,7 @@
     "payrolledTaxYear1": false,
     "payrolledBenefitsTaxYear": null,
     "payrolledBenefitsTaxYear1": null,
-    "cessationPayThisEmployment": 100
+    "cessationPayThisEmployment": 100,
+    "startingTaxCode" : "1250L"
   }
 ]

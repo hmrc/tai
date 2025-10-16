@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2025 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,16 +17,17 @@
 package uk.gov.hmrc.tai.integration
 
 import com.github.tomakehurst.wiremock.client.WireMock.{aResponse, ok, put, urlEqualTo}
-import org.mockito.ArgumentMatchersSugar.eqTo
-import org.mockito.MockitoSugar.when
-import play.api.libs.json.Json
+import org.mockito.ArgumentMatchers.eq as eqTo
+import org.mockito.Mockito.when
+import play.api.libs.json.{JsValue, Json}
+import play.api.mvc.AnyContentAsJson
 import play.api.test.FakeRequest
-import play.api.test.Helpers.{status => getStatus, _}
+import play.api.test.Helpers.{status as getStatus, *}
 import uk.gov.hmrc.http.{HeaderNames, HttpException}
 import uk.gov.hmrc.mongoFeatureToggles.model.{FeatureFlag, FeatureFlagName}
 import uk.gov.hmrc.tai.integration.utils.IntegrationSpec
 import uk.gov.hmrc.tai.model.IabdUpdateExpensesRequest
-import uk.gov.hmrc.tai.model.admin.HipToggleIabds
+import uk.gov.hmrc.tai.model.admin.HipIabdsUpdateExpensesToggle
 
 import scala.concurrent.Future
 
@@ -34,17 +35,18 @@ class PutEmployeeExpensesSpec extends IntegrationSpec {
 
   val apiUrl = s"/tai/$nino/tax-account/$year/expenses/employee-expenses/27"
 
-  val putRequest = Json.toJson(IabdUpdateExpensesRequest(etag.toInt, 123456))
+  val putRequest: JsValue = Json.toJson(IabdUpdateExpensesRequest(etag.toInt, 123456))
 
   override def beforeEach(): Unit = {
     super.beforeEach()
 
-    when(mockFeatureFlagService.get(eqTo[FeatureFlagName](HipToggleIabds))).thenReturn(
-      Future.successful(FeatureFlag(HipToggleIabds, isEnabled = true))
+    when(mockFeatureFlagService.get(eqTo[FeatureFlagName](HipIabdsUpdateExpensesToggle))).thenReturn(
+      Future.successful(FeatureFlag(HipIabdsUpdateExpensesToggle, isEnabled = true))
     )
+    ()
   }
 
-  def request = FakeRequest(POST, apiUrl)
+  def request: FakeRequest[AnyContentAsJson] = FakeRequest(POST, apiUrl)
     .withJsonBody(putRequest)
     .withHeaders(HeaderNames.authorisation -> bearerToken, HeaderNames.xSessionId -> "sessionId")
 

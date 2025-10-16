@@ -16,14 +16,14 @@
 
 package uk.gov.hmrc.tai.model
 
-import play.api.libs.functional.syntax._
-import play.api.libs.json._
-
 /*
  * grossAmount:1000  THIS IS MANDATORY - MUST BE A POSITIVE WHOLE NUMBER
- * receiptDate:DD/MM/CCYY  THIS IS OPTIONAL - If populated it Must be in the format dd/mm/ccyy"
+ * receiptDate:DD/MM/CCYY  THIS IS OPTIONAL - If populated it Must be in the format dd/mm/ccyy
  * @param grossAmount : 1000  THIS IS MANDATORY - MUST BE A POSITIVE WHOLE NUMBER
  */
+import play.api.libs.functional.syntax.*
+import play.api.libs.json.*
+
 case class IabdUpdateAmount(
   employmentSequenceNumber: Option[Int] = None,
   grossAmount: Int,
@@ -37,10 +37,9 @@ case class IabdUpdateAmount(
 
 object IabdUpdateAmount {
 
-  def empSeqNoFieldName =
-    "employmentSequenceNumber"
+  private def empSeqNoFieldName = "employmentSequenceNumber"
 
-  implicit def formats: Format[IabdUpdateAmount] =
+  implicit val formats: Format[IabdUpdateAmount] =
     Format(
       Json.reads[IabdUpdateAmount],
       (
@@ -50,7 +49,16 @@ object IabdUpdateAmount {
           (JsPath \ "receiptDate").writeNullable[String] and
           (JsPath \ "source").writeNullable[Int] and
           (JsPath \ "currentOptimisticLock").writeNullable[Int]
-      )(unlift(IabdUpdateAmount.unapply))
+      )(iadb =>
+        (
+          iadb.employmentSequenceNumber,
+          iadb.grossAmount,
+          iadb.netAmount,
+          iadb.receiptDate,
+          iadb.source,
+          iadb.currentOptimisticLock
+        )
+      )
     )
 
   val writesHip: Writes[IabdUpdateAmount] =

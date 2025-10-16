@@ -17,39 +17,53 @@
 package uk.gov.hmrc.tai.integration.utils
 
 import cats.data.EitherT
-import com.github.tomakehurst.wiremock.client.WireMock.{ok, post, urlEqualTo}
-import org.mockito.ArgumentMatchersSugar.eqTo
-import org.mockito.MockitoSugar.{mock, reset, when}
+import cats.instances.future.*
+import com.github.tomakehurst.wiremock.client.WireMock.*
+import org.mockito.ArgumentMatchers.eq as eqTo
+import org.mockito.Mockito.{reset, when}
+import org.scalatest.Assertion
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.matchers.must.Matchers
 import org.scalatest.wordspec.AnyWordSpec
+import org.scalatestplus.mockito.MockitoSugar.mock
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.Application
 import play.api.cache.AsyncCacheApi
+import play.api.http.Writeable
 import play.api.inject.bind
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.json.{JsValue, Json}
-import play.api.test.Injecting
+import play.api.mvc.{Request, Result}
+import play.api.test.Helpers.route
+import play.api.test.{FakeRequest, Injecting}
 import uk.gov.hmrc.domain.{Generator, Nino}
+import uk.gov.hmrc.http.{BadRequestException, InternalServerException, NotFoundException}
 import uk.gov.hmrc.mongoFeatureToggles.model.{FeatureFlag, FeatureFlagName}
 import uk.gov.hmrc.mongoFeatureToggles.services.FeatureFlagService
-import uk.gov.hmrc.tai.model.admin._
+import uk.gov.hmrc.tai.config.CustomErrorHandler
+import uk.gov.hmrc.tai.model.admin.*
 import uk.gov.hmrc.tai.model.tai.TaxYear
 
 import java.util.UUID
-import scala.concurrent.{ExecutionContext, Future}
-import scala.util.Random
+import scala.concurrent.duration.Duration
+import scala.concurrent.{Await, ExecutionContext, Future}
+import scala.util.{Failure, Random, Try}
 
 trait IntegrationSpec
     extends AnyWordSpec with Matchers with GuiceOneAppPerSuite with WireMockHelper with ScalaFutures with Injecting
     with IntegrationPatience {
   implicit lazy val ec: ExecutionContext = inject[ExecutionContext]
 
+  protected val badRequestException = new BadRequestException("message")
+  protected val notFoundException: NotFoundException = new NotFoundException("Error")
+  protected val internalServerException: InternalServerException = new InternalServerException("")
+
   val mockFeatureFlagService: FeatureFlagService = mock[FeatureFlagService]
 
   override def beforeEach(): Unit = {
     super.beforeEach()
     reset(mockFeatureFlagService)
+    Thread.sleep(2000) // 5 seconds delay
 
     val authResponse =
       s"""
@@ -85,25 +99,14 @@ trait IntegrationSpec
         .willReturn(ok("{\"code\": \"ACCESS_GRANTED\", \"message\": \"Access granted\"}"))
     )
 
-    when(mockFeatureFlagService.get(eqTo[FeatureFlagName](HipToggleEmploymentDetails))).thenReturn(
-      Future.successful(FeatureFlag(HipToggleEmploymentDetails, isEnabled = false))
-    )
-
-    when(mockFeatureFlagService.get(eqTo[FeatureFlagName](HipToggleTaxAccount))).thenReturn(
-      Future.successful(FeatureFlag(HipToggleTaxAccount, isEnabled = false))
-    )
-
-    when(mockFeatureFlagService.get(eqTo[FeatureFlagName](HipToggleEmploymentIabds))).thenReturn(
-      Future.successful(FeatureFlag(HipToggleTaxAccount, isEnabled = false))
-    )
-
-    when(mockFeatureFlagService.get(eqTo[FeatureFlagName](HipToggleIabds))).thenReturn(
-      Future.successful(FeatureFlag(HipToggleIabds, isEnabled = false))
+    when(mockFeatureFlagService.get(eqTo[FeatureFlagName](HipIabdsUpdateExpensesToggle))).thenReturn(
+      Future.successful(FeatureFlag(HipIabdsUpdateExpensesToggle, isEnabled = false))
     )
 
     when(mockFeatureFlagService.getAsEitherT(eqTo[FeatureFlagName](RtiCallToggle))).thenReturn(
       EitherT.rightT(FeatureFlag(RtiCallToggle, isEnabled = false))
     )
+    ()
   }
 
   lazy val fakeAsyncCacheApi = new FakeAsyncCacheApi()
@@ -140,6 +143,7 @@ trait IntegrationSpec
   val cidEtagUrl = s"/citizen-details/$nino/etag"
   val npsTaxAccountUrl = s"/nps-hod-service/services/nps/person/$nino/tax-account/$year"
   val hipTaxAccountUrl = s"/v1/api/person/$nino/tax-account/$year"
+  def hipTaxAccountHistoryUrl(id: Int) = s"/v1/api/person/$nino/tax-account/history/$id"
   val npsIabdsUrl = s"/nps-hod-service/services/nps/person/$nino/iabds/$year"
   val hipIabdsUrl = s"/v1/api/iabd/taxpayer/$nino/tax-year/$year"
   val desTaxCodeHistoryUrl = s"/individuals/tax-code-history/list/$nino/$year?endTaxYear=$year"
@@ -149,6 +153,9 @@ trait IntegrationSpec
 
   val taxAccountJson: String = FileHelper.loadFile("taxAccount.json")
   val taxAccountHipJson: String = FileHelper.loadFile("taxAccountHip.json")
+  val taxAccountEmptyHipJson: String = FileHelper.loadFile("taxAccountEmptyHip.json")
+  val taxAccountHistoryHipJson: String = FileHelper.loadFile("taxAccountHistoryHip.json")
+  val taxAccountHistoryEmptyHipJson: String = FileHelper.loadFile("taxAccountHistoryEmptyHip.json")
   val npsIabdsJson: String = FileHelper.loadFile("iabdsNps.json")
   val hipIabdsJson: String = FileHelper.loadFile("iabdsHip.json")
   val taxCodeHistoryJson: String = FileHelper.loadFile("taxCodeHistory.json")
@@ -162,4 +169,44 @@ trait IntegrationSpec
                                           """.stripMargin)
 
   def generateSessionId: String = UUID.randomUUID().toString
+
+  private lazy val customErrorHandler: CustomErrorHandler = app.injector.instanceOf[CustomErrorHandler]
+
+  private def checkControllerResponseAndErrorHandlerStatus(
+    expException: Throwable,
+    expStatus: Int,
+    futureResult: Future[Result]
+  ): Assertion = {
+    val result = Try(Await.result(futureResult, Duration.Inf))
+    result match {
+      case Failure(e) =>
+        assert(e.getClass == expException.getClass, s" - ${expException.getClass} expected")
+        val errorHandlerResult = Await
+          .result(customErrorHandler.onServerError(FakeRequest(), e), Duration.Inf)
+          .header
+          .status
+        assert(
+          errorHandlerResult == expStatus,
+          s" - exception thrown by controller must be processed by error handler as status $expStatus"
+        )
+      case _ => assert(false, " - failure expected")
+    }
+  }
+
+  protected def callWithErrorHandling[A](
+    request: Request[A],
+    failingUrl: String,
+    status: Int,
+    expException: Throwable,
+    expStatus: Int
+  )(implicit wr: Writeable[A]): Unit =
+    s"when we receive $status from $failingUrl throw exception $expException, caught by error handler which should then return $expStatus" in {
+      server.stubFor(get(urlEqualTo(failingUrl)).willReturn(aResponse().withStatus(status)))
+      checkControllerResponseAndErrorHandlerStatus(
+        expException,
+        expStatus,
+        route(fakeApplication(), request).get
+      )
+    }
+
 }

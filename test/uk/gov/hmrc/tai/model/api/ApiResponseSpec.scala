@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.tai.model.api
 
+import org.mockito.ArgumentMatchers.eq as eqTo
 import org.scalatestplus.play.PlaySpec
 import play.api.libs.json.{Json, OFormat}
 

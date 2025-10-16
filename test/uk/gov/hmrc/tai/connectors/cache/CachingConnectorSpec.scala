@@ -17,7 +17,9 @@
 package uk.gov.hmrc.tai.connectors.cache
 
 import cats.data.EitherT
+import cats.instances.future.*
 import org.mockito.ArgumentMatchers.any
+import org.mockito.Mockito.{reset, times, verify, when}
 import uk.gov.hmrc.mongo.cache.DataKey
 import uk.gov.hmrc.tai.connectors.ConnectorBaseSpec
 import uk.gov.hmrc.tai.repositories.cache.TaiSessionCacheRepository
@@ -30,8 +32,8 @@ class CachingConnectorSpec extends ConnectorBaseSpec {
 
   def connector: CachingConnector = new CachingConnector(mockSessionCacheRepository)
 
-  private class FakeConnector() {
-    def fakeMethod() = Future.successful("underlying method value")
+  private class FakeConnector {
+    def fakeMethod(): Future[String] = Future.successful("underlying method value")
 
     def fakeEitherT(either: Boolean): EitherT[Future, String, String] =
       if (either) EitherT.rightT("underlying method value right")
@@ -40,7 +42,7 @@ class CachingConnectorSpec extends ConnectorBaseSpec {
 
   lazy private val mockConnector = mock[FakeConnector]
 
-  override def beforeEach() = {
+  override def beforeEach(): Unit = {
     super.beforeEach()
     reset(mockSessionCacheRepository, mockConnector)
   }

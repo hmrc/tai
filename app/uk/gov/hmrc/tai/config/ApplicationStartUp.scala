@@ -17,16 +17,15 @@
 package uk.gov.hmrc.tai.config
 
 import uk.gov.hmrc.mongoFeatureToggles.model.FeatureFlagNamesLibrary
-import uk.gov.hmrc.tai.model.admin._
+import uk.gov.hmrc.tai.model.admin.*
 
 class ApplicationStartUp {
   FeatureFlagNamesLibrary.addFlags(
     List(
       RtiCallToggle,
-      HipToggleEmploymentDetails,
-      HipToggleTaxAccount,
-      HipToggleIabds,
-      HipToggleEmploymentIabds,
+      HipIabdsUpdateExpensesToggle,
+      HipGetIabdsExpensesToggle,
+      HipTaxAccountHistoryToggle,
       UseApacheFopLibrary
     )
   )

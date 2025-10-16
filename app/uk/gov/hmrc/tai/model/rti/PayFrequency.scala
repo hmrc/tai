@@ -16,22 +16,29 @@
 
 package uk.gov.hmrc.tai.model.rti
 
+import play.api.libs.json.{JsError, JsString, JsSuccess, Reads, Writes}
+
 object PayFrequency extends Enumeration {
-  val Weekly = Value("W1")
-  val Fortnightly = Value("W2")
+  type PayFrequency = Value
 
-  /*
-   * Not the same as [[Monthly]] (Calendar Month)
-   */
-  val FourWeekly = Value("W4")
+  val Weekly: Value = Value("W1")
+  val Fortnightly: Value = Value("W2")
+  val FourWeekly: Value = Value("W4")
+  val Monthly: Value = Value("M1")
+  val Quarterly: Value = Value("M3")
+  val BiAnnually: Value = Value("M6")
+  val Annually: Value = Value("MA")
+  val OneOff: Value = Value("IO")
+  val Irregular: Value = Value("IR")
 
-  /*
-   * A Calendar month, not the same as [[FourWeekly]]
-   */
-  val Monthly = Value("M1")
-  val Quarterly = Value("M3")
-  val BiAnnually = Value("M6")
-  val Annually = Value("MA")
-  val OneOff = Value("IO")
-  val Irregular = Value("IR")
+  implicit val reads: Reads[PayFrequency] = Reads { json =>
+    json.validate[String].flatMap { str =>
+      values
+        .find(_.toString == str)
+        .map(JsSuccess(_))
+        .getOrElse(JsError(s"Invalid PayFrequency: $str"))
+    }
+  }
+
+  implicit val writes: Writes[PayFrequency] = Writes(pf => JsString(pf.toString))
 }

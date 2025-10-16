@@ -28,3 +28,12 @@ case class NpsEmployment(
   cessationPay: Option[BigDecimal],
   start: LocalDate
 )
+
+object NpsEmployment {
+  def unapply(
+    n: NpsEmployment
+  ): Option[(Option[String], Boolean, Int, Option[String], Int, List[Iabd], Option[BigDecimal], LocalDate)] =
+    Some(
+      (n.employerName, n.isPrimary, n.sequenceNumber, n.worksNumber, n.districtNumber, n.iabds, n.cessationPay, n.start)
+    )
+}

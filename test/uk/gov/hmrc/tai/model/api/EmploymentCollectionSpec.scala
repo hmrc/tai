@@ -17,16 +17,15 @@
 package uk.gov.hmrc.tai.model.api
 
 import org.scalatestplus.play.PlaySpec
-import play.api.libs.json._
+import play.api.libs.json.*
 import uk.gov.hmrc.tai.model.api.EmploymentCollection.employmentCollectionHodReadsHIP
-import uk.gov.hmrc.tai.model.domain.Employment
 import uk.gov.hmrc.tai.model.domain.income.Live
+import uk.gov.hmrc.tai.model.domain.{Employment, EmploymentIncome}
 import uk.gov.hmrc.tai.util.TaxCodeHistoryConstants
 
 import java.io.File
 import java.time.LocalDate
 import scala.io.BufferedSource
-import scala.util.{Failure, Try}
 
 class EmploymentCollectionSpec extends PlaySpec with TaxCodeHistoryConstants {
 
@@ -51,7 +50,8 @@ class EmploymentCollectionSpec extends PlaySpec with TaxCodeHistoryConstants {
       2,
       Some(100),
       false,
-      false
+      false,
+      EmploymentIncome
     )
   )
 
@@ -68,7 +68,8 @@ class EmploymentCollectionSpec extends PlaySpec with TaxCodeHistoryConstants {
       2,
       None,
       true,
-      false
+      false,
+      EmploymentIncome
     ),
     Employment(
       "EMPLOYER2",
@@ -82,7 +83,8 @@ class EmploymentCollectionSpec extends PlaySpec with TaxCodeHistoryConstants {
       2,
       Some(100),
       false,
-      false
+      false,
+      EmploymentIncome
     )
   )
 
@@ -102,25 +104,6 @@ class EmploymentCollectionSpec extends PlaySpec with TaxCodeHistoryConstants {
 
         employment.employments mustBe sampleSingleEmployment
 
-      }
-
-      "reading single employment from Hod where format is NPS format instead of HIP format" in {
-        val employment =
-          getJson("npsSingleEmployment").as[EmploymentCollection](employmentCollectionHodReadsHIP)
-
-        employment.employments mustBe sampleSingleEmployment
-      }
-
-      "reading single employment from Hod where invalid payload (array - Squid) returns the HIP errors and not NPS errors" in {
-        val actual = Try(
-          Json.arr(Json.obj("a" -> "b")).as[EmploymentCollection](employmentCollectionHodReadsHIP)
-        )
-
-        actual mustBe Failure(
-          JsResultException(
-            Seq((__, List(JsonValidationError(List("Unexpected array - Squid payload?")))))
-          )
-        )
       }
 
       "reading multiple employments from Hod" in {

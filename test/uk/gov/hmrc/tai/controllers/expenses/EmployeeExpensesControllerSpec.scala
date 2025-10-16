@@ -16,11 +16,12 @@
 
 package uk.gov.hmrc.tai.controllers.expenses
 
-import org.mockito.ArgumentMatchers.{any, eq => meq}
+import org.mockito.ArgumentMatchers.{any, eq as meq}
+import org.mockito.Mockito.when
 import play.api.libs.json.Json
-import play.api.test.Helpers._
+import play.api.test.Helpers.*
 import play.api.test.{FakeHeaders, FakeRequest}
-import uk.gov.hmrc.http.{BadRequestException, HttpResponse, NotFoundException}
+import uk.gov.hmrc.http.HttpResponse
 import uk.gov.hmrc.tai.controllers.auth.AuthJourney
 import uk.gov.hmrc.tai.model.nps.NpsIabdRoot
 import uk.gov.hmrc.tai.model.tai.TaxYear
@@ -65,7 +66,6 @@ class EmployeeExpensesControllerSpec extends BaseSpec {
         when(
           mockEmployeeExpensesService
             .updateEmployeeExpensesData(any(), any(), any(), meq(updateIabdEmployeeExpenseInternet), any())(
-              any(),
               any()
             )
         )
@@ -83,7 +83,6 @@ class EmployeeExpensesControllerSpec extends BaseSpec {
         when(
           mockEmployeeExpensesService
             .updateEmployeeExpensesData(any(), any(), any(), meq(updateIabdEmployeeExpenseInternet), any())(
-              any(),
               any()
             )
         )
@@ -101,7 +100,6 @@ class EmployeeExpensesControllerSpec extends BaseSpec {
         when(
           mockEmployeeExpensesService
             .updateEmployeeExpensesData(any(), any(), any(), meq(updateIabdEmployeeExpenseInternet), any())(
-              any(),
               any()
             )
         )
@@ -121,7 +119,6 @@ class EmployeeExpensesControllerSpec extends BaseSpec {
         when(
           mockEmployeeExpensesService
             .updateEmployeeExpensesData(any(), any(), any(), meq(updateIabdEmployeeExpenseInternet), any())(
-              any(),
               any()
             )
         )
@@ -141,7 +138,6 @@ class EmployeeExpensesControllerSpec extends BaseSpec {
         when(
           mockEmployeeExpensesService
             .updateEmployeeExpensesData(any(), any(), any(), meq(updateIabdEmployeeExpenseInternet), any())(
-              any(),
               any()
             )
         )
@@ -166,7 +162,7 @@ class EmployeeExpensesControllerSpec extends BaseSpec {
 
         when(
           mockEmployeeExpensesService
-            .updateEmployeeExpensesData(any(), any(), any(), meq(updateIabdEmployeeExpenseWFH), any())(any(), any())
+            .updateEmployeeExpensesData(any(), any(), any(), meq(updateIabdEmployeeExpenseWFH), any())(any())
         )
           .thenReturn(Future.successful(HttpResponse(200, "")))
 
@@ -181,7 +177,7 @@ class EmployeeExpensesControllerSpec extends BaseSpec {
 
         when(
           mockEmployeeExpensesService
-            .updateEmployeeExpensesData(any(), any(), any(), meq(updateIabdEmployeeExpenseWFH), any())(any(), any())
+            .updateEmployeeExpensesData(any(), any(), any(), meq(updateIabdEmployeeExpenseWFH), any())(any())
         )
           .thenReturn(Future.successful(HttpResponse(204, "")))
 
@@ -196,7 +192,7 @@ class EmployeeExpensesControllerSpec extends BaseSpec {
 
         when(
           mockEmployeeExpensesService
-            .updateEmployeeExpensesData(any(), any(), any(), meq(updateIabdEmployeeExpenseWFH), any())(any(), any())
+            .updateEmployeeExpensesData(any(), any(), any(), meq(updateIabdEmployeeExpenseWFH), any())(any())
         )
           .thenReturn(Future.successful(HttpResponse(202, "")))
 
@@ -213,7 +209,7 @@ class EmployeeExpensesControllerSpec extends BaseSpec {
 
         when(
           mockEmployeeExpensesService
-            .updateEmployeeExpensesData(any(), any(), any(), meq(updateIabdEmployeeExpenseWFH), any())(any(), any())
+            .updateEmployeeExpensesData(any(), any(), any(), meq(updateIabdEmployeeExpenseWFH), any())(any())
         )
           .thenReturn(Future.successful(HttpResponse(200, "")))
 
@@ -230,7 +226,7 @@ class EmployeeExpensesControllerSpec extends BaseSpec {
 
         when(
           mockEmployeeExpensesService
-            .updateEmployeeExpensesData(any(), any(), any(), meq(updateIabdEmployeeExpenseWFH), any())(any(), any())
+            .updateEmployeeExpensesData(any(), any(), any(), meq(updateIabdEmployeeExpenseWFH), any())(any())
         )
           .thenReturn(Future.successful(HttpResponse(500, "")))
 
@@ -260,22 +256,27 @@ class EmployeeExpensesControllerSpec extends BaseSpec {
       val fakeRequest = FakeRequest("GET", "/", FakeHeaders(), any())
 
       when(mockEmployeeExpensesService.getEmployeeExpenses(any(), any(), any()))
-        .thenReturn(Future.failed(new BadRequestException("")))
+        .thenReturn(Future.failed(badRequestException))
 
-      val result = controller().getEmployeeExpensesData(nino, taxYear, iabd)(fakeRequest)
-
-      status(result) mustBe BAD_REQUEST
+      checkControllerResponse(
+        badRequestException,
+        controller().getEmployeeExpensesData(nino, taxYear, iabd)(fakeRequest),
+        BAD_REQUEST
+      )
     }
 
     "return NotFound when not found exception thrown" in {
       val fakeRequest = FakeRequest("GET", "/", FakeHeaders(), any())
 
       when(mockEmployeeExpensesService.getEmployeeExpenses(any(), any(), any()))
-        .thenReturn(Future.failed(new NotFoundException("")))
+        .thenReturn(Future.failed(notFoundException))
 
-      val result = controller().getEmployeeExpensesData(nino, taxYear, iabd)(fakeRequest)
+      checkControllerResponse(
+        notFoundException,
+        controller().getEmployeeExpensesData(nino, taxYear, iabd)(fakeRequest),
+        NOT_FOUND
+      )
 
-      status(result) mustBe NOT_FOUND
     }
 
     "return an Exception when an exception thrown" in {

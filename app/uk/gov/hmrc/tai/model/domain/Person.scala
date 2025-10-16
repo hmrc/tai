@@ -32,7 +32,7 @@ case class Person(
 )
 
 object Person {
-  def createLockedUser(nino: Nino) =
+  def createLockedUser(nino: Nino): Person =
     Person(nino, "", "", None, Address.emptyAddress, false, true)
   implicit val personFormat: Format[Person] = Json.format[Person]
 }

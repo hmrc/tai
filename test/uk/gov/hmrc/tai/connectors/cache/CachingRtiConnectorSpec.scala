@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2025 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,8 +17,9 @@
 package uk.gov.hmrc.tai.connectors.cache
 
 import cats.data.EitherT
-import cats.implicits._
+import cats.implicits.*
 import org.mockito.ArgumentMatchers.any
+import org.mockito.Mockito.*
 import play.api.Application
 import play.api.http.Status.INTERNAL_SERVER_ERROR
 import play.api.inject.bind
@@ -27,30 +28,29 @@ import play.api.libs.json.{Format, Reads, Writes}
 import play.api.mvc.AnyContentAsEmpty
 import play.api.test.FakeRequest
 import uk.gov.hmrc.auth.core.AuthorisedFunctions
-import uk.gov.hmrc.http.{HeaderCarrier, UpstreamErrorResponse}
-import uk.gov.hmrc.mongo.cache.DataKey
-import uk.gov.hmrc.mongo.lock.MongoLockRepository
+import uk.gov.hmrc.http.{HeaderCarrier, SessionId, UpstreamErrorResponse}
+import uk.gov.hmrc.mongo.lock.{Lock, MongoLockRepository}
 import uk.gov.hmrc.mongoFeatureToggles.services.FeatureFlagService
 import uk.gov.hmrc.tai.auth.MicroserviceAuthorisedFunctions
-import uk.gov.hmrc.tai.connectors._
+import uk.gov.hmrc.tai.connectors.*
 import uk.gov.hmrc.tai.model.domain.{AnnualAccount, Available, FourWeekly, Payment}
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.repositories.cache.TaiSessionCacheRepository
-import uk.gov.hmrc.tai.service.{LockService, SensitiveFormatService}
+import uk.gov.hmrc.tai.service.SensitiveFormatService
 
-import java.time.LocalDate
+import java.time.{Instant, LocalDate}
 import scala.concurrent.Future
 
 class CachingRtiConnectorSpec extends ConnectorBaseSpec {
   private val mockEncryptionService = mock[SensitiveFormatService]
+  private val mockMongoLockRepository = mock[MongoLockRepository]
   override implicit lazy val app: Application = GuiceApplicationBuilder()
-    .disable[uk.gov.hmrc.tai.modules.LocalGuiceModule]
     .overrides(
       bind[AuthorisedFunctions].to[MicroserviceAuthorisedFunctions],
       bind[RtiConnector].to[CachingRtiConnector],
       bind[RtiConnector].qualifiedWith("default").toInstance(mockRtiConnector),
       bind[TaiSessionCacheRepository].toInstance(mockSessionCacheRepository),
-      bind[LockService].toInstance(spyLockService),
+      bind[MongoLockRepository].toInstance(mockMongoLockRepository),
       bind[FeatureFlagService].toInstance(mockFeatureFlagService),
       bind[IabdConnector].to[DefaultIabdConnector],
       bind[TaxCodeHistoryConnector].to[DefaultTaxCodeHistoryConnector],
@@ -63,14 +63,22 @@ class CachingRtiConnectorSpec extends ConnectorBaseSpec {
 
   lazy val mockRtiConnector: RtiConnector = mock[RtiConnector]
   lazy val mockSessionCacheRepository: TaiSessionCacheRepository = mock[TaiSessionCacheRepository]
-  lazy val spyLockService: FakeLockService = spy(new FakeLockService)
 
-  override implicit val hc: HeaderCarrier = HeaderCarrier()
-
+  override implicit val hc: HeaderCarrier = HeaderCarrier(sessionId = Some(SessionId("id")))
+  private val timestamp = Instant.now()
   override def beforeEach(): Unit = {
-    reset(mockRtiConnector, mockSessionCacheRepository, spyLockService, mockEncryptionService)
+    reset(mockRtiConnector)
+    reset(mockSessionCacheRepository)
+    reset(mockEncryptionService)
+    reset(mockMongoLockRepository)
+
     when(mockEncryptionService.sensitiveFormatFromReadsWritesJsArray[Seq[AnnualAccount]])
-      .thenAnswer((reads: Reads[Seq[AnnualAccount]], writes: Writes[Seq[AnnualAccount]]) => Format(reads, writes))
+      .thenReturn(Format(implicitly[Reads[Seq[AnnualAccount]]], implicitly[Writes[Seq[AnnualAccount]]]))
+    when(mockMongoLockRepository.takeLock(any(), any(), any()))
+      .thenReturn(Future.successful(Some(Lock("some session id", "lockId", timestamp, timestamp.plusSeconds(2)))))
+    when(mockMongoLockRepository.releaseLock(any(), any())).thenReturn(Future.successful((): Unit))
+
+    ()
   }
 
   def connector: CachingRtiConnector = app.injector.instanceOf[CachingRtiConnector]
@@ -80,16 +88,22 @@ class CachingRtiConnectorSpec extends ConnectorBaseSpec {
   val payment: Payment = Payment(LocalDate.now(), 0, 0, 0, 0, 0, 0, FourWeekly, None)
   val annualAccount: AnnualAccount = AnnualAccount(0, TaxYear(2020), Available, Seq(payment), Seq.empty)
 
-  "Calling CachingRtiConnector.getPaymentsForYearAsEitherT" must {
-    "return a Right Seq[AnnualAccount] object" when {
+  "getPaymentsForYear" must {
+    "return a Right Seq[AnnualAccount] object & create & release lock" when {
       "no value is cached" in {
         val expected = Seq(annualAccount)
 
-        when(mockSessionCacheRepository.getFromSession[Seq[AnnualAccount]](DataKey(any[String]()))(any(), any()))
+        when(
+          mockSessionCacheRepository
+            .getEitherFromSession[UpstreamErrorResponse, Seq[AnnualAccount], Either[UpstreamErrorResponse, Seq[
+              AnnualAccount
+            ]]](any())(any(), any())
+        )
           .thenReturn(Future.successful(None))
 
         when(
-          mockSessionCacheRepository.putSession[Seq[AnnualAccount]](DataKey(any[String]()), any())(any(), any(), any())
+          mockSessionCacheRepository
+            .putSession[Either[UpstreamErrorResponse, Seq[AnnualAccount]]](any(), any())(any(), any(), any())
         )
           .thenReturn(Future.successful(("", "")))
 
@@ -100,93 +114,196 @@ class CachingRtiConnectorSpec extends ConnectorBaseSpec {
 
         result mustBe Right(expected)
 
+        verify(mockSessionCacheRepository, times(1)).getEitherFromSession[UpstreamErrorResponse, Seq[
+          AnnualAccount
+        ], Either[UpstreamErrorResponse, Seq[AnnualAccount]]](any())(any(), any())
         verify(mockSessionCacheRepository, times(1))
-          .getFromSession[Seq[AnnualAccount]](DataKey(any[String]()))(any(), any())
-
-        verify(mockSessionCacheRepository, times(1))
-          .putSession[Seq[AnnualAccount]](DataKey(any[String]()), any())(any(), any(), any())
-
+          .putSession[Either[UpstreamErrorResponse, Seq[AnnualAccount]]](any(), any())(any(), any(), any())
         verify(mockRtiConnector, times(1)).getPaymentsForYear(any(), any())(any(), any())
-        verify(spyLockService, times(1)).takeLock(any())(any())
-        verify(spyLockService, times(1)).releaseLock(any())(any())
-
+        verify(mockMongoLockRepository, times(1)).takeLock(any(), any(), any())
+        verify(mockMongoLockRepository, times(1)).releaseLock(any(), any())
       }
 
-      "a value is cached" in {
+      "no value is cached but no lock is returned on first call only to lock repo (i.e. retries)" in {
         val expected = Seq(annualAccount)
 
-        when(mockSessionCacheRepository.getFromSession[Seq[AnnualAccount]](DataKey(any[String]()))(any(), any()))
-          .thenReturn(Future.successful(Some(expected)))
-
-        when(mockRtiConnector.getPaymentsForYear(any(), any())(any(), any()))
-          .thenReturn(null)
+        when(mockMongoLockRepository.takeLock(any(), any(), any()))
+          .thenReturn(Future.successful(None))
+          .thenReturn(Future.successful(Some(Lock("some session id", "lockId", timestamp, timestamp.plusSeconds(2)))))
 
         when(
-          mockSessionCacheRepository.putSession[Seq[AnnualAccount]](DataKey(any[String]()), any())(any(), any(), any())
+          mockSessionCacheRepository
+            .getEitherFromSession[UpstreamErrorResponse, Seq[AnnualAccount], Either[UpstreamErrorResponse, Seq[
+              AnnualAccount
+            ]]](any())(any(), any())
         )
-          .thenReturn(null)
+          .thenReturn(Future.successful(None))
+
+        when(
+          mockSessionCacheRepository
+            .putSession[Either[UpstreamErrorResponse, Seq[AnnualAccount]]](any(), any())(any(), any(), any())
+        )
+          .thenReturn(Future.successful(("", "")))
+
+        when(mockRtiConnector.getPaymentsForYear(any(), any())(any(), any()))
+          .thenReturn(EitherT.rightT[Future, UpstreamErrorResponse](expected))
 
         val result = connector.getPaymentsForYear(nino, TaxYear()).value.futureValue
 
         result mustBe Right(expected)
 
+        verify(mockSessionCacheRepository, times(1)).getEitherFromSession[UpstreamErrorResponse, Seq[
+          AnnualAccount
+        ], Either[UpstreamErrorResponse, Seq[AnnualAccount]]](any())(any(), any())
         verify(mockSessionCacheRepository, times(1))
-          .getFromSession[Seq[AnnualAccount]](DataKey(any[String]()))(any(), any())
-
-        verify(mockSessionCacheRepository, times(0))
-          .putSession[Seq[AnnualAccount]](DataKey(any[String]()), any())(any(), any(), any())
-
-        verify(mockRtiConnector, times(0)).getPaymentsForYear(any(), any())(any(), any())
-        verify(spyLockService, times(1)).takeLock(any())(any())
-        verify(spyLockService, times(1)).releaseLock(any())(any())
-        verify(mockEncryptionService, times(1)).sensitiveFormatFromReadsWritesJsArray[Seq[AnnualAccount]](any(), any())
+          .putSession[Either[UpstreamErrorResponse, Seq[AnnualAccount]]](any(), any())(any(), any(), any())
+        verify(mockRtiConnector, times(1)).getPaymentsForYear(any(), any())(any(), any())
+        verify(mockMongoLockRepository, times(2)).takeLock(any(), any(), any())
+        verify(mockMongoLockRepository, times(2)).releaseLock(any(), any())
       }
-    }
 
-    "return a Left RtiPaymentsForYearError object" in {
-      when(mockRtiConnector.getPaymentsForYear(any(), any())(any(), any()))
-        .thenReturn(EitherT.leftT[Future, Seq[AnnualAccount]](UpstreamErrorResponse("error", INTERNAL_SERVER_ERROR)))
-      when(mockSessionCacheRepository.getFromSession[Seq[AnnualAccount]](DataKey(any[String]()))(any(), any()))
-        .thenReturn(Future.successful(None))
+      "no value is cached but a non-fatal exception thrown in lock repo - exception should be ignored and no retry should happen" in {
+        val expected = Seq(annualAccount)
 
-      when(
-        mockSessionCacheRepository.putSession[Seq[AnnualAccount]](DataKey(any[String]()), any())(any(), any(), any())
-      )
-        .thenReturn(Future.successful(("", "")))
+        when(mockMongoLockRepository.takeLock(any(), any(), any()))
+          .thenReturn(Future.failed(new Exception("")))
 
-      val result = connector.getPaymentsForYear(nino, TaxYear()).value.futureValue
-      result mustBe a[Left[_, _]]
-      verify(mockRtiConnector, times(1)).getPaymentsForYear(any(), any())(any(), any())
-      verify(spyLockService, times(1)).takeLock(any())(any())
-      verify(spyLockService, times(1)).releaseLock(any())(any())
-    }
-
-    "returns an exception and the lock is released" when {
-      "future failed" in {
-        val errorMessage = "Error message"
-        when(mockRtiConnector.getPaymentsForYear(any(), any())(any(), any()))
-          .thenReturn(
-            EitherT[Future, UpstreamErrorResponse, Seq[AnnualAccount]](Future.failed(new Exception(errorMessage)))
-          )
-
-        when(mockSessionCacheRepository.getFromSession[Seq[AnnualAccount]](DataKey(any[String]()))(any(), any()))
+        when(
+          mockSessionCacheRepository
+            .getEitherFromSession[UpstreamErrorResponse, Seq[AnnualAccount], Either[UpstreamErrorResponse, Seq[
+              AnnualAccount
+            ]]](any())(any(), any())
+        )
           .thenReturn(Future.successful(None))
 
         when(
-          mockSessionCacheRepository.putSession[Seq[AnnualAccount]](DataKey(any[String]()), any())(any(), any(), any())
+          mockSessionCacheRepository
+            .putSession[Either[UpstreamErrorResponse, Seq[AnnualAccount]]](any(), any())(any(), any(), any())
         )
           .thenReturn(Future.successful(("", "")))
 
-        val result = connector.getPaymentsForYear(nino, TaxYear()).value
-        whenReady(result.failed) { ex =>
-          ex.getMessage mustBe errorMessage
-        }
+        when(mockRtiConnector.getPaymentsForYear(any(), any())(any(), any()))
+          .thenReturn(EitherT.rightT[Future, UpstreamErrorResponse](expected))
 
+        val result = connector.getPaymentsForYear(nino, TaxYear()).value.futureValue
+
+        result mustBe Right(expected)
+
+        verify(mockSessionCacheRepository, times(1)).getEitherFromSession[UpstreamErrorResponse, Seq[
+          AnnualAccount
+        ], Either[UpstreamErrorResponse, Seq[AnnualAccount]]](any())(any(), any())
+        verify(mockSessionCacheRepository, times(1))
+          .putSession[Either[UpstreamErrorResponse, Seq[AnnualAccount]]](any(), any())(any(), any(), any())
         verify(mockRtiConnector, times(1)).getPaymentsForYear(any(), any())(any(), any())
-        verify(spyLockService, times(1)).takeLock(any())(any())
-        verify(spyLockService, times(1)).releaseLock(any())(any())
-
+        verify(mockMongoLockRepository, times(1)).takeLock(any(), any(), any())
+        verify(mockMongoLockRepository, times(1)).releaseLock(any(), any())
       }
+
+      "a success (right) value is cached" in {
+        val expected = Seq(annualAccount)
+
+        when(
+          mockSessionCacheRepository
+            .getEitherFromSession[UpstreamErrorResponse, Seq[AnnualAccount], Either[UpstreamErrorResponse, Seq[
+              AnnualAccount
+            ]]](any())(any(), any())
+        )
+          .thenReturn(Future.successful(Some(Right(expected))))
+        val result = connector.getPaymentsForYear(nino, TaxYear()).value.futureValue
+
+        result mustBe Right(expected)
+
+        verify(mockSessionCacheRepository, times(1)).getEitherFromSession[UpstreamErrorResponse, Seq[
+          AnnualAccount
+        ], Either[UpstreamErrorResponse, Seq[AnnualAccount]]](any())(any(), any())
+        verify(mockSessionCacheRepository, times(0))
+          .putSession[Either[UpstreamErrorResponse, Seq[AnnualAccount]]](any(), any())(any(), any(), any())
+
+        verify(mockRtiConnector, times(0)).getPaymentsForYear(any(), any())(any(), any())
+        verify(mockEncryptionService, times(1)).sensitiveFormatFromReadsWritesJsArray[Seq[AnnualAccount]](any(), any())
+        verify(mockMongoLockRepository, times(1)).takeLock(any(), any(), any())
+        verify(mockMongoLockRepository, times(1)).releaseLock(any(), any())
+      }
+
+    }
+
+    "return a Left RtiPaymentsForYearError object, create & release lock & cache left" when {
+      "no left value is cached" in {
+        when(mockRtiConnector.getPaymentsForYear(any(), any())(any(), any()))
+          .thenReturn(EitherT.leftT[Future, Seq[AnnualAccount]](UpstreamErrorResponse("error", INTERNAL_SERVER_ERROR)))
+        when(
+          mockSessionCacheRepository
+            .getEitherFromSession[UpstreamErrorResponse, Seq[AnnualAccount], Either[UpstreamErrorResponse, Seq[
+              AnnualAccount
+            ]]](any())(any(), any())
+        )
+          .thenReturn(Future.successful(None))
+
+        when(
+          mockSessionCacheRepository
+            .putSession[Either[UpstreamErrorResponse, Seq[AnnualAccount]]](any(), any())(any(), any(), any())
+        )
+          .thenReturn(Future.successful(("", "")))
+
+        val result = connector.getPaymentsForYear(nino, TaxYear()).value.futureValue
+        result mustBe a[Left[_, _]]
+        verify(mockSessionCacheRepository, times(1))
+          .putSession[Either[UpstreamErrorResponse, Seq[AnnualAccount]]](any(), any())(any(), any(), any())
+        verify(mockRtiConnector, times(1)).getPaymentsForYear(any(), any())(any(), any())
+        verify(mockMongoLockRepository, times(1)).takeLock(any(), any(), any())
+        verify(mockMongoLockRepository, times(1)).releaseLock(any(), any())
+      }
+      "a left value is cached - should use this & not call API" in {
+        val cachedUpstreamErrorResponse: Left[UpstreamErrorResponse, Seq[AnnualAccount]] =
+          Left(UpstreamErrorResponse("error", INTERNAL_SERVER_ERROR))
+        when(
+          mockSessionCacheRepository
+            .getEitherFromSession[UpstreamErrorResponse, Seq[AnnualAccount], Either[UpstreamErrorResponse, Seq[
+              AnnualAccount
+            ]]](any())(any(), any())
+        )
+          .thenReturn(Future.successful(Some(cachedUpstreamErrorResponse)))
+
+        val result = connector.getPaymentsForYear(nino, TaxYear()).value.futureValue
+        result mustBe a[Left[_, _]]
+        verify(mockSessionCacheRepository, times(0))
+          .putSession[Either[UpstreamErrorResponse, Seq[AnnualAccount]]](any(), any())(any(), any(), any())
+        verify(mockRtiConnector, times(0)).getPaymentsForYear(any(), any())(any(), any())
+        verify(mockMongoLockRepository, times(1)).takeLock(any(), any(), any())
+        verify(mockMongoLockRepository, times(1)).releaseLock(any(), any())
+      }
+    }
+
+    "throws an exception - create & release lock & NOT cache exception" in {
+      val errorMessage = "Error message"
+      when(mockRtiConnector.getPaymentsForYear(any(), any())(any(), any()))
+        .thenReturn(
+          EitherT[Future, UpstreamErrorResponse, Seq[AnnualAccount]](Future.failed(new Exception(errorMessage)))
+        )
+
+      when(
+        mockSessionCacheRepository
+          .getEitherFromSession[UpstreamErrorResponse, Seq[AnnualAccount], Either[UpstreamErrorResponse, Seq[
+            AnnualAccount
+          ]]](any())(any(), any())
+      )
+        .thenReturn(Future.successful(None))
+
+      when(
+        mockSessionCacheRepository
+          .putSession[Either[UpstreamErrorResponse, Seq[AnnualAccount]]](any(), any())(any(), any(), any())
+      )
+        .thenReturn(Future.successful(("", "")))
+
+      val result = connector.getPaymentsForYear(nino, TaxYear()).value
+      whenReady(result.failed) { ex =>
+        ex.getMessage mustBe errorMessage
+      }
+      verify(mockSessionCacheRepository, times(0))
+        .putSession[Either[UpstreamErrorResponse, Seq[AnnualAccount]]](any(), any())(any(), any(), any())
+      verify(mockRtiConnector, times(1)).getPaymentsForYear(any(), any())(any(), any())
+      verify(mockMongoLockRepository, times(1)).takeLock(any(), any(), any())
+      verify(mockMongoLockRepository, times(1)).releaseLock(any(), any())
     }
   }
 }

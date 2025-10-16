@@ -29,7 +29,8 @@ class EmploymentBuilder @Inject() (auditor: Auditor) {
   // scalastyle:off method.length
   def combineAccountsWithEmployments(
     employments: Seq[Employment],
-    accounts: Seq[AnnualAccount],
+    rtiAnnualAccounts: Seq[AnnualAccount],
+    rtiIsRTIException: Boolean,
     nino: Nino,
     taxYear: TaxYear
   )(implicit hc: HeaderCarrier): Employments = {
@@ -63,18 +64,23 @@ class EmploymentBuilder @Inject() (auditor: Auditor) {
         duplicates.head.copy(annualAccounts = duplicates.flatMap(_.annualAccounts))
       }
 
-    val accountAssignedEmployments = accounts flatMap { account =>
-      associatedEmployment(account, employments, nino, taxYear)
+    val accountAssignedEmployments = (rtiAnnualAccounts, rtiIsRTIException) match {
+      case (annualAccount, false) => annualAccount flatMap (associatedEmployment(_, employments, nino, taxYear))
+      case _                      => Seq.empty
     }
 
-    val unified = combinedDuplicates(accountAssignedEmployments)
+    val employmentsWithRTI: Seq[Employment] = combinedDuplicates(accountAssignedEmployments)
+    val employmentsWithNoRTI: Seq[Employment] = employments
+      .filterNot(emp => employmentsWithRTI.map(_.sequenceNumber).contains(emp.sequenceNumber))
+      .map { emp =>
+        if (rtiIsRTIException) {
+          emp.copy(annualAccounts = Seq(AnnualAccount(emp.sequenceNumber, taxYear, TemporarilyUnavailable, Nil, Nil)))
+        } else {
+          emp.copy(annualAccounts = Seq(AnnualAccount(emp.sequenceNumber, taxYear, Available, Nil, Nil)))
+        }
+      }
 
-    val nonUnified = employments.filterNot(emp => unified.map(_.sequenceNumber).contains(emp.sequenceNumber)) map {
-      emp =>
-        emp.copy(annualAccounts = Seq(AnnualAccount(emp.sequenceNumber, taxYear, TemporarilyUnavailable, Nil, Nil)))
-    }
-
-    Employments(unified ++ nonUnified, None)
+    Employments(employmentsWithRTI ++ employmentsWithNoRTI, None)
   }
 
   private def auditAssociatedEmployment(
@@ -94,10 +100,6 @@ class EmploymentBuilder @Inject() (auditor: Auditor) {
         "NPS Employment Keys" -> employerKey,
         "RTI Account Key"     -> account.sequenceNumber.toString
       )
-    )
-
-    logger.warn(
-      "EmploymentRepository: Failed to identify an Employment match for an AnnualAccount instance. NPS and RTI data may not align."
     )
     None
   }

@@ -24,15 +24,14 @@ import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.{HeaderCarrier, UpstreamErrorResponse}
 import uk.gov.hmrc.tai.audit.Auditor
 import uk.gov.hmrc.tai.connectors.{CitizenDetailsConnector, TaxAccountConnector}
-import uk.gov.hmrc.tai.controllers.auth.AuthenticatedRequest
-import uk.gov.hmrc.tai.model.domain._
-import uk.gov.hmrc.tai.model.domain.income._
-import uk.gov.hmrc.tai.model.domain.response._
+import uk.gov.hmrc.tai.model.domain.*
+import uk.gov.hmrc.tai.model.domain.income.*
+import uk.gov.hmrc.tai.model.domain.response.*
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.service.helper.TaxCodeIncomeHelper
-import uk.gov.hmrc.tai.util.JsonHelper
 
 import scala.concurrent.{ExecutionContext, Future}
+import scala.util.control.NonFatal
 
 @Singleton
 class IncomeService @Inject() (
@@ -134,7 +133,7 @@ class IncomeService @Inject() (
 
         if (employmentStatus.isEmpty) {
           logger.error(
-            s"No employment found with id `${taxCode.employmentId} in employment destails API for nino `${nino.nino}` and tax year `${year.year}`. See DDCNL-9780"
+            s"No employment found with id `${taxCode.employmentId} in employment details API for nino `${nino.nino}` and tax year `${year.year}`. See DDCNL-9780"
           )
         }
 
@@ -143,14 +142,10 @@ class IncomeService @Inject() (
     }
   }
 
-  def incomes(nino: Nino, year: TaxYear)(implicit hc: HeaderCarrier): Future[Incomes] = {
-    val reads = JsonHelper.selectReads(
-      OtherNonTaxCodeIncomeSquidReads.otherNonTaxCodeIncomeReads,
-      OtherNonTaxCodeIncomeHipReads.otherNonTaxCodeIncomeReads
-    )
+  def incomes(nino: Nino, year: TaxYear)(implicit hc: HeaderCarrier): Future[Incomes] =
     taxAccountConnector.taxAccount(nino, year).flatMap { jsValue =>
       val nonTaxCodeIncome =
-        jsValue.as[Seq[OtherNonTaxCodeIncome]](reads)
+        jsValue.as[Seq[OtherNonTaxCodeIncome]](OtherNonTaxCodeIncomeHipReads.otherNonTaxCodeIncomeReads)
       val (untaxedInterestIncome, otherNonTaxCodeIncome) =
         nonTaxCodeIncome.partition(_.incomeComponentType == UntaxedInterestIncome)
 
@@ -165,7 +160,6 @@ class IncomeService @Inject() (
         Future.successful(Incomes(Seq.empty[TaxCodeIncome], NonTaxCodeIncome(None, otherNonTaxCodeIncome)))
       }
     }
-  }
 
   def employments(filteredTaxCodeIncomes: Seq[TaxCodeIncome], nino: Nino, year: TaxYear)(implicit
     headerCarrier: HeaderCarrier,
@@ -178,8 +172,7 @@ class IncomeService @Inject() (
     }
 
   def updateTaxCodeIncome(nino: Nino, year: TaxYear, employmentId: Int, amount: Int)(implicit
-    hc: HeaderCarrier,
-    request: AuthenticatedRequest[_]
+    hc: HeaderCarrier
   ): Future[IncomeUpdateResponse] = {
 
     val auditEventForIncomeUpdate: String => Unit = (currentAmount: String) =>
@@ -211,9 +204,9 @@ class IncomeService @Inject() (
           }
         case None => Future.successful(IncomeUpdateFailed("Could not find an ETag"))
       }
-      .recover { case ex: Exception =>
-        logger.error(s"IncomeService.updateTaxCodeIncome - failed to update income: ${ex.getMessage}")
-        IncomeUpdateFailed("Could not parse etag")
+      .recover { case NonFatal(ex) =>
+        logger.error(s"IncomeService.updateTaxCodeIncome - failed to update income: ${ex.getMessage}", ex)
+        IncomeUpdateFailed("Failed to update income")
       }
   }
 }

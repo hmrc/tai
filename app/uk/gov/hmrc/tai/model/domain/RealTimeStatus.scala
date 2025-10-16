@@ -32,6 +32,6 @@ object RealTimeStatus extends RealTimeStatus {
       case _                        => throw new IllegalArgumentException("Invalid real time status value")
     }
 
-    override def writes(realTimeStatus: RealTimeStatus) = JsString(realTimeStatus.toString)
+    override def writes(realTimeStatus: RealTimeStatus): JsValue = JsString(realTimeStatus.toString)
   }
 }

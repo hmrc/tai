@@ -17,6 +17,7 @@
 package uk.gov.hmrc.tai.service
 
 import org.mockito.ArgumentMatchers.any
+import org.mockito.Mockito.{reset, when}
 import uk.gov.hmrc.tai.connectors.CompanyCarConnector
 import uk.gov.hmrc.tai.model.domain.benefits.CompanyCarBenefit
 import uk.gov.hmrc.tai.model.tai.TaxYear
@@ -31,6 +32,7 @@ class CompanyCarBenefitServiceSpec extends BaseSpec {
     reset(mockCompanyCarConnector)
     when(mockCompanyCarConnector.ninoVersion(any())(any()))
       .thenReturn(Future.successful(sampleNinoVersion))
+    ()
   }
 
   val mockCompanyCarConnector: CompanyCarConnector = mock[CompanyCarConnector]

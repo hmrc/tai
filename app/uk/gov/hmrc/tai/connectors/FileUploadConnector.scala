@@ -16,29 +16,29 @@
 
 package uk.gov.hmrc.tai.connectors
 
+import com.google.inject.{Inject, Singleton}
 import org.apache.pekko.actor.{ActorSystem, Scheduler}
 import org.apache.pekko.pattern.retry
 import org.apache.pekko.stream.scaladsl.Source
 import org.apache.pekko.util.ByteString
-import com.google.inject.{Inject, Singleton}
 import play.api.Logging
-import play.api.http.Status._
-import uk.gov.hmrc.http.HttpReads.Implicits._
+import play.api.http.Status.*
 import play.api.libs.json.{JsValue, Json}
-import play.api.libs.ws.WSClient
 import play.api.libs.ws.ahc.AhcWSClient
+import play.api.libs.ws.{WSClient, writeableOf_JsValue}
 import play.api.mvc.MultipartFormData.{DataPart, FilePart}
+import uk.gov.hmrc.http.HttpReads.Implicits.*
 import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.http.{HeaderCarrier, HeaderNames, HttpResponse, StringContextOps, UpstreamErrorResponse}
 import uk.gov.hmrc.tai.config.FileUploadConfig
 import uk.gov.hmrc.tai.metrics.Metrics
 import uk.gov.hmrc.tai.model.domain.MimeContentType
-import uk.gov.hmrc.tai.model.enums.APITypes._
+import uk.gov.hmrc.tai.model.enums.APITypes.*
 import uk.gov.hmrc.tai.model.fileupload.EnvelopeSummary
 import uk.gov.hmrc.tai.model.fileupload.formatters.FileUploadFormatters
 
+import scala.concurrent.duration.*
 import scala.concurrent.{ExecutionContext, Future}
-import scala.concurrent.duration._
 
 @Singleton
 class FileUploadConnector @Inject() (
@@ -52,7 +52,7 @@ class FileUploadConnector @Inject() (
 
   implicit val scheduler: Scheduler = ActorSystem().scheduler
 
-  def routingRequest(envelopeId: String): JsValue =
+  private def routingRequest(envelopeId: String): JsValue =
     Json.obj("envelopeId" -> envelopeId, "application" -> "TAI", "destination" -> "DMS")
 
   def createEnvelope(implicit hc: HeaderCarrier): Future[String] = {
@@ -73,24 +73,18 @@ class FileUploadConnector @Inject() (
           if (response.status == CREATED) {
             metrics.incrementSuccessCounter(FusCreateEnvelope)
             envelopeId(response).getOrElse {
-              logger.warn("FileUploadConnector.createEnvelope - No envelope id returned by file upload service")
               throw new RuntimeException("No envelope id returned by file upload service")
             }
           } else {
-            logger.warn(
-              s"FileUploadConnector.createEnvelope - failed to create envelope with status [${response.status}]"
-            )
-            throw new RuntimeException("File upload envelope creation failed")
+            throw new RuntimeException(s"File upload envelope creation failed with status: ${response.status}")
           }
         case Left(error) =>
           timerContext.stop()
-          logger.warn(s"FileUploadConnector.createEnvelope - Upstream error occurred: ${error.statusCode}")
-          throw new RuntimeException("File upload envelope creation failed")
+          throw new RuntimeException(s"File upload envelope creation failed with status: ${error.statusCode}")
       }
-      .recover { case _: Exception =>
-        logger.warn("FileUploadConnector.createEnvelope - call to create envelope failed")
+      .recover { case ex: Exception =>
         metrics.incrementFailedCounter(FusCreateEnvelope)
-        throw new RuntimeException("File upload envelope creation failed")
+        throw ex
       }
   }
 
@@ -104,28 +98,21 @@ class FileUploadConnector @Inject() (
   )(implicit hc: HeaderCarrier): Future[HttpResponse] = {
     val url: String = urls.fileUrl(envelopeId, fileId)
     envelope(envelopeId)
-      .flatMap(envelopeSummary =>
-        envelopeSummary match {
-          case Some(es) if es.isOpen =>
-            uploadFileCall(byteArray, fileName, contentType, url, awsClient)
-          case Some(es) if !es.isOpen =>
-            logger.warn(
-              s"FileUploadConnector.uploadFile - invalid envelope state for uploading file envelope: $envelopeId"
-            )
-            Future.failed(new RuntimeException("Incorrect Envelope State"))
-          case _ =>
-            logger.warn(s"FileUploadConnector.uploadFile - could not read envelope state for envelope: $envelopeId")
-            Future.failed(new RuntimeException("Could Not Read Envelope State"))
-        }
-      )
+      .flatMap {
+        case Some(es) if es.isOpen =>
+          uploadFileCall(byteArray, fileName, contentType, url, awsClient)
+        case Some(es) if !es.isOpen =>
+          Future.failed(new RuntimeException("Incorrect Envelope State"))
+        case _ =>
+          Future.failed(new RuntimeException("Could Not Read Envelope State"))
+      }
       .recoverWith { case _: RuntimeException =>
-        logger.warn("FileUploadConnector.uploadFile - unable to find envelope")
         metrics.incrementFailedCounter(FusUploadFile)
         Future.failed(new RuntimeException("Unable to find Envelope"))
       }
   }
 
-  def uploadFileCall(
+  private def uploadFileCall(
     byteArray: Array[Byte],
     fileName: String,
     contentType: MimeContentType,
@@ -156,9 +143,8 @@ class FileUploadConnector @Inject() (
           ahcWSClient.close()
           HttpResponse(response.status, "")
         } else {
-          logger.warn(s"FileUploadConnector.uploadFile - failed to upload file with status [${response.status}]")
           ahcWSClient.close()
-          throw new RuntimeException("File upload failed")
+          throw new RuntimeException(s"File upload failed with status: ${response.status}")
         }
       }
   }
@@ -178,24 +164,18 @@ class FileUploadConnector @Inject() (
           if (response.status == CREATED) {
             metrics.incrementSuccessCounter(FusCloseEnvelope)
             envelopeId(response).getOrElse {
-              logger.warn("FileUploadConnector.closeEnvelope - No envelope id returned by file upload service")
               throw new RuntimeException("No envelope id returned by file upload service")
             }
           } else {
-            logger.warn(
-              s"FileUploadConnector.closeEnvelope - failed to close envelope with status [${response.status}]"
-            )
-            throw new RuntimeException("File upload envelope routing request failed")
+            throw new RuntimeException(s"File upload envelope routing request failed with status: ${response.status}")
           }
         case Left(error) =>
           timerContext.stop()
-          logger.warn(s"FileUploadConnector.closeEnvelope - Upstream error occurred: ${error.statusCode}")
-          throw new RuntimeException("File upload envelope routing request failed")
+          throw error
       }
-      .recover { case _: Exception =>
-        logger.warn("FileUploadConnector.closeEnvelope - call to close envelope failed")
+      .recover { case ex: Exception =>
         metrics.incrementFailedCounter(FusCloseEnvelope)
-        throw new RuntimeException("File upload envelope routing request failed")
+        throw ex
       }
   }
 
@@ -208,9 +188,6 @@ class FileUploadConnector @Inject() (
           case NOT_FOUND =>
             Future.failed(new RuntimeException(s"Could not find envelope with id: $envId"))
           case _ =>
-            logger.warn(
-              s"FileUploadConnector.envelopeStatus - failed to read envelope status, Api failed with status [${response.status}]"
-            )
             Future.successful(None)
         }
       }

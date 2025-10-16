@@ -188,7 +188,7 @@
       "iabdSummaries": null,
       "sourceAmount": null,
       "personalPensionPayment": null,
-      "giftAidPayments": null,
+      "giftAidPayment": null,
       "personalPensionPaymentRelief": null,
       "giftAidPaymentsRelief": null
     },

@@ -16,10 +16,13 @@
 
 package uk.gov.hmrc.tai.model.nps2
 
-import java.time.LocalDate
 import org.scalatestplus.play.PlaySpec
 
+import java.time.LocalDate
+
 class IncomeSpec extends PlaySpec {
+
+  val ceasedStatus: Income.Ceased = Income.Ceased(LocalDate.now())
 
   "Income Status" must {
     "return the Live status" when {
@@ -48,6 +51,4 @@ class IncomeSpec extends PlaySpec {
       }
     }
   }
-
-  val ceasedStatus = Income.Ceased(LocalDate.now())
 }

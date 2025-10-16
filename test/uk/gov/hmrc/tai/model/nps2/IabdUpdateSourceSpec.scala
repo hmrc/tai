@@ -17,7 +17,7 @@
 package uk.gov.hmrc.tai.model.nps2
 
 import org.scalatestplus.play.PlaySpec
-import uk.gov.hmrc.tai.model.nps2.IabdUpdateSource._
+import uk.gov.hmrc.tai.model.nps2.IabdUpdateSource.*
 
 class IabdUpdateSourceSpec extends PlaySpec {
   "IabdUpdateSource" must {

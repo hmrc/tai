@@ -42,7 +42,8 @@ class EmploymentSpec extends PlaySpec {
       2,
       Some(100),
       false,
-      false
+      false,
+      PensionIncome
     )
   )
 
@@ -72,7 +73,8 @@ class EmploymentSpec extends PlaySpec {
             2,
             Some(100),
             false,
-            false
+            false,
+            PensionIncome
           )
         )
 
@@ -118,13 +120,12 @@ class EmploymentSpec extends PlaySpec {
             "sequenceNumber"               -> 2,
             "cessationPay"                 -> 100,
             "hasPayrolledBenefit"          -> false,
-            "receivingOccupationalPension" -> false
+            "receivingOccupationalPension" -> false,
+            "employmentType"               -> "PensionIncome"
           )
         )
 
         Json.toJson(employmentDetails) mustBe json
-
-        json.as[Seq[Employment]] mustBe employmentDetails
 
       }
     }

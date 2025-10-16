@@ -28,6 +28,11 @@ sealed trait IncomeComponentType extends TaxComponentType
 sealed trait TaxCodeIncomeComponentType extends IncomeComponentType
 
 object TaxCodeIncomeComponentType {
+  implicit val writes: Writes[TaxCodeIncomeComponentType] = new Writes[TaxCodeIncomeComponentType] {
+    def writes(value: TaxCodeIncomeComponentType): JsValue =
+      TaxComponentType.formatTaxComponentType.writes(value)
+  }
+
   def apply(value: String): TaxCodeIncomeComponentType = value match {
     case "EmploymentIncome"         => EmploymentIncome
     case "PensionIncome"            => PensionIncome
@@ -86,6 +91,7 @@ case object UnderpaymentRestriction extends DeductionComponentType
 case object HigherPersonalAllowanceRestriction extends DeductionComponentType
 case object AdjustmentToRateBand extends DeductionComponentType
 case object BRDifferenceTaxCharge extends DeductionComponentType
+case object HICBCPaye extends DeductionComponentType
 
 case object BenefitInKind extends BenefitComponentType
 case object CarFuelBenefit extends BenefitComponentType

@@ -17,13 +17,15 @@
 package uk.gov.hmrc.tai.repositories.cache
 
 import org.mongodb.scala.model.IndexModel
-import play.api.libs.json.{Reads, Writes}
+import play.api.libs.json.{JsPath, JsResultException, Reads, Writes}
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.mongo.cache.{CacheIdType, DataKey, MongoCacheRepository}
 import uk.gov.hmrc.mongo.{MongoComponent, MongoDatabaseCollection, TimestampSupport}
-import uk.gov.hmrc.play.http.logging.Mdc
+import uk.gov.hmrc.mdc.Mdc
+import uk.gov.hmrc.tai.config.CacheConfig
 
-import javax.inject.{Inject, Singleton}
+import java.time.Instant
+import javax.inject.Singleton
 import scala.concurrent.duration.Duration
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -37,12 +39,13 @@ case object SessionCacheId extends CacheIdType[HeaderCarrier] {
 }
 
 @Singleton
-abstract class SessionCacheRepository @Inject() (
+abstract class SessionCacheRepository(
   mongoComponent: MongoComponent,
   override val collectionName: String,
   replaceIndexes: Boolean = true,
   ttl: Duration,
-  timestampSupport: TimestampSupport
+  timestampSupport: TimestampSupport,
+  cacheConfig: CacheConfig
 )(implicit ec: ExecutionContext)
     extends MongoDatabaseCollection {
   /*
@@ -51,7 +54,7 @@ abstract class SessionCacheRepository @Inject() (
     This class has been adapted from the one from hmrc-mongo to use the session id from the headerCarrier instead.
    */
 
-  private val cacheRepo: MongoCacheRepository[HeaderCarrier] = new MongoCacheRepository[HeaderCarrier](
+  private[cache] val cacheRepo: MongoCacheRepository[HeaderCarrier] = new MongoCacheRepository[HeaderCarrier](
     mongoComponent = mongoComponent,
     collectionName = collectionName,
     replaceIndexes = replaceIndexes,
@@ -76,6 +79,41 @@ abstract class SessionCacheRepository @Inject() (
   def getFromSession[T: Reads](dataKey: DataKey[T])(implicit hc: HeaderCarrier): Future[Option[T]] =
     Mdc.preservingMdc {
       cacheRepo.get[T](hc)(dataKey)
+    }
+
+  private def getWithDateTime[A](
+    cacheId: HeaderCarrier
+  )(dataKey: DataKey[A])(implicit reads: Reads[A]): Future[Option[(A, Instant)]] = {
+    def dataPath: JsPath =
+      dataKey.unwrap.split('.').foldLeft[JsPath](JsPath)(_ \ _)
+    cacheRepo
+      .findById(cacheId)
+      .map {
+        _.flatMap { cache =>
+          dataPath
+            .asSingleJson(cache.data)
+            .validateOpt[A]
+            .fold(e => throw JsResultException(e), identity)
+            .map(b => (b, cache.modifiedAt))
+        }
+      }
+  }
+
+  def getEitherFromSession[A, B, T <: Either[A, B]](
+    dataKey: DataKey[T]
+  )(implicit hc: HeaderCarrier, rds: Reads[T]): Future[Option[T]] =
+    Mdc.preservingMdc {
+      getWithDateTime[T](hc)(dataKey).map {
+        case None                          => None
+        case Some(Tuple2(r @ Right(_), _)) => Some(r)
+        case Some(Tuple2(item, instant)) =>
+          val ttl = cacheConfig.cacheErrorInSecondsTTL
+          if (instant.plusSeconds(ttl).isBefore(Instant.now())) {
+            None
+          } else {
+            Some(item)
+          }
+      }
     }
 
   def deleteFromSession[T](dataKey: DataKey[T])(implicit hc: HeaderCarrier): Future[Unit] =

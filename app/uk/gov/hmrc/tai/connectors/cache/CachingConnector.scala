@@ -27,6 +27,11 @@ import scala.concurrent.{ExecutionContext, Future}
 
 class CachingConnector @Inject() (sessionCacheRepository: TaiSessionCacheRepository)(implicit ec: ExecutionContext) {
 
+  def invalidateAll[A](f: => Future[A])(implicit hc: HeaderCarrier): Future[A] =
+    sessionCacheRepository.deleteAllFromSession.flatMap { _ =>
+      f
+    }
+
   def cache[A: Format](key: String)(f: => Future[A])(implicit hc: HeaderCarrier): Future[A] = {
 
     def fetchAndCache: Future[A] =

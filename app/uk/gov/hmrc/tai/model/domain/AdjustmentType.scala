@@ -35,6 +35,6 @@ object AdjustmentType extends AdjustmentType {
       case _                             => throw new IllegalArgumentException("Invalid adjustment type")
     }
 
-    override def writes(adjustmentType: AdjustmentType) = JsString(adjustmentType.toString)
+    override def writes(adjustmentType: AdjustmentType): JsValue = JsString(adjustmentType.toString)
   }
 }

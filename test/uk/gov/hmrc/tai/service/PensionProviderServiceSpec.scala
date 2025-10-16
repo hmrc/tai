@@ -17,18 +17,19 @@
 package uk.gov.hmrc.tai.service
 
 import cats.data.EitherT
-
-import java.time.LocalDate
-import org.mockito.ArgumentMatchers.{any, eq => meq}
+import cats.instances.future.*
+import org.mockito.ArgumentMatchers.{any, eq as meq}
+import org.mockito.Mockito.{doNothing, times, verify, when}
 import play.api.test.FakeRequest
 import uk.gov.hmrc.tai.audit.Auditor
-import uk.gov.hmrc.tai.model.domain._
+import uk.gov.hmrc.tai.model.domain.*
 import uk.gov.hmrc.tai.model.domain.income.Live
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.model.templates.EmploymentPensionViewModel
 import uk.gov.hmrc.tai.templates.html.{EmploymentIForm, PensionProviderIForm}
 import uk.gov.hmrc.tai.util.{BaseSpec, IFormConstants}
 
+import java.time.LocalDate
 import scala.concurrent.Future
 
 class PensionProviderServiceSpec extends BaseSpec {
@@ -47,7 +48,7 @@ class PensionProviderServiceSpec extends BaseSpec {
           .thenReturn(Future.successful("1"))
 
         val mockAuditable = mock[Auditor]
-        doNothing.when(mockAuditable).sendDataEvent(any(), any())(any())
+        doNothing().when(mockAuditable).sendDataEvent(any(), any())(any())
 
         val sut = createSut(mockIFormSubmissionService, mockAuditable, mock[EmploymentService])
         val result = sut.addPensionProvider(nino, addPensionProvider).futureValue
@@ -61,7 +62,7 @@ class PensionProviderServiceSpec extends BaseSpec {
       val map = Map(
         "nino"                -> nino.nino,
         "envelope Id"         -> "1",
-        "start-date"          -> pensionProvider.startDate.toString(),
+        "start-date"          -> pensionProvider.startDate.toString,
         "pensionNumber"       -> pensionProvider.pensionNumber,
         "pensionProviderName" -> pensionProvider.pensionProviderName
       )
@@ -74,7 +75,7 @@ class PensionProviderServiceSpec extends BaseSpec {
         .thenReturn(Future.successful("1"))
 
       val mockAuditable = mock[Auditor]
-      doNothing.when(mockAuditable).sendDataEvent(any(), any())(any())
+      doNothing().when(mockAuditable).sendDataEvent(any(), any())(any())
 
       val sut = createSut(mockIFormSubmissionService, mockAuditable, mock[EmploymentService])
       sut.addPensionProvider(nino, pensionProvider).futureValue
@@ -120,7 +121,7 @@ class PensionProviderServiceSpec extends BaseSpec {
           .thenReturn(Future.successful("1"))
 
         val mockAuditable = mock[Auditor]
-        doNothing.when(mockAuditable).sendDataEvent(any(), any())(any())
+        doNothing().when(mockAuditable).sendDataEvent(any(), any())(any())
 
         val sut = createSut(mockIFormSubmissionService, mockAuditable, mock[EmploymentService])
         val result =
@@ -147,7 +148,7 @@ class PensionProviderServiceSpec extends BaseSpec {
         .thenReturn(Future.successful("1"))
 
       val mockAuditable = mock[Auditor]
-      doNothing.when(mockAuditable).sendDataEvent(any(), any())(any())
+      doNothing().when(mockAuditable).sendDataEvent(any(), any())(any())
 
       val sut = createSut(mockIFormSubmissionService, mockAuditable, mock[EmploymentService])
       sut.incorrectPensionProvider(nino, 1, pensionProvider)(implicitly, FakeRequest()).futureValue
@@ -181,12 +182,13 @@ class PensionProviderServiceSpec extends BaseSpec {
           2,
           Some(100),
           hasPayrolledBenefit = false,
-          receivingOccupationalPension = false
+          receivingOccupationalPension = false,
+          PensionIncome
         )
 
         val mockEmploymentService = mock[EmploymentService]
         when(mockEmploymentService.employmentAsEitherT(any(), any())(any(), any()))
-          .thenReturn(EitherT.rightT(employment))
+          .thenReturn(EitherT.rightT(Some(employment)))
 
         val sut = createSut(mock[IFormSubmissionService], mock[Auditor], mockEmploymentService)
 

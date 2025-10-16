@@ -20,7 +20,71 @@ import org.scalatestplus.play.PlaySpec
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.util.TaxCodeHistoryConstants
 
+import java.time.LocalDate
+
 class TaxCodeChangeSpec extends PlaySpec with TaxCodeHistoryConstants {
+  def createTaxCodeChange(
+    currentTaxCodeChangeRecords: Seq[TaxCodeSummary] =
+      Seq(currentTaxCodeChangeRecordPrimary, currentTaxCodeChangeRecordSecondary),
+    previousTaxCodeChangeRecords: Seq[TaxCodeSummary] =
+      Seq(previousTaxCodeChangeRecordPrimary, previousTaxCodeChangeRecordSecondary)
+  ): TaxCodeChange =
+    TaxCodeChange(currentTaxCodeChangeRecords, previousTaxCodeChangeRecords)
+
+  val currentStartDate: LocalDate = TaxYear().start.plusDays(2)
+  val currentEndDate: LocalDate = TaxYear().end
+  val previousStartDate: LocalDate = TaxYear().start.plusDays(1)
+  val previousEndDate: LocalDate = currentStartDate.minusDays(1)
+  val payrollNumberPrev = "11111"
+  val payrollNumberCurr = "22222"
+
+  val previousTaxCodeChangeRecordPrimary: TaxCodeSummary = TaxCodeSummary(
+    1,
+    "1185L",
+    Cumulative,
+    previousStartDate,
+    previousEndDate,
+    "Employer 1",
+    Some(payrollNumberPrev),
+    pensionIndicator = false,
+    primary = true
+  )
+
+  val previousTaxCodeChangeRecordSecondary: TaxCodeSummary = TaxCodeSummary(
+    2,
+    "D0",
+    Cumulative,
+    previousStartDate,
+    previousEndDate,
+    "Employer 1",
+    Some(payrollNumberPrev),
+    pensionIndicator = false,
+    primary = false
+  )
+
+  val currentTaxCodeChangeRecordPrimary: TaxCodeSummary = TaxCodeSummary(
+    3,
+    "1000L",
+    Cumulative,
+    currentStartDate,
+    currentEndDate,
+    "Employer 1",
+    Some(payrollNumberCurr),
+    pensionIndicator = false,
+    primary = true
+  )
+
+  val currentTaxCodeChangeRecordSecondary: TaxCodeSummary = TaxCodeSummary(
+    4,
+    "1001L",
+    Cumulative,
+    currentStartDate.minusDays(1),
+    currentEndDate,
+    "Employer 2",
+    Some(payrollNumberCurr),
+    pensionIndicator = false,
+    primary = false
+  )
 
   "TaxCodeChange" must {
     "return the latest tax code change date" in {
@@ -101,68 +165,4 @@ class TaxCodeChangeSpec extends PlaySpec with TaxCodeHistoryConstants {
       taxCodeChange.secondaryPreviousPayrollNumbers mustEqual expectedPayrollNumbers
     }
   }
-
-  def createTaxCodeChange(
-    currentTaxCodeChangeRecords: Seq[TaxCodeSummary] =
-      Seq(currentTaxCodeChangeRecordPrimary, currentTaxCodeChangeRecordSecondary),
-    previousTaxCodeChangeRecords: Seq[TaxCodeSummary] =
-      Seq(previousTaxCodeChangeRecordPrimary, previousTaxCodeChangeRecordSecondary)
-  ): TaxCodeChange =
-    TaxCodeChange(currentTaxCodeChangeRecords, previousTaxCodeChangeRecords)
-
-  val currentStartDate = TaxYear().start.plusDays(2)
-  val currentEndDate = TaxYear().end
-  val previousStartDate = TaxYear().start.plusDays(1)
-  val previousEndDate = currentStartDate.minusDays(1)
-  val payrollNumberPrev = "11111"
-  val payrollNumberCurr = "22222"
-
-  val previousTaxCodeChangeRecordPrimary = TaxCodeSummary(
-    1,
-    "1185L",
-    Cumulative,
-    previousStartDate,
-    previousEndDate,
-    "Employer 1",
-    Some(payrollNumberPrev),
-    pensionIndicator = false,
-    primary = true
-  )
-
-  val previousTaxCodeChangeRecordSecondary = TaxCodeSummary(
-    2,
-    "D0",
-    Cumulative,
-    previousStartDate,
-    previousEndDate,
-    "Employer 1",
-    Some(payrollNumberPrev),
-    pensionIndicator = false,
-    primary = false
-  )
-
-  val currentTaxCodeChangeRecordPrimary = TaxCodeSummary(
-    3,
-    "1000L",
-    Cumulative,
-    currentStartDate,
-    currentEndDate,
-    "Employer 1",
-    Some(payrollNumberCurr),
-    pensionIndicator = false,
-    primary = true
-  )
-
-  val currentTaxCodeChangeRecordSecondary = TaxCodeSummary(
-    4,
-    "1001L",
-    Cumulative,
-    currentStartDate.minusDays(1),
-    currentEndDate,
-    "Employer 2",
-    Some(payrollNumberCurr),
-    pensionIndicator = false,
-    primary = false
-  )
-
 }

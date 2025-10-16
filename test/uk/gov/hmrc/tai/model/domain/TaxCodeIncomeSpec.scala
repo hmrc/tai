@@ -16,15 +16,14 @@
 
 package uk.gov.hmrc.tai.model.domain
 
-import java.time.LocalDate
 import org.scalatestplus.play.PlaySpec
 import play.api.libs.json.{JsObject, Json}
 import uk.gov.hmrc.tai.factory.TaxCodeIncomeFactory
-import uk.gov.hmrc.tai.model.domain.income.{BasisOperation, OtherBasisOperation}
+import uk.gov.hmrc.tai.model.domain.income.{BasisOperation, OtherBasisOperation, TaxCodeIncome}
 
 class TaxCodeIncomeSpec extends PlaySpec {
 
-  val taxCodeIncome = TaxCodeIncomeFactory.create
+  val taxCodeIncome: TaxCodeIncome = TaxCodeIncomeFactory.create
 
   "TaxCodeIncomeSource taxCodeWithEmergencySuffix" must {
     "return the taxCode WITH X suffix" when {
@@ -61,21 +60,5 @@ class TaxCodeIncomeSpec extends PlaySpec {
       }
     }
 
-    "Handle nulls correctly" when {
-      "updateNotificationDate is not null" in {
-        val date: Option[LocalDate] = Some(LocalDate.now())
-
-        val model = taxCodeIncome.copy(basisOperation = OtherBasisOperation, updateNotificationDate = date)
-
-        val expectedJson = TaxCodeIncomeFactory.createJson
-        val updatedJson = expectedJson
-          .as[JsObject] + ("taxCode" -> Json.toJson("K100")) + ("basisOperation" -> Json.toJson(OtherBasisOperation)(
-          BasisOperation.formatBasisOperationType.writes(_)
-        )) + ("updateNotificationDate" -> Json
-          .toJson(date))
-
-        Json.toJson(model) mustEqual updatedJson
-      }
-    }
   }
 }

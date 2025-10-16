@@ -1,5 +1,8 @@
 {
   "queryResult" : 0,
+  "taxYear" : "17-18",
+  "nino" : "$NINO",
+  "requestId" : "00000000000000",
   "individual" : {
     "relatedTaxYear" : "17-18",
     "employments" : {

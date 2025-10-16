@@ -16,9 +16,10 @@
 
 package uk.gov.hmrc.tai.util
 
-import java.time.LocalDate
-import org.mockito.MockitoSugar
+import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
+
+import java.time.LocalDate
 
 class DateTimeHelperSpec extends PlaySpec with MockitoSugar {
 

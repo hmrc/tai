@@ -20,12 +20,12 @@ import com.google.inject.Inject
 import play.api.libs.json.Json
 import play.api.mvc.{Action, AnyContent, ControllerComponents}
 import uk.gov.hmrc.domain.Nino
-import uk.gov.hmrc.http._
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 import uk.gov.hmrc.tai.controllers.auth.AuthJourney
 import uk.gov.hmrc.tai.model.TaxFreeAmountComparison
 import uk.gov.hmrc.tai.model.api.ApiResponse
 import uk.gov.hmrc.tai.service.TaxFreeAmountComparisonService
+import play.api.Logging
 
 import scala.concurrent.ExecutionContext
 
@@ -35,19 +35,19 @@ class TaxCodeChangeIabdComparisonController @Inject() (
   cc: ControllerComponents
 )(implicit
   ec: ExecutionContext
-) extends BackendController(cc) {
+) extends BackendController(cc) with Logging {
 
   def taxCodeChangeIabdComparison(nino: Nino): Action[AnyContent] = authentication.authWithUserDetails.async {
     implicit request =>
-      taxFreeAmountComparisonService.taxFreeAmountComparison(nino).map { comparison: TaxFreeAmountComparison =>
-        Ok(Json.toJson(ApiResponse(Json.toJson(comparison), Seq.empty)))
-      } recover {
-        case ex: NotFoundException =>
-          NotFound(Json.toJson(Map("reason" -> ex.getMessage)))
-        case ex: HttpException if ex.responseCode >= 500 =>
-          BadGateway(Json.toJson(Map("reason" -> ex.getMessage)))
-        case ex: HttpException =>
-          InternalServerError(Json.toJson(Map("reason" -> ex.getMessage)))
+      taxFreeAmountComparisonService.taxFreeAmountComparison(nino).map { (comparison: TaxFreeAmountComparison) =>
+        if (comparison.previous.isEmpty || comparison.next.isEmpty) {
+          val ex = new RuntimeException("No tax code change data found")
+          logger.error(ex.getMessage, ex)
+          InternalServerError(Json.toJson(ApiResponse[String]("NO_TAX_CODE_CHANGE_DATA", Seq.empty)))
+        } else {
+          Ok(Json.toJson(ApiResponse(Json.toJson(comparison), Seq.empty)))
+        }
       }
   }
+
 }

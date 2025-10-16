@@ -16,8 +16,10 @@
 
 package uk.gov.hmrc.tai.connectors
 
+import org.mockito.ArgumentMatchers.eq as eqTo
 import play.api.libs.json.{Json, OFormat}
-import uk.gov.hmrc.http._
+import uk.gov.hmrc.http.*
+import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.tai.metrics.Metrics
 import uk.gov.hmrc.tai.model.enums.APITypes
 import uk.gov.hmrc.tai.model.rti.RtiData
@@ -26,7 +28,7 @@ import uk.gov.hmrc.tai.model.tai.TaxYear
 class BaseConnectorSpec extends ConnectorBaseSpec {
 
   lazy val metrics: Metrics = inject[Metrics]
-  lazy val httpClient: HttpClient = inject[HttpClient]
+  lazy val httpClient: HttpClientV2 = inject[HttpClientV2]
 
   lazy val sut: BaseConnector = new BaseConnector {
     override def originatorId: String = "testOriginatorId"

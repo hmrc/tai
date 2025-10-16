@@ -55,21 +55,21 @@ class CitizenDetailsConfig @Inject() (servicesConfig: ServicesConfig) extends Ba
 
 @Singleton
 class DesConfig @Inject() (servicesConfig: ServicesConfig) extends BaseConfig with HodConfig {
-  lazy val baseURL: String = servicesConfig.baseUrl("des-hod")
-  lazy val environment: String = servicesConfig.getConfString("des-hod.env", "local")
-  lazy val authorization: String = "Bearer " + servicesConfig.getConfString("des-hod.authorizationToken", "local")
+  val baseURL: String = servicesConfig.baseUrl("des-hod")
+  val environment: String = servicesConfig.getConfString("des-hod.env", "local")
+  val authorization: String = "Bearer " + servicesConfig.getConfString("des-hod.authorizationToken", "local")
   lazy val daPtaOriginatorId: String = servicesConfig.getConfString("des-hod.da-pta.originatorId", "")
-  lazy val originatorId: String = servicesConfig.getConfString("des-hod.originatorId", "")
+  val originatorId: String = servicesConfig.getConfString("des-hod.originatorId", "")
   lazy val timeoutInMilliseconds: Int = servicesConfig.getConfInt("des-hod.timeoutInMilliseconds", 1000)
 }
 
 @Singleton
 class IfConfig @Inject() (servicesConfig: ServicesConfig) extends BaseConfig with HodConfig {
-  lazy val baseURL: String = servicesConfig.baseUrl("if-hod")
-  lazy val environment: String = servicesConfig.getConfString("if-hod.env", "local")
-  lazy val authorization: String = "Bearer " + servicesConfig.getConfString("if-hod.authorizationToken", "local")
+  val baseURL: String = servicesConfig.baseUrl("if-hod")
+  val environment: String = servicesConfig.getConfString("if-hod.env", "local")
+  val authorization: String = "Bearer " + servicesConfig.getConfString("if-hod.authorizationToken", "local")
   lazy val daPtaOriginatorId: String = servicesConfig.getConfString("if-hod.da-pta.originatorId", "")
-  lazy val originatorId: String = servicesConfig.getConfString("if-hod.originatorId", "")
+  val originatorId: String = servicesConfig.getConfString("if-hod.originatorId", "")
   lazy val timeoutInMilliseconds: Int = servicesConfig.getConfInt("if-hod.timeoutInMilliseconds", 1000)
 }
 
@@ -77,20 +77,20 @@ class IfConfig @Inject() (servicesConfig: ServicesConfig) extends BaseConfig wit
 class NpsConfig @Inject() (servicesConfig: ServicesConfig) extends BaseConfig with HodConfig {
   lazy val path: String = servicesConfig.getConfString("nps-hod.path", "")
 
-  override lazy val baseURL: String = s"${servicesConfig.baseUrl("nps-hod")}$path"
-  override lazy val environment = ""
-  override lazy val authorization = ""
-  override lazy val originatorId: String = servicesConfig.getConfString("nps-hod.originatorId", "local")
+  override val baseURL: String = s"${servicesConfig.baseUrl("nps-hod")}$path"
+  override val environment = ""
+  override val authorization = ""
+  override val originatorId: String = servicesConfig.getConfString("nps-hod.originatorId", "local")
 }
 
 @Singleton
 class HipConfig @Inject() (servicesConfig: ServicesConfig) extends BaseConfig with HodConfig {
   lazy val path: String = servicesConfig.getConfString("hip-hod.path", "")
 
-  override lazy val baseURL: String = s"${servicesConfig.baseUrl("hip-hod")}$path"
-  override lazy val environment = ""
-  override lazy val authorization = ""
-  override lazy val originatorId: String = servicesConfig.getConfString("hip-hod.originatorId", "local")
+  override val baseURL: String = s"${servicesConfig.baseUrl("hip-hod")}$path"
+  override val environment = ""
+  override val authorization = ""
+  override val originatorId: String = servicesConfig.getConfString("hip-hod.originatorId", "local")
   lazy val clientId: String = servicesConfig.getConfString("hip-hod.clientId", "local")
   lazy val clientSecret: String = servicesConfig.getConfString("hip-hod.clientSecret", "local")
 }
@@ -110,6 +110,11 @@ class MongoConfig @Inject() (val runModeConfiguration: Configuration) extends Ba
 class RtiConfig @Inject() extends BaseConfig {
   val hodRetryDelayInMillis: Int = 200
   val hodRetryMaximum: Int = 20
+}
+@Singleton
+class CacheConfig @Inject() (val runModeConfiguration: Configuration) extends BaseConfig {
+  lazy val cacheErrorInSecondsTTL: Long =
+    runModeConfiguration.getOptional[Long]("tai.cache.upstream-errors.expiryInSeconds").getOrElse(0L)
 }
 
 @Singleton

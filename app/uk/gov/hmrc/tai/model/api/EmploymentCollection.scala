@@ -16,19 +16,35 @@
 
 package uk.gov.hmrc.tai.model.api
 
+import play.api.libs.json.*
 import play.api.libs.json.Reads.localDateReads
-import play.api.libs.json._
-import uk.gov.hmrc.tai.model.domain.Employment
+import uk.gov.hmrc.tai.model.domain.*
 import uk.gov.hmrc.tai.model.domain.Employment.numberChecked
 import uk.gov.hmrc.tai.model.domain.income.TaxCodeIncomeStatus
-import uk.gov.hmrc.tai.util.JsonHelper._
+import uk.gov.hmrc.tai.util.JsonHelper.*
 
 import java.time.LocalDate
 
-case class EmploymentCollection(employments: Seq[Employment], etag: Option[Int])
+//todo this is a duplicate of uk.gov.hmrc.tai.model.domain.Employments
+case class EmploymentCollection(employments: Seq[Employment], etag: Option[Int]) {
+  def employmentById(id: Int): Option[Employment] = employments.find(_.sequenceNumber == id)
+}
 
 object EmploymentCollection {
-  implicit val employmentCollectionFormat: Format[EmploymentCollection] = Json.format[EmploymentCollection]
+  implicit val writes: Writes[EmploymentCollection] = Json.writes[EmploymentCollection]
+
+  private def determineComponentType(
+    activeOccupationalPension: Boolean,
+    jobSeekersAllowance: Option[Boolean],
+    otherIncomeSource: Option[Boolean]
+  ): TaxCodeIncomeComponentType =
+    (activeOccupationalPension, jobSeekersAllowance.getOrElse(false), otherIncomeSource.getOrElse(false)) match {
+      case (true, _, _) => PensionIncome
+      case (_, true, _) => JobSeekerAllowanceIncome
+      case (_, _, true) => OtherIncome
+      case _            => EmploymentIncome
+    }
+
   def employmentHodNpsReads: Reads[Employment] = new Reads[Employment] {
     private val dateReadsFromHod: Reads[LocalDate] = localDateReads("dd/MM/yyyy")
 
@@ -45,6 +61,9 @@ object EmploymentCollection {
         .asOpt[Boolean]
         .getOrElse(false)
       val receivingOccupationalPension = (json \ "receivingOccupationalPension").as[Boolean]
+      val jobSeekersAllowance = (json \ "receivingJobseekersAllowance").asOpt[Boolean]
+      val otherIncomeSource = (json \ "otherIncomeSourceIndicator").asOpt[Boolean]
+      val incomeType = determineComponentType(receivingOccupationalPension, jobSeekersAllowance, otherIncomeSource)
       val status = TaxCodeIncomeStatus.employmentStatusFromNps(json)
       JsSuccess(
         Employment(
@@ -59,12 +78,14 @@ object EmploymentCollection {
           sequenceNumber,
           cessationPay,
           payrolledBenefit,
-          receivingOccupationalPension
+          receivingOccupationalPension,
+          incomeType
         )
       )
     }
   }
 
+  // scalastyle:off method.length
   def employmentHodReads: Reads[Employment] = new Reads[Employment] {
     private def splitEmpRef(empRef: String): JsResult[(String, String)] =
       empRef.split("/").toSeq match {
@@ -75,14 +96,11 @@ object EmploymentCollection {
     private val dateReadsFromHod: Reads[LocalDate] = localDateReads("yyyy-MM-dd")
 
     override def reads(json: JsValue): JsResult[Employment] = {
-
       val employerReference = numberChecked((json \ "employerReference").as[String])
-
       val name = (json \ "payeSchemeOperatorName").as[String]
       val payrollNumber = (json \ "worksNumber").asOpt[String]
       val startDate = (json \ "startDate").as[LocalDate](dateReadsFromHod)
       val endDate = (json \ "endDate").asOpt[LocalDate](dateReadsFromHod)
-
       splitEmpRef(employerReference) match {
         case JsSuccess(Tuple2(taxDistrictNumber, payeNumber), _) =>
           val sequenceNumber = (json \ "employmentSequenceNumber").as[Int]
@@ -92,6 +110,10 @@ object EmploymentCollection {
               .asOpt[Boolean]
               .getOrElse(false)
           val receivingOccupationalPension = (json \ "activeOccupationalPension").as[Boolean]
+          val jobSeekersAllowance = (json \ "jobSeekersAllowance").asOpt[Boolean]
+          val otherIncomeSource = (json \ "otherIncomeSource").asOpt[Boolean]
+          val incomeType =
+            determineComponentType(receivingOccupationalPension, jobSeekersAllowance, otherIncomeSource)
           val status = TaxCodeIncomeStatus.employmentStatus(json)
           JsSuccess(
             Employment(
@@ -106,44 +128,25 @@ object EmploymentCollection {
               sequenceNumber,
               cessationPay,
               payrolledBenefit,
-              receivingOccupationalPension
+              receivingOccupationalPension,
+              incomeType
             )
           )
         case errors @ JsError(_) => errors
       }
-
     }
   }
 
-  private def readsNps: Reads[EmploymentCollection] = { (json: JsValue) =>
-    implicit val rds: Reads[Employment] = employmentHodNpsReads
-    JsSuccess(EmploymentCollection(json.as[Seq[Employment]], None))
-  }
-
-  private def readsHip: Reads[EmploymentCollection] = { (json: JsValue) =>
-    val readsSeqEmployment = json match {
-      case _: JsArray => Reads[Seq[Employment]](_ => JsError("Unexpected array - Squid payload?"))
-      case _ =>
-        (__ \ "individualsEmploymentDetails").readNullable[Seq[Employment]](Reads.seq(employmentHodReads)).map {
-          case None    => Nil
-          case Some(e) => e
-        }
-    }
+  lazy val employmentCollectionHodReadsHIP: Reads[EmploymentCollection] = { (json: JsValue) =>
+    val readsSeqEmployment =
+      (__ \ "individualsEmploymentDetails").readNullable[Seq[Employment]](Reads.seq(employmentHodReads)).map {
+        case None    => Nil
+        case Some(e) => e
+      }
 
     readsSeqEmployment.reads(json).map { seqEmployment =>
       EmploymentCollection(seqEmployment, None)
     }
   }
 
-  /*
-    If toggle switched on then we still need to cater for payloads in NPS format which may still be
-    present in the cache.
-   */
-  lazy val employmentCollectionHodReadsHIP: Reads[EmploymentCollection] = readsHip orElseTry readsNps
-
-  /*
-    If toggle switched on then for some reason has to be switched off then we have to cater
-    for payloads in HIP format even though toggle is off.
-   */
-  lazy val employmentCollectionHodReadsNPS: Reads[EmploymentCollection] = readsNps orElseTry readsHip
 }

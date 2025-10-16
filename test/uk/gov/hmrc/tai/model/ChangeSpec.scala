@@ -20,6 +20,10 @@ import org.scalatestplus.play.PlaySpec
 import play.api.libs.json.{JsNumber, JsObject, JsString, Json}
 
 class ChangeSpec extends PlaySpec {
+
+  val validJson: JsObject = JsObject(Map("currentYear" -> JsNumber(12), "currentYearPlusOne" -> JsString("the value")))
+
+  val invalidJson: JsString = JsString("the value")
   "changeReads" must {
     "return a valid Change[A,B]" when {
       "given valid json" in {
@@ -44,8 +48,4 @@ class ChangeSpec extends PlaySpec {
       }
     }
   }
-
-  val validJson = JsObject(Map("currentYear" -> JsNumber(12), "currentYearPlusOne" -> JsString("the value")))
-
-  val invalidJson = JsString("the value")
 }

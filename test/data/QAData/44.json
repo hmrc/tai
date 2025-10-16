@@ -1,1 +1,311 @@
-{"taxAccountId":null,"date":"18/04/2016","nino":"$NINO","taxYear":2016,"previousTaxAccountId":38,"previousYearTaxAccountId":37,"nextTaxAccountId":null,"nextYearTaxAccountId":null,"totalEstTax":3836.00,"totalEstPay":{"npsDescription":null,"amount":30000.00,"type":null,"iabdSummaries":[{"amount":30000,"type":27,"npsDescription":"New Estimated Pay","employmentId":3,"defaultEstimatedPay":null}],"sourceAmount":null},"adjustedNetIncome":{"npsDescription":null,"amount":35500,"type":null,"iabdSummaries":[{"amount":30000,"type":27,"npsDescription":"New Estimated Pay","employmentId":3,"defaultEstimatedPay":null},{"amount":5500,"type":76,"npsDescription":"UK Dividend","employmentId":null}],"sourceAmount":null},"totalLiability":{"nonSavings":{"totalIncome":{"npsDescription":null,"amount":30000,"type":null,"iabdSummaries":[{"amount":30000,"type":27,"npsDescription":"New Estimated Pay","employmentId":3,"defaultEstimatedPay":null}],"sourceAmount":null},"allowReliefDeducts":{"npsDescription":null,"amount":11000,"type":null,"iabdSummaries":[{"amount":11000,"type":118,"npsDescription":"Personal Allowance (PA)","employmentId":null}],"sourceAmount":null},"totalTax":3800.00,"totalTaxableIncome":19000,"taxBands":[{"bandType":"B","taxCode":"BR","isBasicRate":true,"income":19000,"tax":3800.00,"lowerBand":0,"upperBand":32000,"rate":20.00},{"bandType":"D0","taxCode":"D0","isBasicRate":false,"income":null,"tax":null,"lowerBand":32000,"upperBand":150000,"rate":40.00},{"bandType":"D1","taxCode":"D1","isBasicRate":false,"income":null,"tax":null,"lowerBand":150000,"upperBand":0,"rate":45.00}]},"untaxedInterest":null,"bankInterest":null,"ukDividends":{"totalIncome":{"npsDescription":null,"amount":5500,"type":null,"iabdSummaries":[{"amount":37.5,"type":129,"npsDescription":"Dividends Tax","employmentId":null},{"amount":5500,"type":76,"npsDescription":"UK Dividend","employmentId":null}],"sourceAmount":null},"allowReliefDeducts":{"npsDescription":null,"amount":0,"type":null,"iabdSummaries":null,"sourceAmount":null},"totalTax":37.50,"totalTaxableIncome":5500,"taxBands":[{"bandType":"SDR","taxCode":"BR","isBasicRate":false,"income":null,"tax":null,"lowerBand":0,"upperBand":5000,"rate":0.00},{"bandType":"LDR","taxCode":"BR","isBasicRate":true,"income":500,"tax":37.50,"lowerBand":5000,"upperBand":32000,"rate":7.50},{"bandType":"HDR1","taxCode":"D0","isBasicRate":false,"income":null,"tax":null,"lowerBand":32000,"upperBand":150000,"rate":32.50},{"bandType":"HDR2","taxCode":"D1","isBasicRate":false,"income":null,"tax":null,"lowerBand":150000,"upperBand":0,"rate":38.10}]},"foreignInterest":null,"foreignDividends":null,"basicRateExtensions":{"npsDescription":null,"amount":0,"type":null,"iabdSummaries":null,"sourceAmount":null,"personalPensionPayment":null,"giftAidPayments":null,"personalPensionPaymentRelief":null,"giftAidPaymentsRelief":null},"reliefsGivingBackTax":null,"otherTaxDue":null,"alreadyTaxedAtSource":null,"totalLiability":3837.50},"incomeSources":[{"employmentId":3,"employmentType":1,"employmentStatus":1,"employmentTaxDistrictNumber":1,"employmentPayeRef":"000","pensionIndicator":false,"otherIncomeSourceIndicator":false,"jsaIndicator":false,"name":"EMPLOYER1","taxCode":"1081L","potentialUnderpayment":0,"allowances":[{"npsDescription":"personal allowance","amount":11000,"type":11,"iabdSummaries":[{"amount":11000,"type":118,"npsDescription":"Personal Allowance (PA)","employmentId":null}],"sourceAmount":11000}],"deductions":[{"npsDescription":"Dividend Tax","amount":187,"type":44,"iabdSummaries":[{"amount":37.5,"type":129,"npsDescription":"Dividends Tax","employmentId":null}],"sourceAmount":0}],"payAndTax":{"totalIncome":{"npsDescription":null,"amount":30000.00,"type":null,"iabdSummaries":[{"amount":30000,"type":27,"npsDescription":"New Estimated Pay","employmentId":3,"defaultEstimatedPay":null}],"sourceAmount":null},"allowReliefDeducts":{"npsDescription":null,"amount":10819.64,"type":null,"iabdSummaries":null,"sourceAmount":null},"totalTax":3836.00,"totalTaxableIncome":19180.00,"taxBands":[{"bandType":"B","taxCode":"BR","isBasicRate":true,"income":19180.00,"tax":3836.00,"lowerBand":0,"upperBand":32000,"rate":20.00},{"bandType":"D0","taxCode":"D0","isBasicRate":false,"income":null,"tax":null,"lowerBand":32000,"upperBand":150000,"rate":40.00},{"bandType":"D1","taxCode":"D1","isBasicRate":false,"income":null,"tax":null,"lowerBand":150000,"upperBand":0,"rate":45.00}]}}]}
+{
+  "taxAccountId": null,
+  "date": "18/04/2016",
+  "nino": "$NINO",
+  "taxYear": 2016,
+  "previousTaxAccountId": 38,
+  "previousYearTaxAccountId": 37,
+  "nextTaxAccountId": null,
+  "nextYearTaxAccountId": null,
+  "totalEstTax": 3836.00,
+  "totalEstPay": {
+    "npsDescription": null,
+    "amount": 30000.00,
+    "type": null,
+    "iabdSummaries": [
+      {
+        "amount": 30000,
+        "type": 27,
+        "npsDescription": "New Estimated Pay",
+        "employmentId": 3,
+        "defaultEstimatedPay": null
+      }
+    ],
+    "sourceAmount": null
+  },
+  "adjustedNetIncome": {
+    "npsDescription": null,
+    "amount": 35500,
+    "type": null,
+    "iabdSummaries": [
+      {
+        "amount": 30000,
+        "type": 27,
+        "npsDescription": "New Estimated Pay",
+        "employmentId": 3,
+        "defaultEstimatedPay": null
+      },
+      {
+        "amount": 5500,
+        "type": 76,
+        "npsDescription": "UK Dividend",
+        "employmentId": null
+      }
+    ],
+    "sourceAmount": null
+  },
+  "totalLiability": {
+    "nonSavings": {
+      "totalIncome": {
+        "npsDescription": null,
+        "amount": 30000,
+        "type": null,
+        "iabdSummaries": [
+          {
+            "amount": 30000,
+            "type": 27,
+            "npsDescription": "New Estimated Pay",
+            "employmentId": 3,
+            "defaultEstimatedPay": null
+          }
+        ],
+        "sourceAmount": null
+      },
+      "allowReliefDeducts": {
+        "npsDescription": null,
+        "amount": 11000,
+        "type": null,
+        "iabdSummaries": [
+          {
+            "amount": 11000,
+            "type": 118,
+            "npsDescription": "Personal Allowance (PA)",
+            "employmentId": null
+          }
+        ],
+        "sourceAmount": null
+      },
+      "totalTax": 3800.00,
+      "totalTaxableIncome": 19000,
+      "taxBands": [
+        {
+          "bandType": "B",
+          "taxCode": "BR",
+          "isBasicRate": true,
+          "income": 19000,
+          "tax": 3800.00,
+          "lowerBand": 0,
+          "upperBand": 32000,
+          "rate": 20.00
+        },
+        {
+          "bandType": "D0",
+          "taxCode": "D0",
+          "isBasicRate": false,
+          "income": null,
+          "tax": null,
+          "lowerBand": 32000,
+          "upperBand": 150000,
+          "rate": 40.00
+        },
+        {
+          "bandType": "D1",
+          "taxCode": "D1",
+          "isBasicRate": false,
+          "income": null,
+          "tax": null,
+          "lowerBand": 150000,
+          "upperBand": 0,
+          "rate": 45.00
+        }
+      ]
+    },
+    "untaxedInterest": null,
+    "bankInterest": null,
+    "ukDividends": {
+      "totalIncome": {
+        "npsDescription": null,
+        "amount": 5500,
+        "type": null,
+        "iabdSummaries": [
+          {
+            "amount": 37.5,
+            "type": 129,
+            "npsDescription": "Dividends Tax",
+            "employmentId": null
+          },
+          {
+            "amount": 5500,
+            "type": 76,
+            "npsDescription": "UK Dividend",
+            "employmentId": null
+          }
+        ],
+        "sourceAmount": null
+      },
+      "allowReliefDeducts": {
+        "npsDescription": null,
+        "amount": 0,
+        "type": null,
+        "iabdSummaries": null,
+        "sourceAmount": null
+      },
+      "totalTax": 37.50,
+      "totalTaxableIncome": 5500,
+      "taxBands": [
+        {
+          "bandType": "SDR",
+          "taxCode": "BR",
+          "isBasicRate": false,
+          "income": null,
+          "tax": null,
+          "lowerBand": 0,
+          "upperBand": 5000,
+          "rate": 0.00
+        },
+        {
+          "bandType": "LDR",
+          "taxCode": "BR",
+          "isBasicRate": true,
+          "income": 500,
+          "tax": 37.50,
+          "lowerBand": 5000,
+          "upperBand": 32000,
+          "rate": 7.50
+        },
+        {
+          "bandType": "HDR1",
+          "taxCode": "D0",
+          "isBasicRate": false,
+          "income": null,
+          "tax": null,
+          "lowerBand": 32000,
+          "upperBand": 150000,
+          "rate": 32.50
+        },
+        {
+          "bandType": "HDR2",
+          "taxCode": "D1",
+          "isBasicRate": false,
+          "income": null,
+          "tax": null,
+          "lowerBand": 150000,
+          "upperBand": 0,
+          "rate": 38.10
+        }
+      ]
+    },
+    "foreignInterest": null,
+    "foreignDividends": null,
+    "basicRateExtensions": {
+      "npsDescription": null,
+      "amount": 0,
+      "type": null,
+      "iabdSummaries": null,
+      "sourceAmount": null,
+      "personalPensionPayment": null,
+      "giftAidPayment": null,
+      "personalPensionPaymentRelief": null,
+      "giftAidPaymentsRelief": null
+    },
+    "reliefsGivingBackTax": null,
+    "otherTaxDue": null,
+    "alreadyTaxedAtSource": null,
+    "totalLiability": 3837.50
+  },
+  "incomeSources": [
+    {
+      "employmentId": 3,
+      "employmentType": 1,
+      "employmentStatus": 1,
+      "employmentTaxDistrictNumber": 1,
+      "employmentPayeRef": "000",
+      "pensionIndicator": false,
+      "otherIncomeSourceIndicator": false,
+      "jsaIndicator": false,
+      "name": "EMPLOYER1",
+      "taxCode": "1081L",
+      "potentialUnderpayment": 0,
+      "allowances": [
+        {
+          "npsDescription": "personal allowance",
+          "amount": 11000,
+          "type": 11,
+          "iabdSummaries": [
+            {
+              "amount": 11000,
+              "type": 118,
+              "npsDescription": "Personal Allowance (PA)",
+              "employmentId": null
+            }
+          ],
+          "sourceAmount": 11000
+        }
+      ],
+      "deductions": [
+        {
+          "npsDescription": "Dividend Tax",
+          "amount": 187,
+          "type": 44,
+          "iabdSummaries": [
+            {
+              "amount": 37.5,
+              "type": 129,
+              "npsDescription": "Dividends Tax",
+              "employmentId": null
+            }
+          ],
+          "sourceAmount": 0
+        }
+      ],
+      "payAndTax": {
+        "totalIncome": {
+          "npsDescription": null,
+          "amount": 30000.00,
+          "type": null,
+          "iabdSummaries": [
+            {
+              "amount": 30000,
+              "type": 27,
+              "npsDescription": "New Estimated Pay",
+              "employmentId": 3,
+              "defaultEstimatedPay": null
+            }
+          ],
+          "sourceAmount": null
+        },
+        "allowReliefDeducts": {
+          "npsDescription": null,
+          "amount": 10819.64,
+          "type": null,
+          "iabdSummaries": null,
+          "sourceAmount": null
+        },
+        "totalTax": 3836.00,
+        "totalTaxableIncome": 19180.00,
+        "taxBands": [
+          {
+            "bandType": "B",
+            "taxCode": "BR",
+            "isBasicRate": true,
+            "income": 19180.00,
+            "tax": 3836.00,
+            "lowerBand": 0,
+            "upperBand": 32000,
+            "rate": 20.00
+          },
+          {
+            "bandType": "D0",
+            "taxCode": "D0",
+            "isBasicRate": false,
+            "income": null,
+            "tax": null,
+            "lowerBand": 32000,
+            "upperBand": 150000,
+            "rate": 40.00
+          },
+          {
+            "bandType": "D1",
+            "taxCode": "D1",
+            "isBasicRate": false,
+            "income": null,
+            "tax": null,
+            "lowerBand": 150000,
+            "upperBand": 0,
+            "rate": 45.00
+          }
+        ]
+      }
+    }
+  ]
+}

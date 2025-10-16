@@ -16,6 +16,8 @@
 
 package uk.gov.hmrc.tai.integration.utils
 
+import uk.gov.hmrc.tai.model.tai.TaxYear
+
 import scala.io.Source.fromFile
 
 object FileHelper {
@@ -23,7 +25,7 @@ object FileHelper {
   def loadFile(name: String): String = {
     val filePath = s"it/test/uk/gov/hmrc/tai/integration/resources/$name"
     val source = fromFile(filePath)
-    try source.mkString
+    try source.mkString.replaceAll("<CY>", TaxYear().year.toString)
     finally source.close()
   }
 }

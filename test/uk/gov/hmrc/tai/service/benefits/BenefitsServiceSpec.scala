@@ -16,20 +16,75 @@
 
 package uk.gov.hmrc.tai.service.benefits
 
-import java.time.LocalDate
-import org.mockito.ArgumentMatchers.{any, eq => meq}
+import org.mockito.ArgumentMatchers.{any, eq as meq}
+import org.mockito.Mockito.{doNothing, times, verify, when}
 import uk.gov.hmrc.http.UnprocessableEntityException
 import uk.gov.hmrc.tai.audit.Auditor
-import uk.gov.hmrc.tai.model.domain._
-import uk.gov.hmrc.tai.model.domain.benefits._
+import uk.gov.hmrc.tai.model.domain.*
+import uk.gov.hmrc.tai.model.domain.benefits.*
 import uk.gov.hmrc.tai.model.domain.calculation.CodingComponent
 import uk.gov.hmrc.tai.model.tai.TaxYear
-import uk.gov.hmrc.tai.service._
+import uk.gov.hmrc.tai.service.*
 import uk.gov.hmrc.tai.util.{BaseSpec, IFormConstants}
 
+import java.time.LocalDate
 import scala.concurrent.Future
 
 class BenefitsServiceSpec extends BaseSpec {
+  val allBenefitTypesExceptCompanyCar: Seq[BenefitComponentType] = Seq(
+    EmployerProvidedServices,
+    BenefitInKind,
+    CarFuelBenefit,
+    MedicalInsurance,
+    Telephone,
+    ServiceBenefit,
+    TaxableExpensesBenefit,
+    VanBenefit,
+    VanFuelBenefit,
+    BeneficialLoan,
+    Accommodation,
+    Assets,
+    AssetTransfer,
+    EducationalServices,
+    Entertaining,
+    Expenses,
+    Mileage,
+    NonQualifyingRelocationExpenses,
+    NurseryPlaces,
+    OtherItems,
+    PaymentsOnEmployeesBehalf,
+    PersonalIncidentalExpenses,
+    QualifyingRelocationExpenses,
+    EmployerProvidedProfessionalSubscription,
+    IncomeTaxPaidButNotDeductedFromDirectorsRemuneration,
+    VouchersAndCreditCards,
+    NonCashBenefit
+  )
+
+  def createBenefitList(typesList: Seq[BenefitComponentType], amount: BigDecimal = 100): Seq[CodingComponent] =
+    typesList.map(benefitType => CodingComponent(benefitType, Some(126), amount, "some other description"))
+
+  def createGenericBenefitList(typesList: Seq[BenefitComponentType], amount: BigDecimal = 100): Seq[GenericBenefit] =
+    typesList.map(benefitType => GenericBenefit(benefitType, Some(126), amount))
+
+  val taxFreeAmountComponentsWithoutBenefits: Seq[CodingComponent] = Seq(
+    CodingComponent(PersonalAllowancePA, Some(123), 12345, "some description"),
+    CodingComponent(Commission, Some(125), 777, "some other description"),
+    CodingComponent(BalancingCharge, Some(126), 999, "some other description")
+  )
+
+  private def createSUT(
+    companyCarBenefitRepository: CompanyCarBenefitService = mock[CompanyCarBenefitService],
+    codingComponentService: CodingComponentService = mock[CodingComponentService],
+    iFormSubmissionService: IFormSubmissionService = mock[IFormSubmissionService],
+    auditable: Auditor = mock[Auditor]
+  ) =
+    new BenefitsService(
+      companyCarBenefitRepository,
+      codingComponentService,
+      iFormSubmissionService,
+      auditable
+    )
   "companyCarBenefit" must {
     "return Nil" when {
       "the repository returned Nil" in {
@@ -336,7 +391,7 @@ class BenefitsServiceSpec extends BaseSpec {
           .thenReturn(Future.successful("1"))
 
         val mockAuditable = mock[Auditor]
-        doNothing
+        doNothing()
           .when(mockAuditable)
           .sendDataEvent(any(), any())(any())
 
@@ -373,7 +428,7 @@ class BenefitsServiceSpec extends BaseSpec {
         .thenReturn(Future.successful("1"))
 
       val mockAuditable = mock[Auditor]
-      doNothing
+      doNothing()
         .when(mockAuditable)
         .sendDataEvent(any(), any())(any())
 
@@ -389,59 +444,4 @@ class BenefitsServiceSpec extends BaseSpec {
         .sendDataEvent(meq(IFormConstants.RemoveCompanyBenefitAuditTxnName), meq(map))(any())
     }
   }
-
-  val allBenefitTypesExceptCompanyCar = Seq(
-    EmployerProvidedServices,
-    BenefitInKind,
-    CarFuelBenefit,
-    MedicalInsurance,
-    Telephone,
-    ServiceBenefit,
-    TaxableExpensesBenefit,
-    VanBenefit,
-    VanFuelBenefit,
-    BeneficialLoan,
-    Accommodation,
-    Assets,
-    AssetTransfer,
-    EducationalServices,
-    Entertaining,
-    Expenses,
-    Mileage,
-    NonQualifyingRelocationExpenses,
-    NurseryPlaces,
-    OtherItems,
-    PaymentsOnEmployeesBehalf,
-    PersonalIncidentalExpenses,
-    QualifyingRelocationExpenses,
-    EmployerProvidedProfessionalSubscription,
-    IncomeTaxPaidButNotDeductedFromDirectorsRemuneration,
-    VouchersAndCreditCards,
-    NonCashBenefit
-  )
-
-  def createBenefitList(typesList: Seq[BenefitComponentType], amount: BigDecimal = 100) =
-    typesList.map(benefitType => CodingComponent(benefitType, Some(126), amount, "some other description"))
-
-  def createGenericBenefitList(typesList: Seq[BenefitComponentType], amount: BigDecimal = 100) =
-    typesList.map(benefitType => GenericBenefit(benefitType, Some(126), amount))
-
-  val taxFreeAmountComponentsWithoutBenefits = Seq(
-    CodingComponent(PersonalAllowancePA, Some(123), 12345, "some description"),
-    CodingComponent(Commission, Some(125), 777, "some other description"),
-    CodingComponent(BalancingCharge, Some(126), 999, "some other description")
-  )
-
-  private def createSUT(
-    companyCarBenefitRepository: CompanyCarBenefitService = mock[CompanyCarBenefitService],
-    codingComponentService: CodingComponentService = mock[CodingComponentService],
-    iFormSubmissionService: IFormSubmissionService = mock[IFormSubmissionService],
-    auditable: Auditor = mock[Auditor]
-  ) =
-    new BenefitsService(
-      companyCarBenefitRepository,
-      codingComponentService,
-      iFormSubmissionService,
-      auditable
-    )
 }

@@ -17,9 +17,10 @@
 package uk.gov.hmrc.tai.controllers.benefits
 
 import org.mockito.ArgumentMatchers.any
+import org.mockito.Mockito.when
 import play.api.libs.json.Json
 import play.api.test.FakeRequest
-import play.api.test.Helpers._
+import play.api.test.Helpers.*
 import uk.gov.hmrc.tai.model.domain.benefits.{CompanyCar, CompanyCarBenefit}
 import uk.gov.hmrc.tai.service.benefits.BenefitsService
 import uk.gov.hmrc.tai.util.BaseSpec
@@ -40,7 +41,11 @@ class CompanyCarBenefitControllerSpec extends BaseSpec {
         when(mockCompanyCarService.companyCarBenefits(any())(any()))
           .thenReturn(Future.successful(Nil))
 
-        val sut = new CompanyCarBenefitController(mockCompanyCarService, loggedInAuthenticationAuthJourney, cc)
+        val sut = new CompanyCarBenefitController(
+          mockCompanyCarService,
+          loggedInAuthenticationAuthJourney,
+          cc
+        )
         val result = sut.companyCarBenefits(nino)(FakeRequest())
         status(result) mustBe NOT_FOUND
       }
@@ -70,7 +75,11 @@ class CompanyCarBenefitControllerSpec extends BaseSpec {
         when(mockCompanyCarService.companyCarBenefits(any())(any()))
           .thenReturn(Future.successful(companyCarSeq))
 
-        val sut = new CompanyCarBenefitController(mockCompanyCarService, loggedInAuthenticationAuthJourney, cc)
+        val sut = new CompanyCarBenefitController(
+          mockCompanyCarService,
+          loggedInAuthenticationAuthJourney,
+          cc
+        )
         val result = sut.companyCarBenefits(nino)(FakeRequest())
 
         status(result) mustBe OK
@@ -122,7 +131,11 @@ class CompanyCarBenefitControllerSpec extends BaseSpec {
         when(mockCompanyCarService.companyCarBenefits(any())(any()))
           .thenReturn(Future.successful(companyCarSeq))
 
-        val sut = new CompanyCarBenefitController(mockCompanyCarService, loggedInAuthenticationAuthJourney, cc)
+        val sut = new CompanyCarBenefitController(
+          mockCompanyCarService,
+          loggedInAuthenticationAuthJourney,
+          cc
+        )
         val result = sut.companyCarBenefits(nino)(FakeRequest())
 
         status(result) mustBe OK

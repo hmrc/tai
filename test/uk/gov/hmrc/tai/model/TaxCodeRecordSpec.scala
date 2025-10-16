@@ -21,7 +21,49 @@ import org.scalatestplus.play.PlaySpec
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.util.TaxCodeHistoryConstants
 
+import java.time.LocalDate
+
 class TaxCodeRecordSpec extends PlaySpec with TaxCodeHistoryConstants with Matchers {
+
+  val cyMinus1: TaxYear = TaxYear().prev
+
+  val mostRecentStartDate: LocalDate = cyMinus1.start.plusDays(2)
+  val mostRecentEndDate: LocalDate = cyMinus1.end
+  val previousStartDate: LocalDate = cyMinus1.start
+  val previousEndDate: LocalDate = mostRecentStartDate.minusDays(1)
+  val previousStartDateInPrevYear: LocalDate = cyMinus1.start.minusDays(2)
+  val payrollNumber = "12345"
+
+  val olderTaxCodeRecord: TaxCodeRecord = TaxCodeRecord(
+    TaxYear(),
+    1,
+    "1185L",
+    Cumulative,
+    "Employer 1",
+    operatedTaxCode = true,
+    previousStartDateInPrevYear,
+    Some(payrollNumber),
+    pensionIndicator = false,
+    Primary
+  )
+
+  val mostRecentTaxCodeRecord: TaxCodeRecord = TaxCodeRecord(
+    TaxYear(),
+    2,
+    "1000L",
+    Cumulative,
+    "Employer 1",
+    operatedTaxCode = true,
+    mostRecentStartDate,
+    Some(payrollNumber),
+    pensionIndicator = false,
+    Primary
+  )
+
+  val recordEmployer2: TaxCodeRecord = mostRecentTaxCodeRecord.copy(employerName = "Employer 2")
+
+  val recordNoPayrollPrimary: TaxCodeRecord = mostRecentTaxCodeRecord.copy(payrollNumber = None)
+  val recordNoPayrollSecondary: TaxCodeRecord = mostRecentTaxCodeRecord.copy(payrollNumber = None)
 
   "mostRecentTaxCodeRecord" must {
 
@@ -41,44 +83,4 @@ class TaxCodeRecordSpec extends PlaySpec with TaxCodeHistoryConstants with Match
 
     }
   }
-
-  val cyMinus1 = TaxYear().prev
-
-  val mostRecentStartDate = cyMinus1.start.plusDays(2)
-  val mostRecentEndDate = cyMinus1.end
-  val previousStartDate = cyMinus1.start
-  val previousEndDate = mostRecentStartDate.minusDays(1)
-  val previousStartDateInPrevYear = cyMinus1.start.minusDays(2)
-  val payrollNumber = "12345"
-
-  val olderTaxCodeRecord = TaxCodeRecord(
-    TaxYear(),
-    1,
-    "1185L",
-    Cumulative,
-    "Employer 1",
-    operatedTaxCode = true,
-    previousStartDateInPrevYear,
-    Some(payrollNumber),
-    pensionIndicator = false,
-    Primary
-  )
-
-  val mostRecentTaxCodeRecord = TaxCodeRecord(
-    TaxYear(),
-    2,
-    "1000L",
-    Cumulative,
-    "Employer 1",
-    operatedTaxCode = true,
-    mostRecentStartDate,
-    Some(payrollNumber),
-    pensionIndicator = false,
-    Primary
-  )
-
-  val recordEmployer2 = mostRecentTaxCodeRecord.copy(employerName = "Employer 2")
-
-  val recordNoPayrollPrimary = mostRecentTaxCodeRecord.copy(payrollNumber = None)
-  val recordNoPayrollSecondary = mostRecentTaxCodeRecord.copy(payrollNumber = None)
 }

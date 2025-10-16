@@ -1,1 +1,318 @@
-{"taxAccountId":null,"date":"18/04/2016","nino":"$NINO","taxYear":2016,"previousTaxAccountId":23,"previousYearTaxAccountId":20,"nextTaxAccountId":null,"nextYearTaxAccountId":null,"totalEstTax":2255.00,"totalEstPay":{"npsDescription":null,"amount":25625.00,"type":null,"iabdSummaries":[{"amount":25625,"type":27,"npsDescription":"New Estimated Pay","employmentId":8,"defaultEstimatedPay":null}],"sourceAmount":null},"adjustedNetIncome":{"npsDescription":null,"amount":23737,"type":null,"iabdSummaries":[{"amount":25625,"type":27,"npsDescription":"New Estimated Pay","employmentId":8,"defaultEstimatedPay":null}],"sourceAmount":null},"totalLiability":{"nonSavings":{"totalIncome":{"npsDescription":null,"amount":25625,"type":null,"iabdSummaries":[{"amount":25625,"type":27,"npsDescription":"New Estimated Pay","employmentId":8,"defaultEstimatedPay":null}],"sourceAmount":null},"allowReliefDeducts":{"npsDescription":null,"amount":13832,"type":null,"iabdSummaries":[{"amount":11000,"type":118,"npsDescription":"Personal Allowance (PA)","employmentId":null},{"amount":944,"type":18,"npsDescription":"Retirement Annuity Payments","employmentId":null},{"amount":944,"type":93,"npsDescription":"Trade Union Subscriptions","employmentId":null},{"amount":944,"type":11,"npsDescription":"Loan Interest Amount","employmentId":null}],"sourceAmount":null},"totalTax":2358.60,"totalTaxableIncome":11793,"taxBands":[{"bandType":"B","taxCode":"BR","isBasicRate":true,"income":11793,"tax":2358.60,"lowerBand":0,"upperBand":32000,"rate":20.00},{"bandType":"D0","taxCode":"D0","isBasicRate":false,"income":null,"tax":null,"lowerBand":32000,"upperBand":150000,"rate":40.00},{"bandType":"D1","taxCode":"D1","isBasicRate":false,"income":null,"tax":null,"lowerBand":150000,"upperBand":0,"rate":45.00}]},"untaxedInterest":null,"bankInterest":null,"ukDividends":null,"foreignInterest":null,"foreignDividends":null,"basicRateExtensions":{"npsDescription":null,"amount":0,"type":null,"iabdSummaries":null,"sourceAmount":null,"personalPensionPayment":null,"giftAidPayments":null,"personalPensionPaymentRelief":null,"giftAidPaymentsRelief":null},"reliefsGivingBackTax":{"npsDescription":null,"amount":102.40,"type":null,"iabdSummaries":[{"amount":1024,"type":6,"npsDescription":"Maintenance Payments","employmentId":null}],"sourceAmount":null,"enterpriseInvestmentSchemeRelief":null,"concessionalRelief":null,"maintenancePayments":102.40,"marriedCouplesAllowance":null,"doubleTaxationRelief":null},"otherTaxDue":null,"alreadyTaxedAtSource":null,"totalLiability":2256.20},"incomeSources":[{"employmentId":8,"employmentType":1,"employmentStatus":1,"employmentTaxDistrictNumber":1,"employmentPayeRef":"000","pensionIndicator":false,"otherIncomeSourceIndicator":false,"jsaIndicator":false,"name":"EMPLOYER1","taxCode":"1434T","potentialUnderpayment":0,"allowances":[{"npsDescription":"payments towards a retirement annuity","amount":944,"type":4,"iabdSummaries":[{"amount":944,"type":18,"npsDescription":"Retirement Annuity Payments","employmentId":null}],"sourceAmount":944},{"npsDescription":"death, sickness or funeral benefits","amount":944,"type":25,"iabdSummaries":[{"amount":944,"type":93,"npsDescription":"Trade Union Subscriptions","employmentId":null}],"sourceAmount":944},{"npsDescription":"loan interest","amount":944,"type":8,"iabdSummaries":[{"amount":944,"type":11,"npsDescription":"Loan Interest Amount","employmentId":null}],"sourceAmount":944},{"npsDescription":"maintenance payments","amount":1024,"type":10,"iabdSummaries":[{"amount":1024,"type":6,"npsDescription":"Maintenance Payments","employmentId":null}],"sourceAmount":1024},{"npsDescription":"personal allowance","amount":11000,"type":11,"iabdSummaries":[{"amount":11000,"type":118,"npsDescription":"Personal Allowance (PA)","employmentId":null}],"sourceAmount":11000}],"deductions":[{"npsDescription":"Higher Personal Allowance Restriction","amount":512,"type":37,"iabdSummaries":null,"sourceAmount":0}],"payAndTax":{"totalIncome":{"npsDescription":null,"amount":25625.00,"type":null,"iabdSummaries":[{"amount":25625,"type":27,"npsDescription":"New Estimated Pay","employmentId":8,"defaultEstimatedPay":null}],"sourceAmount":null},"allowReliefDeducts":{"npsDescription":null,"amount":14349.92,"type":null,"iabdSummaries":null,"sourceAmount":null},"totalTax":2255.00,"totalTaxableIncome":11275.00,"taxBands":[{"bandType":"B","taxCode":"BR","isBasicRate":true,"income":11275.00,"tax":2255.00,"lowerBand":0,"upperBand":32000,"rate":20.00},{"bandType":"D0","taxCode":"D0","isBasicRate":false,"income":null,"tax":null,"lowerBand":32000,"upperBand":150000,"rate":40.00},{"bandType":"D1","taxCode":"D1","isBasicRate":false,"income":null,"tax":null,"lowerBand":150000,"upperBand":0,"rate":45.00}]}}]}
+{
+  "taxAccountId": null,
+  "date": "18/04/2016",
+  "nino": "$NINO",
+  "taxYear": 2016,
+  "previousTaxAccountId": 23,
+  "previousYearTaxAccountId": 20,
+  "nextTaxAccountId": null,
+  "nextYearTaxAccountId": null,
+  "totalEstTax": 2255.00,
+  "totalEstPay": {
+    "npsDescription": null,
+    "amount": 25625.00,
+    "type": null,
+    "iabdSummaries": [
+      {
+        "amount": 25625,
+        "type": 27,
+        "npsDescription": "New Estimated Pay",
+        "employmentId": 8,
+        "defaultEstimatedPay": null
+      }
+    ],
+    "sourceAmount": null
+  },
+  "adjustedNetIncome": {
+    "npsDescription": null,
+    "amount": 23737,
+    "type": null,
+    "iabdSummaries": [
+      {
+        "amount": 25625,
+        "type": 27,
+        "npsDescription": "New Estimated Pay",
+        "employmentId": 8,
+        "defaultEstimatedPay": null
+      }
+    ],
+    "sourceAmount": null
+  },
+  "totalLiability": {
+    "nonSavings": {
+      "totalIncome": {
+        "npsDescription": null,
+        "amount": 25625,
+        "type": null,
+        "iabdSummaries": [
+          {
+            "amount": 25625,
+            "type": 27,
+            "npsDescription": "New Estimated Pay",
+            "employmentId": 8,
+            "defaultEstimatedPay": null
+          }
+        ],
+        "sourceAmount": null
+      },
+      "allowReliefDeducts": {
+        "npsDescription": null,
+        "amount": 13832,
+        "type": null,
+        "iabdSummaries": [
+          {
+            "amount": 11000,
+            "type": 118,
+            "npsDescription": "Personal Allowance (PA)",
+            "employmentId": null
+          },
+          {
+            "amount": 944,
+            "type": 18,
+            "npsDescription": "Retirement Annuity Payments",
+            "employmentId": null
+          },
+          {
+            "amount": 944,
+            "type": 93,
+            "npsDescription": "Trade Union Subscriptions",
+            "employmentId": null
+          },
+          {
+            "amount": 944,
+            "type": 11,
+            "npsDescription": "Loan Interest Amount",
+            "employmentId": null
+          }
+        ],
+        "sourceAmount": null
+      },
+      "totalTax": 2358.60,
+      "totalTaxableIncome": 11793,
+      "taxBands": [
+        {
+          "bandType": "B",
+          "taxCode": "BR",
+          "isBasicRate": true,
+          "income": 11793,
+          "tax": 2358.60,
+          "lowerBand": 0,
+          "upperBand": 32000,
+          "rate": 20.00
+        },
+        {
+          "bandType": "D0",
+          "taxCode": "D0",
+          "isBasicRate": false,
+          "income": null,
+          "tax": null,
+          "lowerBand": 32000,
+          "upperBand": 150000,
+          "rate": 40.00
+        },
+        {
+          "bandType": "D1",
+          "taxCode": "D1",
+          "isBasicRate": false,
+          "income": null,
+          "tax": null,
+          "lowerBand": 150000,
+          "upperBand": 0,
+          "rate": 45.00
+        }
+      ]
+    },
+    "untaxedInterest": null,
+    "bankInterest": null,
+    "ukDividends": null,
+    "foreignInterest": null,
+    "foreignDividends": null,
+    "basicRateExtensions": {
+      "npsDescription": null,
+      "amount": 0,
+      "type": null,
+      "iabdSummaries": null,
+      "sourceAmount": null,
+      "personalPensionPayment": null,
+      "giftAidPayment": null,
+      "personalPensionPaymentRelief": null,
+      "giftAidPaymentsRelief": null
+    },
+    "reliefsGivingBackTax": {
+      "npsDescription": null,
+      "amount": 102.40,
+      "type": null,
+      "iabdSummaries": [
+        {
+          "amount": 1024,
+          "type": 6,
+          "npsDescription": "Maintenance Payments",
+          "employmentId": null
+        }
+      ],
+      "sourceAmount": null,
+      "enterpriseInvestmentSchemeRelief": null,
+      "concessionalRelief": null,
+      "maintenancePayments": 102.40,
+      "marriedCouplesAllowance": null,
+      "doubleTaxationRelief": null
+    },
+    "otherTaxDue": null,
+    "alreadyTaxedAtSource": null,
+    "totalLiability": 2256.20
+  },
+  "incomeSources": [
+    {
+      "employmentId": 8,
+      "employmentType": 1,
+      "employmentStatus": 1,
+      "employmentTaxDistrictNumber": 1,
+      "employmentPayeRef": "000",
+      "pensionIndicator": false,
+      "otherIncomeSourceIndicator": false,
+      "jsaIndicator": false,
+      "name": "EMPLOYER1",
+      "taxCode": "1434T",
+      "potentialUnderpayment": 0,
+      "allowances": [
+        {
+          "npsDescription": "payments towards a retirement annuity",
+          "amount": 944,
+          "type": 4,
+          "iabdSummaries": [
+            {
+              "amount": 944,
+              "type": 18,
+              "npsDescription": "Retirement Annuity Payments",
+              "employmentId": null
+            }
+          ],
+          "sourceAmount": 944
+        },
+        {
+          "npsDescription": "death, sickness or funeral benefits",
+          "amount": 944,
+          "type": 25,
+          "iabdSummaries": [
+            {
+              "amount": 944,
+              "type": 93,
+              "npsDescription": "Trade Union Subscriptions",
+              "employmentId": null
+            }
+          ],
+          "sourceAmount": 944
+        },
+        {
+          "npsDescription": "loan interest",
+          "amount": 944,
+          "type": 8,
+          "iabdSummaries": [
+            {
+              "amount": 944,
+              "type": 11,
+              "npsDescription": "Loan Interest Amount",
+              "employmentId": null
+            }
+          ],
+          "sourceAmount": 944
+        },
+        {
+          "npsDescription": "maintenance payments",
+          "amount": 1024,
+          "type": 10,
+          "iabdSummaries": [
+            {
+              "amount": 1024,
+              "type": 6,
+              "npsDescription": "Maintenance Payments",
+              "employmentId": null
+            }
+          ],
+          "sourceAmount": 1024
+        },
+        {
+          "npsDescription": "personal allowance",
+          "amount": 11000,
+          "type": 11,
+          "iabdSummaries": [
+            {
+              "amount": 11000,
+              "type": 118,
+              "npsDescription": "Personal Allowance (PA)",
+              "employmentId": null
+            }
+          ],
+          "sourceAmount": 11000
+        }
+      ],
+      "deductions": [
+        {
+          "npsDescription": "Higher Personal Allowance Restriction",
+          "amount": 512,
+          "type": 37,
+          "iabdSummaries": null,
+          "sourceAmount": 0
+        }
+      ],
+      "payAndTax": {
+        "totalIncome": {
+          "npsDescription": null,
+          "amount": 25625.00,
+          "type": null,
+          "iabdSummaries": [
+            {
+              "amount": 25625,
+              "type": 27,
+              "npsDescription": "New Estimated Pay",
+              "employmentId": 8,
+              "defaultEstimatedPay": null
+            }
+          ],
+          "sourceAmount": null
+        },
+        "allowReliefDeducts": {
+          "npsDescription": null,
+          "amount": 14349.92,
+          "type": null,
+          "iabdSummaries": null,
+          "sourceAmount": null
+        },
+        "totalTax": 2255.00,
+        "totalTaxableIncome": 11275.00,
+        "taxBands": [
+          {
+            "bandType": "B",
+            "taxCode": "BR",
+            "isBasicRate": true,
+            "income": 11275.00,
+            "tax": 2255.00,
+            "lowerBand": 0,
+            "upperBand": 32000,
+            "rate": 20.00
+          },
+          {
+            "bandType": "D0",
+            "taxCode": "D0",
+            "isBasicRate": false,
+            "income": null,
+            "tax": null,
+            "lowerBand": 32000,
+            "upperBand": 150000,
+            "rate": 40.00
+          },
+          {
+            "bandType": "D1",
+            "taxCode": "D1",
+            "isBasicRate": false,
+            "income": null,
+            "tax": null,
+            "lowerBand": 150000,
+            "upperBand": 0,
+            "rate": 45.00
+          }
+        ]
+      }
+    }
+  ]
+}

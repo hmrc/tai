@@ -16,21 +16,22 @@
 
 package uk.gov.hmrc.tai.model.domain
 
-import java.time.LocalDate
 import org.scalatestplus.play.PlaySpec
 import uk.gov.hmrc.tai.model.domain.income.Live
 import uk.gov.hmrc.tai.model.tai.TaxYear
 
+import java.time.LocalDate
+
 class EmploymentsSpec extends PlaySpec {
 
   val currentTaxYear: TaxYear = TaxYear()
-  val previousTaxYear = currentTaxYear.prev
-  val now = LocalDate.now()
+  val previousTaxYear: TaxYear = currentTaxYear.prev
+  val now: LocalDate = LocalDate.now()
 
-  val annualAccountCTY = createAnnualAccount()
-  val annualAccountPTY = createAnnualAccount(taxYear = previousTaxYear)
+  val annualAccountCTY: AnnualAccount = createAnnualAccount()
+  val annualAccountPTY: AnnualAccount = createAnnualAccount(taxYear = previousTaxYear)
 
-  val employment1 = Employment(
+  val employment1: Employment = Employment(
     "TEST",
     Live,
     Some("12345"),
@@ -42,7 +43,8 @@ class EmploymentsSpec extends PlaySpec {
     1,
     Some(100),
     false,
-    false
+    false,
+    PensionIncome
   )
 
   def createAnnualAccount(
@@ -143,7 +145,8 @@ class EmploymentsSpec extends PlaySpec {
             1,
             None,
             false,
-            false
+            false,
+            PensionIncome
           )
 
         val employment1WithPTYAccount =
@@ -159,7 +162,8 @@ class EmploymentsSpec extends PlaySpec {
             1,
             None,
             false,
-            false
+            false,
+            PensionIncome
           )
 
         val annualAccount2CTY = createAnnualAccount(sequenceNumber = 2, taxYear = currentTaxYear)
@@ -176,7 +180,8 @@ class EmploymentsSpec extends PlaySpec {
             2,
             None,
             false,
-            false
+            false,
+            PensionIncome
           )
 
         val expectedMergedEmployment = employment1.copy(annualAccounts = Seq(annualAccountCTY, annualAccountPTY))
@@ -204,7 +209,8 @@ class EmploymentsSpec extends PlaySpec {
             1,
             None,
             false,
-            false
+            false,
+            PensionIncome
           )
 
         val annualAccount2CTY = createAnnualAccount(sequenceNumber = 2, taxYear = currentTaxYear)
@@ -221,7 +227,8 @@ class EmploymentsSpec extends PlaySpec {
             2,
             None,
             false,
-            false
+            false,
+            PensionIncome
           )
 
         val unifiedEmployment = Employments(Seq(employment1), None)
@@ -254,7 +261,8 @@ class EmploymentsSpec extends PlaySpec {
           1,
           None,
           false,
-          false
+          false,
+          PensionIncome
         )
 
       val employment1WithUpdatedStatus =
@@ -270,7 +278,8 @@ class EmploymentsSpec extends PlaySpec {
           1,
           None,
           false,
-          false
+          false,
+          PensionIncome
         )
 
       val annualAccount2CTY = createAnnualAccount(sequenceNumber = 2, taxYear = currentTaxYear)
@@ -287,7 +296,8 @@ class EmploymentsSpec extends PlaySpec {
           2,
           None,
           false,
-          false
+          false,
+          PensionIncome
         )
 
       val expectedEmployments =
