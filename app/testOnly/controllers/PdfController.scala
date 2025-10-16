@@ -14,25 +14,27 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.tai.controllers.testOnly
+package testOnly.controllers
 
 import com.google.inject.Inject
 import org.apache.pekko.util.ByteString
 import play.api.http.HttpEntity.Strict
-import play.api.mvc.{Action, AnyContent, ControllerComponents, ResponseHeader, Result}
+import play.api.mvc.*
 import uk.gov.hmrc.mongoFeatureToggles.services.FeatureFlagService
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 import uk.gov.hmrc.tai.model.admin.UseApacheFopLibrary
 import uk.gov.hmrc.tai.model.templates.{EmploymentPensionViewModel, RemoveCompanyBenefitViewModel}
 import uk.gov.hmrc.tai.service.PdfService
 import uk.gov.hmrc.tai.service.PdfService.{EmploymentIFormReportRequest, PdfGeneratorRequest, PensionProviderIFormRequest, RemoveCompanyBenefitIFormRequest}
+import testOnly.testViews.templates.html.PdfIndex
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class TestOnlyPdfController @Inject() (
+class PdfController @Inject() (
   pdfService: PdfService,
   cc: ControllerComponents,
-  featureFlagService: FeatureFlagService
+  featureFlagService: FeatureFlagService,
+  view: PdfIndex
 )(implicit ec: ExecutionContext)
     extends BackendController(cc) with TestData {
 
@@ -41,7 +43,7 @@ class TestOnlyPdfController @Inject() (
       Result(
         header = ResponseHeader(OK),
         body = Strict(
-          ByteString.apply(uk.gov.hmrc.tai.templates.html.Index().body.getBytes()),
+          ByteString.apply(view().body.getBytes()),
           contentType = Some("text/html")
         )
       )

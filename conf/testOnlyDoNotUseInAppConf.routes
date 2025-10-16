@@ -19,5 +19,5 @@ GET           /test-only/v1/api/employment/employee/:nino/tax-year/:taxYear/empl
 GET           /test-only/v1/api/person/:nino/tax-account/:taxYear                                @testOnly.controllers.ApiCallController.taxAccount(nino: Nino, taxYear: Int)
 GET           /test-only/v1/api/iabd/taxpayer/:nino/tax-year/:taxYear                            @testOnly.controllers.ApiCallController.iabds(nino: Nino, taxYear: Int)
 
-GET           /tai/test-only/pdf/:isNewGenerator/:contentId/:dataId         @uk.gov.hmrc.tai.controllers.testOnly.TestOnlyPdfController.pdf(isNewGenerator:Boolean,contentId:String,dataId: String)
-GET           /tai/test-only/pdf                                            @uk.gov.hmrc.tai.controllers.testOnly.TestOnlyPdfController.index()
+GET           /tai/test-only/pdf/:isNewGenerator/:contentId/:dataId         @testOnly.controllers.PdfController.pdf(isNewGenerator:Boolean,contentId:String,dataId: String)
+GET           /tai/test-only/pdf                                            @testOnly.controllers.PdfController.index()
