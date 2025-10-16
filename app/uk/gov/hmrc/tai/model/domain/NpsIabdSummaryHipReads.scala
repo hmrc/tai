@@ -32,11 +32,11 @@ object NpsIabdSummaryHipReads {
   def totalLiabilityIabds(json: JsValue, subPath: String, categories: Seq[String]): Seq[NpsIabdSummary] = {
 
     val parseSummary: PartialFunction[JsValue, NpsIabdSummary] = {
-      case jsonValue if (jsonValue \ "type").asOpt[(String, Int)](readsTypeTuple).isDefined =>
-        val fullType = (jsonValue \ "type").as[String]
+      case json if (json \ "type").asOpt[(String, Int)](readsTypeTuple).isDefined =>
+        val fullType = (json \ "type").as[String]
         val (description, componentType) = parseTypeOrException(fullType)
-        val employmentId = (jsonValue \ "employmentSequenceNumber").asOpt[Int]
-        val amount = (jsonValue \ "amount").asOpt[BigDecimal].getOrElse(BigDecimal(0))
+        val employmentId = (json \ "employmentSequenceNumber").asOpt[Int]
+        val amount = (json \ "amount").asOpt[BigDecimal].getOrElse(BigDecimal(0))
         NpsIabdSummary(componentType, employmentId, amount, description)
     }
 
