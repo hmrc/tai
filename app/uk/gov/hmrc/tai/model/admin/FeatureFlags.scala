@@ -55,4 +55,5 @@ case object UseApacheFopLibrary extends FeatureFlagName {
   override val description: Option[String] = Some(
     "Use ApacheFopLibrary instead of PDF_GENERATOR_SERVICE"
   )
+  override val lockedEnvironments: Seq[Environment] = Seq(Local, Staging, Qa, Production)
 }

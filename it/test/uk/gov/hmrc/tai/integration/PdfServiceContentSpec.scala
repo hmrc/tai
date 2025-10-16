@@ -32,6 +32,7 @@ import uk.gov.hmrc.tai.service.PdfService
 import uk.gov.hmrc.tai.service.PdfService.{EmploymentIFormReportRequest, PdfGeneratorRequest, PensionProviderIFormRequest, RemoveCompanyBenefitIFormRequest}
 import uk.gov.hmrc.tai.service.helper.XslFo2PdfBytesFunction
 import uk.gov.hmrc.tai.util.BaseSpec
+import org.mockito.Mockito.when
 
 import java.nio.file.{Files, Path, Paths}
 import java.util.concurrent.TimeUnit
