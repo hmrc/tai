@@ -20,7 +20,10 @@ import org.mockito.ArgumentMatchers.{any, contains}
 import org.mockito.Mockito.{never, times, verify, when}
 import uk.gov.hmrc.http.HttpResponse
 import uk.gov.hmrc.tai.connectors.CitizenDetailsConnector
-import uk.gov.hmrc.tai.model.domain.{Address, Person}
+import uk.gov.hmrc.tai.model.domain.{AddEmployment, Address, Person}
+import uk.gov.hmrc.tai.model.tai.TaxYear
+import uk.gov.hmrc.tai.model.templates.EmploymentPensionViewModel
+import uk.gov.hmrc.tai.service.PdfService.EmploymentIFormReportRequest
 import uk.gov.hmrc.tai.util.BaseSpec
 
 import java.nio.file.{Files, Paths}
@@ -62,7 +65,18 @@ class IFormSubmissionServiceSpec extends BaseSpec {
         .thenReturn(Future.successful(HttpResponse(200, responseBody)))
 
       val sut = createSUT(mockCitizenDetailsConnector, mockPdfService, mockFileUploadService)
-      val messageId = sut.uploadIForm(nino, iformSubmissionKey, iformId, (_: Person) => Future(""))(hc).futureValue
+      val addEmployment =
+        AddEmployment("employerName", LocalDate.parse("2018-12-13"), "12345", "Yes", Some("123456789"))
+      val templateModel =
+        EmploymentPensionViewModel(taxYear = TaxYear(2017), person = person, employment = addEmployment)
+      val messageId = sut
+        .uploadIForm(
+          nino,
+          iformSubmissionKey,
+          iformId,
+          (_: Person) => Future(EmploymentIFormReportRequest(templateModel))
+        )(hc)
+        .futureValue
 
       messageId mustBe "1"
 
@@ -92,8 +106,20 @@ class IFormSubmissionServiceSpec extends BaseSpec {
         .thenReturn(Future.failed(new RuntimeException("Error")))
 
       val sut = createSUT(mockCitizenDetailsConnector, mockPdfService, mockFileUploadService)
+      val addEmployment =
+        AddEmployment("employerName", LocalDate.parse("2018-12-13"), "12345", "Yes", Some("123456789"))
+      val templateModel =
+        EmploymentPensionViewModel(taxYear = TaxYear(2017), person = person, employment = addEmployment)
 
-      val result = sut.uploadIForm(nino, iformSubmissionKey, iformId, (_: Person) => Future(""))(hc).failed.futureValue
+      val result = sut
+        .uploadIForm(
+          nino,
+          iformSubmissionKey,
+          iformId,
+          (_: Person) => Future(EmploymentIFormReportRequest(templateModel))
+        )(hc)
+        .failed
+        .futureValue
 
       result mustBe a[RuntimeException]
 

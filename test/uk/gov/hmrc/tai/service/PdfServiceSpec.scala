@@ -20,10 +20,8 @@ import org.mockito.ArgumentMatchers
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.when
 import uk.gov.hmrc.http.HttpException
-import uk.gov.hmrc.mongoFeatureToggles.model.FeatureFlag
 import uk.gov.hmrc.mongoFeatureToggles.services.FeatureFlagService
 import uk.gov.hmrc.tai.connectors.PdfConnector
-import uk.gov.hmrc.tai.model.admin.UseApacheFopLibrary
 import uk.gov.hmrc.tai.model.templates.EmploymentPensionViewModel
 import uk.gov.hmrc.tai.service.PdfService.EmploymentIFormReportRequest
 import uk.gov.hmrc.tai.service.helper.XslFo2PdfBytesFunction
@@ -49,7 +47,7 @@ class PdfServiceSpec extends BaseSpec {
         val mockFeatureFlagService = mock[FeatureFlagService]
 
         val sut = createSut(mockHtml2Pdf, mockXslFo2PdfBytesFunction, mockFeatureFlagService)
-        val result = sut.generatePdf(htmlAsString).futureValue
+        val result = sut.generatePdfLegacy(htmlAsString).futureValue
 
         result mustBe pdfBytes
       }
@@ -67,31 +65,9 @@ class PdfServiceSpec extends BaseSpec {
         val mockFeatureFlagService = mock[FeatureFlagService]
 
         val sut = createSut(mockHtml2Pdf, mockXslFo2PdfBytesFunction, mockFeatureFlagService)
-        val result = sut.generatePdf(htmlAsString).failed.futureValue
+        val result = sut.generatePdfLegacy(htmlAsString).failed.futureValue
 
         result mustBe a[HttpException]
-      }
-    }
-  }
-
-  "PdfService generatePdfDocumentBytes using PDF generator" should {
-    "return the pdf as bytes " when {
-      "generatePdf is called successfully" in {
-
-        val mockHtml2Pdf = mock[PdfConnector]
-        val mockXslFo2PdfBytesFunction = inject[XslFo2PdfBytesFunction]
-        val mockFeatureFlagService = mock[FeatureFlagService]
-        val sut = createSut(mockHtml2Pdf, mockXslFo2PdfBytesFunction, mockFeatureFlagService)
-
-        when(mockFeatureFlagService.get(any())).thenReturn(Future.successful(FeatureFlag(UseApacheFopLibrary, false)))
-
-        val pdfBytes = Files.readAllBytes(Paths.get("test/resources/sample.pdf"))
-        when(mockHtml2Pdf.generatePdf(any())).thenReturn(Future.successful(pdfBytes))
-
-        val request = new EmploymentIFormReportRequest(emp_isEnd_NO_isAdd_NO)
-
-        val result = sut.generatePdfDocumentBytes(request).futureValue
-        result mustBe pdfBytes
       }
     }
   }
@@ -105,14 +81,12 @@ class PdfServiceSpec extends BaseSpec {
         val mockFeatureFlagService = mock[FeatureFlagService]
         val sut = createSut(mockHtml2Pdf, mockXslFo2PdfBytesFunction, mockFeatureFlagService)
 
-        when(mockFeatureFlagService.get(any())).thenReturn(Future.successful(FeatureFlag(UseApacheFopLibrary, true)))
-
         val pdfBytes = Files.readAllBytes(Paths.get("test/resources/sample.pdf"))
         when(mockXslFo2PdfBytesFunction(any())).thenReturn(pdfBytes)
 
         val request = new EmploymentIFormReportRequest(emp_isEnd_NO_isAdd_NO)
 
-        val result = sut.generatePdfDocumentBytes(request).futureValue
+        val result = sut.generatePdfUsingFop(request.xmlFoDocument()).futureValue
         result mustBe pdfBytes
       }
     }

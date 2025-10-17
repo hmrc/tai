@@ -20,20 +20,20 @@ import com.google.inject.Inject
 import org.apache.pekko.util.ByteString
 import play.api.http.HttpEntity.Strict
 import play.api.mvc.*
-import uk.gov.hmrc.mongoFeatureToggles.services.FeatureFlagService
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
-import uk.gov.hmrc.tai.model.admin.UseApacheFopLibrary
 import uk.gov.hmrc.tai.model.templates.{EmploymentPensionViewModel, RemoveCompanyBenefitViewModel}
 import uk.gov.hmrc.tai.service.PdfService
 import uk.gov.hmrc.tai.service.PdfService.{EmploymentIFormReportRequest, PdfGeneratorRequest, PensionProviderIFormRequest, RemoveCompanyBenefitIFormRequest}
 import testOnly.testViews.templates.html.PdfIndex
+import uk.gov.hmrc.tai.connectors.PdfConnector
+import uk.gov.hmrc.tai.service.helper.XslFo2PdfBytesFunction
 
 import scala.concurrent.{ExecutionContext, Future}
 
 class PdfController @Inject() (
-  pdfService: PdfService,
   cc: ControllerComponents,
-  featureFlagService: FeatureFlagService,
+  html2Pdf: PdfConnector,
+  xslFo2Pdf: XslFo2PdfBytesFunction,
   view: PdfIndex
 )(implicit ec: ExecutionContext)
     extends BackendController(cc) with TestData {
@@ -47,6 +47,13 @@ class PdfController @Inject() (
           contentType = Some("text/html")
         )
       )
+    }
+
+  private def generatePdfDocumentBytes(pdfReport: PdfGeneratorRequest[_], useApacheFop: Boolean): Future[Array[Byte]] =
+    if (useApacheFop) {
+      Future.successful(xslFo2Pdf(pdfReport.xmlFoDocument()))
+    } else {
+      html2Pdf.generatePdf(pdfReport.htmlDocument())
     }
 
   def pdf(useNewGenerator: Boolean = false, formId: String, dataId: String): Action[AnyContent] =
@@ -63,35 +70,21 @@ class PdfController @Inject() (
       )
 
       val request: PdfGeneratorRequest[_] = if (formId == "EmploymentIFormReportRequest") {
-        new EmploymentIFormReportRequest(dataEmp.get(dataId).get)
+        new EmploymentIFormReportRequest(dataEmp(dataId))
       } else if (formId == "PensionProviderIFormRequest") {
-        new PensionProviderIFormRequest(dataEmp.get(dataId).get)
+        new PensionProviderIFormRequest(dataEmp(dataId))
       } else if (formId == "RemoveCompanyBenefitIFormRequest") {
-        new RemoveCompanyBenefitIFormRequest(dataComp.get(dataId).get)
+        new RemoveCompanyBenefitIFormRequest(dataComp(dataId))
       } else {
         throw new Exception("unknown form")
       }
 
-      featureFlagService
-        .get(UseApacheFopLibrary)
-        .map(_.isEnabled)
-        .flatMap { isEnabled =>
-          if (isEnabled != useNewGenerator) {
-            featureFlagService.set(UseApacheFopLibrary, useNewGenerator)
-          } else {
-            Future.successful((): Unit)
-          }
-        }
-        .flatMap(_ =>
-          pdfService
-            .generatePdfDocumentBytes(request)
+      generatePdfDocumentBytes(request, useNewGenerator).map(bytes =>
+        Result(
+          header = ResponseHeader(OK),
+          body = Strict(ByteString.apply(bytes), contentType = Some("application/pdf"))
         )
-        .map(bytes =>
-          Result(
-            header = ResponseHeader(OK),
-            body = Strict(ByteString.apply(bytes), contentType = Some("application/pdf"))
-          )
-        )
+      )
     }
 }
 

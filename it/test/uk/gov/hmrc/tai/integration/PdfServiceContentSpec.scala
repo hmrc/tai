@@ -51,7 +51,8 @@ class PdfServiceContentSpec extends BaseSpec with PdfServiceContentSpecHelper {
   "PdfService generatePdfDocumentBytes, when using Apache FOP" should {
     forAll(table) { (scenario, request, path) =>
       s"generate correct report for scenario '$scenario'" in {
-        val pdfBytes: Array[Byte] = await(sut.generatePdfDocumentBytes(request))(Timeout.apply(5, TimeUnit.SECONDS))
+        val pdfBytes: Array[Byte] =
+          await(sut.generatePdfUsingFop(request.xmlFoDocument()))(Timeout.apply(5, TimeUnit.SECONDS))
         val pdfText: String = extractPdfText(pdfBytes)
         val expectedText: String = Files.readString(path)
         pdfText mustBe expectedText

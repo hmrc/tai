@@ -23,7 +23,7 @@ import uk.gov.hmrc.tai.model.admin.UseApacheFopLibrary
 import uk.gov.hmrc.tai.model.templates.{EmploymentPensionViewModel, RemoveCompanyBenefitViewModel}
 import uk.gov.hmrc.tai.service.PdfService.PdfGeneratorRequest
 import uk.gov.hmrc.tai.service.helper.XslFo2PdfBytesFunction
-import uk.gov.hmrc.tai.templates._
+import uk.gov.hmrc.tai.templates.*
 
 import scala.annotation.nowarn
 import scala.concurrent.{ExecutionContext, Future}
@@ -37,16 +37,19 @@ class PdfService @Inject() (
   ec: ExecutionContext
 ) {
 
-//  @deprecated(message = "calls to pdf-generator-service should be replaced by lib such as appachefop", since = "TBC")
-  def generatePdf(html: String): Future[Array[Byte]] = html2Pdf.generatePdf(html)
+  def generatePdfLegacy(html: String): Future[Array[Byte]] = html2Pdf.generatePdf(html)
 
-  def generatePdfDocumentBytes(pdfReport: PdfGeneratorRequest[_]): Future[Array[Byte]] =
-    featureFlagService.get(UseApacheFopLibrary).map(_.isEnabled).flatMap { enableApacheFop =>
-      if (enableApacheFop)
-        Future.successful(xslFo2Pdf(pdfReport.xmlFoDocument()))
-      else
-        generatePdf(pdfReport.htmlDocument())
+  def generatePdfUsingFop(xmlFo: Array[Byte]): Future[Array[Byte]] = Future.successful(xslFo2Pdf(xmlFo))
+
+  def generatePdf[T](generatorRequest: PdfGeneratorRequest[T]): Future[Array[Byte]] =
+    featureFlagService.get(UseApacheFopLibrary).flatMap { toggle =>
+      if (toggle.isEnabled) {
+        generatePdfUsingFop(generatorRequest.xmlFoDocument())
+      } else {
+        generatePdfLegacy(generatorRequest.htmlDocument())
+      }
     }
+
 }
 
 object PdfService {
