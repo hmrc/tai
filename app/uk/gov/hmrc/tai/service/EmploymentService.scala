@@ -30,7 +30,7 @@ import uk.gov.hmrc.tai.model.api.EmploymentCollection.employmentCollectionHodRea
 import uk.gov.hmrc.tai.model.domain.*
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.model.templates.{EmploymentPensionViewModel, PdfSubmission}
-import uk.gov.hmrc.tai.templates.html.EmploymentIForm
+import uk.gov.hmrc.tai.service.PdfService.EmploymentIFormReportRequest
 import uk.gov.hmrc.tai.templates.xml.PdfSubmissionMetadata
 import uk.gov.hmrc.tai.util.IFormConstants
 
@@ -143,9 +143,9 @@ class EmploymentService @Inject() (
         for {
           person <- citizenDetailsConnector.getPerson(nino)
           templateModel = EmploymentPensionViewModel(TaxYear(), person, endEmployment, existingEmployment)
-          endEmploymentHtml = EmploymentIForm(templateModel).toString
+          pdfRequest = EmploymentIFormReportRequest(templateModel)
           pdf <-
-            pdfService.generatePdf(endEmploymentHtml)
+            pdfService.generatePdf(pdfRequest)
           envelopeId <- fileUploadService.createEnvelope()
           endEmploymentMetadata = PdfSubmissionMetadata(PdfSubmission(ninoWithoutSuffix(nino), "TES1", 2))
                                     .toString()
@@ -185,8 +185,9 @@ class EmploymentService @Inject() (
     for {
       person <- citizenDetailsConnector.getPerson(nino)
       templateModel = EmploymentPensionViewModel(TaxYear(), person, employment)
-      addEmploymentHtml = EmploymentIForm(templateModel).toString
-      pdf        <- pdfService.generatePdf(addEmploymentHtml)
+      pdfRequest = EmploymentIFormReportRequest(templateModel)
+      pdf <-
+        pdfService.generatePdf(pdfRequest)
       envelopeId <- fileUploadService.createEnvelope()
       addEmploymentMetadata = PdfSubmissionMetadata(PdfSubmission(ninoWithoutSuffix(nino), "TES1", 2))
                                 .toString()
@@ -229,7 +230,7 @@ class EmploymentService @Inject() (
           .map {
             case Some(employment) =>
               val templateModel = EmploymentPensionViewModel(TaxYear(), person, incorrectEmployment, employment)
-              EmploymentIForm(templateModel).toString
+              EmploymentIFormReportRequest(templateModel)
             case None => throw new RuntimeException(s"employment id: $id not found in list of employments")
           }
           .foldF(Future.failed, Future.successful)
@@ -258,7 +259,7 @@ class EmploymentService @Inject() (
       IFormConstants.UpdatePreviousYearIncomeSubmissionKey,
       "TES1",
       (person: Person) =>
-        Future.successful(EmploymentIForm(EmploymentPensionViewModel(year, person, incorrectEmployment)).toString)
+        Future.successful(EmploymentIFormReportRequest(EmploymentPensionViewModel(year, person, incorrectEmployment)))
     ) map { envelopeId =>
       logger.info("Envelope Id for updatePreviousYearIncome- " + envelopeId)
 
