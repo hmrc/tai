@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2024 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,30 +14,15 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.tai.model.domain.income
+package uk.gov.hmrc.tai.model.hip.reads
 
-import play.api.libs.json._
-import uk.gov.hmrc.tai.model.domain._
+import play.api.libs.json.*
+import uk.gov.hmrc.tai.model.domain.*
+import uk.gov.hmrc.tai.model.domain.income.*
 
 object OtherNonTaxCodeIncomeHipReads {
-  implicit val format: Format[OtherNonTaxCodeIncome] = Json.format[OtherNonTaxCodeIncome]
 
-  val otherNonTaxCodeIncomeReads: Reads[Seq[OtherNonTaxCodeIncome]] = (json: JsValue) => {
-    val extractedIabds: Seq[NpsIabdSummary] =
-      json.as[Seq[NpsIabdSummary]](NpsIabdSummaryHipReads.iabdsFromTotalLiabilityReads)
-    JsSuccess(nonTaxCodeIncomes(extractedIabds))
-  }
-
-  private def nonTaxCodeIncomes(iabds: Seq[NpsIabdSummary]): Seq[OtherNonTaxCodeIncome] =
-    iabds collect {
-      case iabd if nonTaxCodeIncomesMap.isDefinedAt(iabd.componentType) =>
-        OtherNonTaxCodeIncome(
-          nonTaxCodeIncomesMap(iabd.componentType),
-          iabd.employmentId,
-          iabd.amount,
-          iabd.description
-        )
-    }
+  implicit val format: OFormat[OtherNonTaxCodeIncome] = Json.format[OtherNonTaxCodeIncome]
 
   private val nonTaxCodeIncomesMap: Map[Int, NonTaxCodeIncomeComponentType] = Map(
     19  -> NonCodedIncome,
@@ -71,4 +56,15 @@ object OtherNonTaxCodeIncomeHipReads {
     123 -> EmploymentAndSupportAllowance
   )
 
+  val otherNonTaxCodeIncomeReads: Reads[Seq[OtherNonTaxCodeIncome]] =
+    NpsIabdSummaryHipReads
+      .filteredIabdsFromTotalLiabilityReads(nonTaxCodeIncomesMap.contains)
+      .map(_.map { iabd =>
+        OtherNonTaxCodeIncome(
+          incomeComponentType = nonTaxCodeIncomesMap(iabd.componentType),
+          employmentId = iabd.employmentId,
+          amount = iabd.amount,
+          description = iabd.description
+        )
+      })
 }

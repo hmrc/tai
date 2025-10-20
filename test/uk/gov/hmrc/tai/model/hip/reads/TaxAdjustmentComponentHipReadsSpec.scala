@@ -14,11 +14,12 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.tai.model.domain.taxAdjustments
+package uk.gov.hmrc.tai.model.hip.reads
 
 import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
 import play.api.libs.json.{JsNull, Json}
+import uk.gov.hmrc.tai.model.domain.taxAdjustments.*
 
 class TaxAdjustmentComponentHipReadsSpec extends PlaySpec with MockitoSugar {
   "taxAdjustmentComponentReads" must {

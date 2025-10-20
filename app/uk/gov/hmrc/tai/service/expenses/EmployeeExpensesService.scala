@@ -22,7 +22,7 @@ import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
 import uk.gov.hmrc.tai.connectors.IabdConnector
 import uk.gov.hmrc.tai.model.UpdateIabdEmployeeExpense
 import uk.gov.hmrc.tai.model.enums.APITypes
-import uk.gov.hmrc.tai.model.nps.NpsIabdRoot
+import uk.gov.hmrc.tai.model.domain.IabdDetails
 import uk.gov.hmrc.tai.model.tai.TaxYear
 
 import scala.concurrent.Future
@@ -52,16 +52,16 @@ class EmployeeExpensesService @Inject() (iabdConnector: IabdConnector, featureFl
       apiType = APITypes.DesIabdUpdateEmployeeExpensesAPI
     )
 
-  def getEmployeeExpenses(nino: Nino, taxYear: Int, iabd: Int)(implicit hc: HeaderCarrier): Future[List[NpsIabdRoot]] =
+  def getEmployeeExpenses(nino: Nino, taxYear: Int, iabd: Int)(implicit hc: HeaderCarrier): Future[List[IabdDetails]] =
     featureFlagService.get(HipGetIabdsExpensesToggle).flatMap { toggle =>
       if (toggle.isEnabled) {
-        NpsIabdRoot.iabdTypeToString(iabd) match {
+        IabdDetails.iabdTypeToString(iabd) match {
           case None =>
             Future.failed(new RuntimeException(s"Could not find IABD type for sourceType: $iabd"))
-          case Some(sourceTypeString) =>
-            iabdConnector.iabds(nino, TaxYear(taxYear), Some(sourceTypeString)).map { response =>
-              response.as[List[NpsIabdRoot]](NpsIabdRoot.readsHipListNpsIabdRoot)
-            }
+          case Some(sourceTypeLabel) =>
+            iabdConnector
+              .iabds(nino, TaxYear(taxYear), Some(sourceTypeLabel))
+              .map(_.as[Seq[IabdDetails]](IabdDetails.reads).toList)
         }
       } else {
         iabdConnector.getIabdsForType(nino, taxYear, iabd)

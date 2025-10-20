@@ -22,7 +22,8 @@ import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.mongoFeatureToggles.services.FeatureFlagService
 import uk.gov.hmrc.tai.connectors.TaxAccountConnector
 import uk.gov.hmrc.tai.model.admin.HipTaxAccountHistoryToggle
-import uk.gov.hmrc.tai.model.domain.calculation.{CodingComponent, CodingComponentHipReads, CodingComponentSquidReads}
+import uk.gov.hmrc.tai.model.domain.calculation.{CodingComponent, CodingComponentSquidReads}
+import uk.gov.hmrc.tai.model.hip.reads.CodingComponentHipReads
 import uk.gov.hmrc.tai.model.tai.TaxYear
 
 import scala.concurrent.{ExecutionContext, Future}

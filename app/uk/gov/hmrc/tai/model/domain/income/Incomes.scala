@@ -54,7 +54,7 @@ case class Incomes(taxCodeIncomes: Seq[TaxCodeIncome], nonTaxCodeIncomes: NonTax
 
 object Incomes {
   implicit val format: Format[Incomes] = {
-    import TaxCodeIncomeHipReads.reads
+    import uk.gov.hmrc.tai.model.hip.reads.TaxCodeIncomeHipReads.reads
     Json.format[Incomes]
   }
 }

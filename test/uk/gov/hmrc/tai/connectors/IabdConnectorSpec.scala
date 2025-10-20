@@ -28,9 +28,9 @@ import uk.gov.hmrc.mongoFeatureToggles.model.{FeatureFlag, FeatureFlagName}
 import uk.gov.hmrc.tai.config.{DesConfig, HipConfig}
 import uk.gov.hmrc.tai.model.admin.HipIabdsUpdateExpensesToggle
 import uk.gov.hmrc.tai.model.domain.IabdDetails
+import uk.gov.hmrc.tai.model.domain.IabdDetails.{readsSingle => IabdDetailsReadsSingle}
 import uk.gov.hmrc.tai.model.domain.response.{HodUpdateFailure, HodUpdateSuccess}
 import uk.gov.hmrc.tai.model.enums.APITypes
-import uk.gov.hmrc.tai.model.nps.NpsIabdRoot
 import uk.gov.hmrc.tai.model.nps2.IabdType.{NewEstimatedPay, hipMapping}
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.model.{IabdUpdateAmount, UpdateIabdEmployeeExpense}
@@ -267,15 +267,16 @@ class IabdConnectorSpec extends ConnectorBaseSpec {
   "getIabdsForType" must {
     "get IABD's from DES api" when {
       "supplied with a valid nino, year and IABD type" in {
-
-        val iabdList = List(NpsIabdRoot(nino = nino.nino, `type` = iabdType))
-        val jsonData = Json.toJson(iabdList).toString()
+        val jsonData: String = json.toString()
 
         server.stubFor(
           get(urlEqualTo(iabdsForTypeUrl)).willReturn(aResponse().withStatus(OK).withBody(jsonData))
         )
 
-        sut().getIabdsForType(nino, taxYear.year, iabdType).futureValue mustBe iabdList
+        implicit val listIabdReads: Reads[List[IabdDetails]] = Reads.list(IabdDetailsReadsSingle)
+        val expected: List[IabdDetails] = Json.parse(jsonData).as[List[IabdDetails]]
+
+        sut().getIabdsForType(nino, taxYear.year, iabdType).futureValue mustBe expected
 
         server.verify(
           getRequestedFor(urlEqualTo(iabdsForTypeUrl))
