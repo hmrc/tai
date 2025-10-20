@@ -18,7 +18,6 @@ package testOnly.controllers
 
 import com.google.inject.Inject
 import org.apache.pekko.util.ByteString
-import play.api.http.HttpEntity.Strict
 import play.api.mvc.*
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 import uk.gov.hmrc.tai.model.templates.{EmploymentPensionViewModel, RemoveCompanyBenefitViewModel}
@@ -38,16 +37,9 @@ class PdfController @Inject() (
 )(implicit ec: ExecutionContext)
     extends BackendController(cc) with TestData {
 
-  def index(): Action[AnyContent] =
-    Action { _ =>
-      Result(
-        header = ResponseHeader(OK),
-        body = Strict(
-          ByteString.apply(view().body.getBytes()),
-          contentType = Some("text/html")
-        )
-      )
-    }
+  def index(): Action[AnyContent] = Action { _ =>
+    Ok(view())
+  }
 
   private def generatePdfDocumentBytes(pdfReport: PdfGeneratorRequest[_], useApacheFop: Boolean): Future[Array[Byte]] =
     if (useApacheFop) {
@@ -79,12 +71,7 @@ class PdfController @Inject() (
         throw new Exception("unknown form")
       }
 
-      generatePdfDocumentBytes(request, useNewGenerator).map(bytes =>
-        Result(
-          header = ResponseHeader(OK),
-          body = Strict(ByteString.apply(bytes), contentType = Some("application/pdf"))
-        )
-      )
+      generatePdfDocumentBytes(request, useNewGenerator).map(bytes => Ok(ByteString.apply(bytes)).as("application/pdf"))
     }
 }
 
