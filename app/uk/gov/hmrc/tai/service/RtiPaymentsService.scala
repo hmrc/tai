@@ -22,7 +22,7 @@ import play.api.mvc.Request
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.{HeaderCarrier, UpstreamErrorResponse}
 import uk.gov.hmrc.tai.connectors.RtiConnector
-import uk.gov.hmrc.tai.model.domain.AnnualAccount
+import uk.gov.hmrc.tai.model.domain.{AnnualAccount, TemporarilyUnavailable}
 import uk.gov.hmrc.tai.model.tai.TaxYear
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -38,6 +38,15 @@ class RtiPaymentsService @Inject() (
   ): EitherT[Future, UpstreamErrorResponse, Seq[AnnualAccount]] =
     rtiConnector.getPaymentsForYear(nino, taxYear).transform {
       case Right(accounts: Seq[AnnualAccount]) => Right(accounts)
-      case Left(_)                             => Right(Seq.empty)
+      case Left(_) =>
+        Right(
+          Seq(
+            AnnualAccount(
+              sequenceNumber = 0,
+              taxYear = taxYear,
+              rtiStatus = TemporarilyUnavailable
+            )
+          )
+        )
     }
 }
