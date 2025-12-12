@@ -20,15 +20,14 @@ import org.jsoup.Jsoup
 import org.jsoup.parser.Parser
 import org.scalatestplus.play.PlaySpec
 import play.twirl.api.Xml
-import uk.gov.hmrc.domain.{Generator, Nino}
+import uk.gov.hmrc.domain.{Nino, NinoGenerator}
 import uk.gov.hmrc.tai.model.templates.PdfSubmission
 
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
-import scala.util.Random
 
 class PdfSubmissionMetadataSpec extends PlaySpec {
-  private val nino: Nino = new Generator(new Random).nextNino
+  private val nino: Nino = NinoGenerator().nextNino
   val received: LocalDateTime = LocalDateTime.now()
 
   val pdfSubmission: PdfSubmission = PdfSubmission(

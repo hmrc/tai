@@ -34,15 +34,13 @@ package uk.gov.hmrc.tai.model
 
 import org.scalatestplus.play.PlaySpec
 import play.api.libs.json.Json
-import uk.gov.hmrc.domain.{Generator, Nino}
+import uk.gov.hmrc.domain.{Nino, NinoGenerator}
 import uk.gov.hmrc.tai.factory.{TaxCodeHistoryFactory, TaxCodeRecordFactory}
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.util.TaxCodeHistoryConstants
 
-import scala.util.Random
-
 class TaxCodeHistorySpec extends PlaySpec with TaxCodeHistoryConstants {
-  private val nino: Nino = new Generator(new Random).nextNino
+  private val nino: Nino = NinoGenerator().nextNino
   "TaxCodeHistory reads" must {
     "return a TaxCodeHistory given valid Json" in {
       val taxCodeHistory = TaxCodeHistoryFactory.createTaxCodeHistory(nino)

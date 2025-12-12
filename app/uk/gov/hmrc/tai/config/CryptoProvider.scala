@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2025 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,15 +17,24 @@
 package uk.gov.hmrc.tai.config
 
 import play.api.Configuration
-import uk.gov.hmrc.crypto.{ApplicationCrypto, Decrypter, Encrypter}
+import uk.gov.hmrc.crypto.{Decrypter, Encrypter, SymmetricCryptoFactory}
 
 import javax.inject.{Inject, Provider, Singleton}
 
 @Singleton
 class CryptoProvider @Inject() (
-  configuration: Configuration
+  configuration: Configuration,
+  fakeEncrypterDecrypter: FakeEncrypterDecrypter
 ) extends Provider[Encrypter with Decrypter] {
 
-  override def get(): Encrypter with Decrypter =
-    new ApplicationCrypto(configuration.underlying).JsonCrypto
+  override def get(): Encrypter with Decrypter = {
+    val mongoEncryptionEnabled = configuration
+      .getOptional[Boolean]("mongo.encryption.enabled")
+      .getOrElse(true)
+    if (mongoEncryptionEnabled) {
+      SymmetricCryptoFactory.aesGcmCryptoFromConfig(baseConfigKey = "mongo.encryption", configuration.underlying)
+    } else {
+      fakeEncrypterDecrypter
+    }
+  }
 }

@@ -19,13 +19,11 @@ package uk.gov.hmrc.tai.templates
 import org.jsoup.Jsoup
 import org.scalatestplus.play.PlaySpec
 import play.twirl.api.Html
-import uk.gov.hmrc.domain.Generator
+import uk.gov.hmrc.domain.NinoGenerator
 import uk.gov.hmrc.tai.model.templates.EmploymentPensionViewModel
 
-import scala.util.Random
-
 class EmploymentIFormSpec extends PlaySpec {
-  private val nino = new Generator(new Random()).nextNino
+  private val nino = NinoGenerator().nextNino
 
   private val endEmploymentViewModel: EmploymentPensionViewModel =
     EmploymentPensionViewModel(

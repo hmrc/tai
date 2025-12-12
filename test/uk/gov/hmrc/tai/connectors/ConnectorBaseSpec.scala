@@ -30,7 +30,7 @@ import play.api.cache.AsyncCacheApi
 import play.api.inject.bind
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.test.Injecting
-import uk.gov.hmrc.domain.{Generator, Nino}
+import uk.gov.hmrc.domain.{Nino, NinoGenerator}
 import uk.gov.hmrc.http.{HeaderCarrier, HttpException, RequestId, SessionId}
 import uk.gov.hmrc.mongoFeatureToggles.model.{FeatureFlag, FeatureFlagName}
 import uk.gov.hmrc.mongoFeatureToggles.services.FeatureFlagService
@@ -40,12 +40,11 @@ import uk.gov.hmrc.tai.util.{FakeAsyncCacheApi, WireMockHelper}
 import scala.concurrent.duration.DurationInt
 import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.reflect.ClassTag
-import scala.util.Random
 
 trait ConnectorBaseSpec
     extends PlaySpec with MockitoSugar with WireMockHelper with ScalaFutures with Injecting with IntegrationPatience {
 
-  val nino: Nino = new Generator(new Random).nextNino
+  val nino: Nino = NinoGenerator().nextNino
 
   val sessionId = "testSessionId"
   val requestId = "testRequestId"

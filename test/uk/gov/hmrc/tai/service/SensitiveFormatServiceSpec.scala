@@ -23,7 +23,7 @@ import org.scalatestplus.mockito.MockitoSugar.mock
 import org.scalatestplus.play.PlaySpec
 import play.api.libs.json.*
 import uk.gov.hmrc.crypto.{Crypted, Decrypter, Encrypter, PlainText}
-import uk.gov.hmrc.domain.{Generator, Nino}
+import uk.gov.hmrc.domain.{Nino, NinoGenerator}
 import uk.gov.hmrc.tai.config.MongoConfig
 import uk.gov.hmrc.tai.model.domain.*
 import uk.gov.hmrc.tai.model.tai.TaxYear
@@ -31,7 +31,6 @@ import uk.gov.hmrc.tai.model.{TaxCodeHistory, TaxCodeRecord}
 import uk.gov.hmrc.tai.service.SensitiveFormatService.*
 
 import java.time.LocalDate
-import scala.util.Random
 
 class SensitiveFormatServiceSpec extends PlaySpec with BeforeAndAfterEach {
   private trait EncrypterDecrypter extends Encrypter with Decrypter
@@ -102,7 +101,7 @@ class SensitiveFormatServiceSpec extends PlaySpec with BeforeAndAfterEach {
         Seq(EndOfTaxYearUpdate(LocalDate.of(2017, 5, 26), Seq(Adjustment(NationalInsuranceAdjustment, BigDecimal(10)))))
     )
 
-  private val nino: Nino = new Generator(new Random).nextNino
+  private val nino: Nino = NinoGenerator().nextNino
   private val taxCodeHistory = TaxCodeHistory(nino.nino, Seq.empty)
   private val validJson = Json.obj(
     "nino"          -> nino,

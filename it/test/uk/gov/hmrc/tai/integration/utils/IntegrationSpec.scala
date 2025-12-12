@@ -36,7 +36,7 @@ import play.api.libs.json.{JsValue, Json}
 import play.api.mvc.{Request, Result}
 import play.api.test.Helpers.route
 import play.api.test.{FakeRequest, Injecting}
-import uk.gov.hmrc.domain.{Generator, Nino}
+import uk.gov.hmrc.domain.{Nino, NinoGenerator}
 import uk.gov.hmrc.http.{BadRequestException, InternalServerException, NotFoundException}
 import uk.gov.hmrc.mongoFeatureToggles.model.{FeatureFlag, FeatureFlagName}
 import uk.gov.hmrc.mongoFeatureToggles.services.FeatureFlagService
@@ -47,7 +47,7 @@ import uk.gov.hmrc.tai.model.tai.TaxYear
 import java.util.UUID
 import scala.concurrent.duration.Duration
 import scala.concurrent.{Await, ExecutionContext, Future}
-import scala.util.{Failure, Random, Try}
+import scala.util.{Failure, Try}
 
 trait IntegrationSpec
     extends AnyWordSpec with Matchers with GuiceOneAppPerSuite with WireMockHelper with ScalaFutures with Injecting
@@ -135,7 +135,7 @@ trait IntegrationSpec
 
   override def fakeApplication(): Application = guiceAppBuilder.build()
 
-  val nino: Nino = new Generator(new Random).nextNino
+  val nino: Nino = NinoGenerator().nextNino
   val year: Int = TaxYear().year
   val etag: String = "123"
   val bearerToken = "Bearer 11"

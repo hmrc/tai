@@ -22,18 +22,17 @@ import play.api.libs.json.Json
 import play.api.mvc.Result
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{status, *}
-import uk.gov.hmrc.domain.Generator
+import uk.gov.hmrc.domain.NinoGenerator
 import uk.gov.hmrc.tai.factory.TaxFreeAmountComparisonFactory
 import uk.gov.hmrc.tai.model.TaxFreeAmountComparison
 import uk.gov.hmrc.tai.service.TaxFreeAmountComparisonService
 import uk.gov.hmrc.tai.util.BaseSpec
 
 import scala.concurrent.Future
-import scala.util.Random
 
 class TaxCodeChangeIabdComparisonControllerSpec extends BaseSpec {
 
-  private def ninoGenerator = new Generator(new Random).nextNino
+  private def ninoGenerator = NinoGenerator().nextNino
 
   private val taxFreeAmountComparisonService = mock[TaxFreeAmountComparisonService]
 
