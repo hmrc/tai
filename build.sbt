@@ -46,7 +46,8 @@ lazy val microservice = Project(appName, file("."))
       "uk.gov.hmrc.tai.model.domain._",
       "uk.gov.hmrc.tai.binders._",
       "uk.gov.hmrc.domain._"
-    )
+    ),
+    Compile / TwirlKeys.compileTemplates / sourceDirectories += baseDirectory.value / "app" / "testOnly" / "testViews"
   )
 
 lazy val scoverageSettings = {

@@ -1,0 +1,1381 @@
+{
+  "data": {
+    "previous": [
+      {
+        "componentType": "MarriedCouplesAllowanceToWifeMAW",
+        "amount": 105,
+        "description": "married couple's allowance to your wife",
+        "iabdCategory": "Deduction",
+        "inputAmount": 30105
+      },
+      {
+        "componentType": "BalancingCharge",
+        "amount": 114,
+        "description": "balancing charge",
+        "iabdCategory": "Deduction",
+        "inputAmount": 30114
+      },
+      {
+        "componentType": "UnderpaymentRestriction",
+        "amount": 127,
+        "description": "underpayment restriction",
+        "iabdCategory": "Deduction",
+        "inputAmount": 30127
+      },
+      {
+        "componentType": "GiftAidAdjustment",
+        "amount": 129,
+        "description": "Gift Aid adjustment",
+        "iabdCategory": "Deduction",
+        "inputAmount": 30129
+      },
+      {
+        "componentType": "UnderPaymentFromPreviousYear",
+        "amount": 134,
+        "description": "Underpayment amount",
+        "iabdCategory": "Deduction",
+        "inputAmount": 30134
+      },
+      {
+        "componentType": "HigherPersonalAllowanceRestriction",
+        "amount": 136,
+        "description": "Higher Personal Allowance Restriction",
+        "iabdCategory": "Deduction",
+        "inputAmount": 30136
+      },
+      {
+        "componentType": "AdjustmentToRateBand",
+        "amount": 139,
+        "description": "Adjustment to Rate Band",
+        "iabdCategory": "Deduction",
+        "inputAmount": 30139
+      },
+      {
+        "componentType": "OutstandingDebt",
+        "amount": 140,
+        "description": "Outstanding Debt Restriction",
+        "iabdCategory": "Deduction",
+        "inputAmount": 30140
+      },
+      {
+        "componentType": "ChildBenefit",
+        "amount": 141,
+        "description": "Child Benefit",
+        "iabdCategory": "Deduction",
+        "inputAmount": 30141
+      },
+      {
+        "componentType": "MarriageAllowanceTransferred",
+        "amount": 142,
+        "description": "Personal Allowance Transferred to Partner",
+        "iabdCategory": "Deduction",
+        "inputAmount": 30142
+      },
+      {
+        "componentType": "DividendTax",
+        "amount": 143,
+        "description": "Dividend Tax",
+        "iabdCategory": "Deduction",
+        "inputAmount": 30143
+      },
+      {
+        "componentType": "EstimatedTaxYouOweThisYear",
+        "amount": 144,
+        "description": "In Year Adjustment",
+        "iabdCategory": "Deduction",
+        "inputAmount": 30144
+      },
+      {
+        "componentType": "BRDifferenceTaxCharge",
+        "amount": 149,
+        "description": "BR Difference Tax Charge",
+        "iabdCategory": "Deduction",
+        "inputAmount": 30149
+      },
+      {
+        "componentType": "HICBCPaye",
+        "amount": 150,
+        "description": "HICBC PAYE",
+        "iabdCategory": "Deduction",
+        "inputAmount": 30150
+      },
+      {
+        "componentType": "PersonalPensionPayments",
+        "amount": 205,
+        "description": "Personal Pension Relief",
+        "iabdCategory": "Allowance",
+        "inputAmount": 30205
+      },
+      {
+        "componentType": "GiftAidPayments",
+        "amount": 206,
+        "description": "Gift Aid payments",
+        "iabdCategory": "Allowance",
+        "inputAmount": 30206
+      },
+      {
+        "componentType": "EnterpriseInvestmentScheme",
+        "amount": 207,
+        "description": "Enterprise Investment Scheme relief",
+        "iabdCategory": "Allowance",
+        "inputAmount": 30207
+      },
+      {
+        "componentType": "LoanInterestAmount",
+        "amount": 208,
+        "description": "loan interest",
+        "iabdCategory": "Allowance",
+        "inputAmount": 30208
+      },
+      {
+        "componentType": "MaintenancePayments",
+        "amount": 210,
+        "description": "maintenance payments",
+        "iabdCategory": "Allowance",
+        "inputAmount": 30210
+      },
+      {
+        "componentType": "PersonalAllowancePA",
+        "amount": 211,
+        "description": "personal allowance",
+        "iabdCategory": "Allowance",
+        "inputAmount": 30211
+      },
+      {
+        "componentType": "PersonalAllowanceAgedPAA",
+        "amount": 212,
+        "description": "personal allowance",
+        "iabdCategory": "Allowance",
+        "inputAmount": 30212
+      },
+      {
+        "componentType": "PersonalAllowanceElderlyPAE",
+        "amount": 213,
+        "description": "personal allowance",
+        "iabdCategory": "Allowance",
+        "inputAmount": 30213
+      },
+      {
+        "componentType": "MarriedCouplesAllowanceMAE",
+        "amount": 217,
+        "description": "married couple's allowance",
+        "iabdCategory": "Allowance",
+        "inputAmount": 30217
+      },
+      {
+        "componentType": "MarriedCouplesAllowanceMCCP",
+        "amount": 218,
+        "description": "married couple's allowance",
+        "iabdCategory": "Allowance",
+        "inputAmount": 30218
+      },
+      {
+        "componentType": "SurplusMarriedCouplesAllowanceToWifeWAE",
+        "amount": 220,
+        "description": "married couple's allowance from husband",
+        "iabdCategory": "Allowance",
+        "inputAmount": 30220
+      },
+      {
+        "componentType": "MarriedCouplesAllowanceToWifeWMA",
+        "amount": 221,
+        "description": "married couple's allowance",
+        "iabdCategory": "Allowance",
+        "inputAmount": 30221
+      },
+      {
+        "componentType": "ConcessionRelief",
+        "amount": 228,
+        "description": "concessional relief",
+        "iabdCategory": "Allowance",
+        "inputAmount": 30228
+      },
+      {
+        "componentType": "DoubleTaxationRelief",
+        "amount": 229,
+        "description": "double taxation relief",
+        "iabdCategory": "Allowance",
+        "inputAmount": 30229
+      },
+      {
+        "componentType": "ForeignPensionAllowance",
+        "amount": 230,
+        "description": "foreign pension allowance",
+        "iabdCategory": "Allowance",
+        "inputAmount": 30230
+      },
+      {
+        "componentType": "EarlyYearsAdjustment",
+        "amount": 231,
+        "description": "Earlier Years Adjustment",
+        "iabdCategory": "Allowance",
+        "inputAmount": 30231
+      },
+      {
+        "componentType": "MarriageAllowanceReceived",
+        "amount": 232,
+        "description": "Personal Allowance Received from Partner",
+        "iabdCategory": "Allowance",
+        "inputAmount": 30232
+      },
+      {
+        "componentType": "BRDifferenceTaxReduction",
+        "amount": 234,
+        "description": "BR Difference Tax Reduction",
+        "iabdCategory": "Allowance",
+        "inputAmount": 30234
+      },
+      {
+        "componentType": "StatePension",
+        "amount": 100,
+        "description": "state pension/state benefits",
+        "iabdCategory": "NonTaxCodeIncome",
+        "inputAmount": 30100
+      },
+      {
+        "componentType": "PublicServicesPension",
+        "amount": 101,
+        "description": "public services pension",
+        "iabdCategory": "NonTaxCodeIncome",
+        "inputAmount": 30101
+      },
+      {
+        "componentType": "ForcesPension",
+        "amount": 102,
+        "description": "Forces Pension",
+        "iabdCategory": "NonTaxCodeIncome",
+        "inputAmount": 30102
+      },
+      {
+        "componentType": "OccupationalPension",
+        "amount": 103,
+        "description": "other pension",
+        "iabdCategory": "NonTaxCodeIncome",
+        "inputAmount": 30103
+      },
+      {
+        "componentType": "IncapacityBenefit",
+        "amount": 104,
+        "description": "taxable incapacity benefit",
+        "iabdCategory": "NonTaxCodeIncome",
+        "inputAmount": 30104
+      },
+      {
+        "componentType": "OtherEarnings",
+        "amount": 116,
+        "description": "other earnings",
+        "iabdCategory": "NonTaxCodeIncome",
+        "inputAmount": 30116
+      },
+      {
+        "componentType": "JobSeekersAllowance",
+        "amount": 117,
+        "description": "Jobseeker's allowance",
+        "iabdCategory": "NonTaxCodeIncome",
+        "inputAmount": 30117
+      },
+      {
+        "componentType": "PartTimeEarnings",
+        "amount": 118,
+        "description": "part time earnings",
+        "iabdCategory": "NonTaxCodeIncome",
+        "inputAmount": 30118
+      },
+      {
+        "componentType": "Tips",
+        "amount": 119,
+        "description": "Tips",
+        "iabdCategory": "NonTaxCodeIncome",
+        "inputAmount": 30119
+      },
+      {
+        "componentType": "Commission",
+        "amount": 120,
+        "description": "Commission",
+        "iabdCategory": "NonTaxCodeIncome",
+        "inputAmount": 30120
+      },
+      {
+        "componentType": "OtherIncomeEarned",
+        "amount": 121,
+        "description": "other earnings",
+        "iabdCategory": "NonTaxCodeIncome",
+        "inputAmount": 30121
+      },
+      {
+        "componentType": "UntaxedInterestIncome",
+        "amount": 122,
+        "description": "interest without tax taken off (gross interest)",
+        "iabdCategory": "NonTaxCodeIncome",
+        "inputAmount": 30122
+      },
+      {
+        "componentType": "OtherIncomeNotEarned",
+        "amount": 123,
+        "description": "other income (not earnings)",
+        "iabdCategory": "NonTaxCodeIncome",
+        "inputAmount": 30123
+      },
+      {
+        "componentType": "Profit",
+        "amount": 124,
+        "description": "property income",
+        "iabdCategory": "NonTaxCodeIncome",
+        "inputAmount": 30124
+      },
+      {
+        "componentType": "PersonalPensionAnnuity",
+        "amount": 125,
+        "description": "annuity",
+        "iabdCategory": "NonTaxCodeIncome",
+        "inputAmount": 30125
+      },
+      {
+        "componentType": "Profit",
+        "amount": 126,
+        "description": "property income",
+        "iabdCategory": "NonTaxCodeIncome",
+        "inputAmount": 30126
+      },
+      {
+        "componentType": "BankOrBuildingSocietyInterest",
+        "amount": 131,
+        "description": "savings income taxable at higher rate",
+        "iabdCategory": "NonTaxCodeIncome",
+        "inputAmount": 30131
+      },
+      {
+        "componentType": "EmploymentAndSupportAllowance",
+        "amount": 137,
+        "description": "Employment Support Allowance",
+        "iabdCategory": "NonTaxCodeIncome",
+        "inputAmount": 30137
+      },
+      {
+        "componentType": "BlindPersonsAllowance",
+        "employmentId": 1,
+        "amount": 11100014,
+        "description": "Blind Persons Allowance",
+        "iabdCategory": "Allowance"
+      },
+      {
+        "componentType": "BpaReceivedFromSpouseOrCivilPartner",
+        "employmentId": 1,
+        "amount": 11100015,
+        "description": "BPA Received from Spouse/Civil Partner",
+        "iabdCategory": "Allowance"
+      },
+      {
+        "componentType": "CommunityInvestmentTaxCredit",
+        "employmentId": 1,
+        "amount": 11100016,
+        "description": "Community Investment Tax Credit",
+        "iabdCategory": "Allowance"
+      },
+      {
+        "componentType": "GiftsSharesCharity",
+        "employmentId": 1,
+        "amount": 11100017,
+        "description": "Gifts of Shares to Charity",
+        "iabdCategory": "Allowance"
+      },
+      {
+        "componentType": "RetirementAnnuityPayments",
+        "employmentId": 1,
+        "amount": 11100018,
+        "description": "Retirement Annuity Payments",
+        "iabdCategory": "Allowance"
+      },
+      {
+        "componentType": "JobExpenses",
+        "employmentId": 1,
+        "amount": 11100055,
+        "description": "Job Expenses",
+        "iabdCategory": "Allowance"
+      },
+      {
+        "componentType": "FlatRateJobExpenses",
+        "employmentId": 1,
+        "amount": 11100056,
+        "description": "Flat Rate Job Expenses",
+        "iabdCategory": "Allowance"
+      },
+      {
+        "componentType": "ProfessionalSubscriptions",
+        "employmentId": 1,
+        "amount": 11100057,
+        "description": "Professional Subscriptions",
+        "iabdCategory": "Allowance"
+      },
+      {
+        "componentType": "HotelAndMealExpenses",
+        "employmentId": 1,
+        "amount": 11100058,
+        "description": "Hotel and Meal Expenses",
+        "iabdCategory": "Allowance"
+      },
+      {
+        "componentType": "OtherExpenses",
+        "employmentId": 1,
+        "amount": 11100059,
+        "description": "Other Expenses",
+        "iabdCategory": "Allowance"
+      },
+      {
+        "componentType": "VehicleExpenses",
+        "employmentId": 1,
+        "amount": 11100060,
+        "description": "Vehicle Expenses",
+        "iabdCategory": "Allowance"
+      },
+      {
+        "componentType": "MileageAllowanceRelief",
+        "employmentId": 1,
+        "amount": 11100061,
+        "description": "Mileage Allowance Relief",
+        "iabdCategory": "Allowance"
+      },
+      {
+        "componentType": "VentureCapitalTrust",
+        "employmentId": 1,
+        "amount": 11100090,
+        "description": "Venture Capital Trust",
+        "iabdCategory": "Allowance"
+      },
+      {
+        "componentType": "LossRelief",
+        "employmentId": 1,
+        "amount": 11100102,
+        "description": "Loss relief",
+        "iabdCategory": "Allowance"
+      },
+      {
+        "componentType": "BlindPersonsAllowance",
+        "employmentId": 1,
+        "amount": 11100014,
+        "description": "Blind Persons Allowance",
+        "iabdCategory": "Allowance"
+      },
+      {
+        "componentType": "BpaReceivedFromSpouseOrCivilPartner",
+        "employmentId": 1,
+        "amount": 11100015,
+        "description": "BPA Received from Spouse/Civil Partner",
+        "iabdCategory": "Allowance"
+      },
+      {
+        "componentType": "CommunityInvestmentTaxCredit",
+        "employmentId": 1,
+        "amount": 11100016,
+        "description": "Community Investment Tax Credit",
+        "iabdCategory": "Allowance"
+      },
+      {
+        "componentType": "GiftsSharesCharity",
+        "employmentId": 1,
+        "amount": 11100017,
+        "description": "Gifts of Shares to Charity",
+        "iabdCategory": "Allowance"
+      },
+      {
+        "componentType": "RetirementAnnuityPayments",
+        "employmentId": 1,
+        "amount": 11100018,
+        "description": "Retirement Annuity Payments",
+        "iabdCategory": "Allowance"
+      },
+      {
+        "componentType": "JobExpenses",
+        "employmentId": 1,
+        "amount": 11100055,
+        "description": "Job Expenses",
+        "iabdCategory": "Allowance"
+      },
+      {
+        "componentType": "FlatRateJobExpenses",
+        "employmentId": 1,
+        "amount": 11100056,
+        "description": "Flat Rate Job Expenses",
+        "iabdCategory": "Allowance"
+      },
+      {
+        "componentType": "ProfessionalSubscriptions",
+        "employmentId": 1,
+        "amount": 11100057,
+        "description": "Professional Subscriptions",
+        "iabdCategory": "Allowance"
+      },
+      {
+        "componentType": "HotelAndMealExpenses",
+        "employmentId": 1,
+        "amount": 11100058,
+        "description": "Hotel and Meal Expenses",
+        "iabdCategory": "Allowance"
+      },
+      {
+        "componentType": "OtherExpenses",
+        "employmentId": 1,
+        "amount": 11100059,
+        "description": "Other Expenses",
+        "iabdCategory": "Allowance"
+      },
+      {
+        "componentType": "VehicleExpenses",
+        "employmentId": 1,
+        "amount": 11100060,
+        "description": "Vehicle Expenses",
+        "iabdCategory": "Allowance"
+      },
+      {
+        "componentType": "MileageAllowanceRelief",
+        "employmentId": 1,
+        "amount": 11100061,
+        "description": "Mileage Allowance Relief",
+        "iabdCategory": "Allowance"
+      },
+      {
+        "componentType": "VentureCapitalTrust",
+        "employmentId": 1,
+        "amount": 11100090,
+        "description": "Venture Capital Trust",
+        "iabdCategory": "Allowance"
+      },
+      {
+        "componentType": "LossRelief",
+        "employmentId": 1,
+        "amount": 11100102,
+        "description": "Loss relief",
+        "iabdCategory": "Allowance"
+      },
+      {
+        "componentType": "BlindPersonsAllowance",
+        "employmentId": 1,
+        "amount": 11100014,
+        "description": "Blind Persons Allowance",
+        "iabdCategory": "Allowance"
+      },
+      {
+        "componentType": "BpaReceivedFromSpouseOrCivilPartner",
+        "employmentId": 1,
+        "amount": 11100015,
+        "description": "BPA Received from Spouse/Civil Partner",
+        "iabdCategory": "Allowance"
+      },
+      {
+        "componentType": "CommunityInvestmentTaxCredit",
+        "employmentId": 1,
+        "amount": 11100016,
+        "description": "Community Investment Tax Credit",
+        "iabdCategory": "Allowance"
+      },
+      {
+        "componentType": "GiftsSharesCharity",
+        "employmentId": 1,
+        "amount": 11100017,
+        "description": "Gifts of Shares to Charity",
+        "iabdCategory": "Allowance"
+      },
+      {
+        "componentType": "RetirementAnnuityPayments",
+        "employmentId": 1,
+        "amount": 11100018,
+        "description": "Retirement Annuity Payments",
+        "iabdCategory": "Allowance"
+      },
+      {
+        "componentType": "JobExpenses",
+        "employmentId": 1,
+        "amount": 11100055,
+        "description": "Job Expenses",
+        "iabdCategory": "Allowance"
+      },
+      {
+        "componentType": "FlatRateJobExpenses",
+        "employmentId": 1,
+        "amount": 11100056,
+        "description": "Flat Rate Job Expenses",
+        "iabdCategory": "Allowance"
+      },
+      {
+        "componentType": "ProfessionalSubscriptions",
+        "employmentId": 1,
+        "amount": 11100057,
+        "description": "Professional Subscriptions",
+        "iabdCategory": "Allowance"
+      },
+      {
+        "componentType": "HotelAndMealExpenses",
+        "employmentId": 1,
+        "amount": 11100058,
+        "description": "Hotel and Meal Expenses",
+        "iabdCategory": "Allowance"
+      },
+      {
+        "componentType": "OtherExpenses",
+        "employmentId": 1,
+        "amount": 11100059,
+        "description": "Other Expenses",
+        "iabdCategory": "Allowance"
+      },
+      {
+        "componentType": "VehicleExpenses",
+        "employmentId": 1,
+        "amount": 11100060,
+        "description": "Vehicle Expenses",
+        "iabdCategory": "Allowance"
+      },
+      {
+        "componentType": "MileageAllowanceRelief",
+        "employmentId": 1,
+        "amount": 11100061,
+        "description": "Mileage Allowance Relief",
+        "iabdCategory": "Allowance"
+      },
+      {
+        "componentType": "VentureCapitalTrust",
+        "employmentId": 1,
+        "amount": 11100090,
+        "description": "Venture Capital Trust",
+        "iabdCategory": "Allowance"
+      },
+      {
+        "componentType": "LossRelief",
+        "employmentId": 1,
+        "amount": 11100102,
+        "description": "Loss relief",
+        "iabdCategory": "Allowance"
+      },
+      {
+        "componentType": "BlindPersonsAllowance",
+        "employmentId": 1,
+        "amount": 11100014,
+        "description": "Blind Persons Allowance",
+        "iabdCategory": "Allowance"
+      },
+      {
+        "componentType": "BpaReceivedFromSpouseOrCivilPartner",
+        "employmentId": 1,
+        "amount": 11100015,
+        "description": "BPA Received from Spouse/Civil Partner",
+        "iabdCategory": "Allowance"
+      },
+      {
+        "componentType": "CommunityInvestmentTaxCredit",
+        "employmentId": 1,
+        "amount": 11100016,
+        "description": "Community Investment Tax Credit",
+        "iabdCategory": "Allowance"
+      },
+      {
+        "componentType": "GiftsSharesCharity",
+        "employmentId": 1,
+        "amount": 11100017,
+        "description": "Gifts of Shares to Charity",
+        "iabdCategory": "Allowance"
+      },
+      {
+        "componentType": "RetirementAnnuityPayments",
+        "employmentId": 1,
+        "amount": 11100018,
+        "description": "Retirement Annuity Payments",
+        "iabdCategory": "Allowance"
+      },
+      {
+        "componentType": "JobExpenses",
+        "employmentId": 1,
+        "amount": 11100055,
+        "description": "Job Expenses",
+        "iabdCategory": "Allowance"
+      },
+      {
+        "componentType": "FlatRateJobExpenses",
+        "employmentId": 1,
+        "amount": 11100056,
+        "description": "Flat Rate Job Expenses",
+        "iabdCategory": "Allowance"
+      },
+      {
+        "componentType": "ProfessionalSubscriptions",
+        "employmentId": 1,
+        "amount": 11100057,
+        "description": "Professional Subscriptions",
+        "iabdCategory": "Allowance"
+      },
+      {
+        "componentType": "HotelAndMealExpenses",
+        "employmentId": 1,
+        "amount": 11100058,
+        "description": "Hotel and Meal Expenses",
+        "iabdCategory": "Allowance"
+      },
+      {
+        "componentType": "OtherExpenses",
+        "employmentId": 1,
+        "amount": 11100059,
+        "description": "Other Expenses",
+        "iabdCategory": "Allowance"
+      },
+      {
+        "componentType": "VehicleExpenses",
+        "employmentId": 1,
+        "amount": 11100060,
+        "description": "Vehicle Expenses",
+        "iabdCategory": "Allowance"
+      },
+      {
+        "componentType": "MileageAllowanceRelief",
+        "employmentId": 1,
+        "amount": 11100061,
+        "description": "Mileage Allowance Relief",
+        "iabdCategory": "Allowance"
+      },
+      {
+        "componentType": "VentureCapitalTrust",
+        "employmentId": 1,
+        "amount": 11100090,
+        "description": "Venture Capital Trust",
+        "iabdCategory": "Allowance"
+      },
+      {
+        "componentType": "LossRelief",
+        "employmentId": 1,
+        "amount": 11100102,
+        "description": "Loss relief",
+        "iabdCategory": "Allowance"
+      },
+      {
+        "componentType": "BlindPersonsAllowance",
+        "employmentId": 1,
+        "amount": 11100014,
+        "description": "Blind Persons Allowance",
+        "iabdCategory": "Allowance"
+      },
+      {
+        "componentType": "BpaReceivedFromSpouseOrCivilPartner",
+        "employmentId": 1,
+        "amount": 11100015,
+        "description": "BPA Received from Spouse/Civil Partner",
+        "iabdCategory": "Allowance"
+      },
+      {
+        "componentType": "CommunityInvestmentTaxCredit",
+        "employmentId": 1,
+        "amount": 11100016,
+        "description": "Community Investment Tax Credit",
+        "iabdCategory": "Allowance"
+      },
+      {
+        "componentType": "GiftsSharesCharity",
+        "employmentId": 1,
+        "amount": 11100017,
+        "description": "Gifts of Shares to Charity",
+        "iabdCategory": "Allowance"
+      },
+      {
+        "componentType": "RetirementAnnuityPayments",
+        "employmentId": 1,
+        "amount": 11100018,
+        "description": "Retirement Annuity Payments",
+        "iabdCategory": "Allowance"
+      },
+      {
+        "componentType": "JobExpenses",
+        "employmentId": 1,
+        "amount": 11100055,
+        "description": "Job Expenses",
+        "iabdCategory": "Allowance"
+      },
+      {
+        "componentType": "FlatRateJobExpenses",
+        "employmentId": 1,
+        "amount": 11100056,
+        "description": "Flat Rate Job Expenses",
+        "iabdCategory": "Allowance"
+      },
+      {
+        "componentType": "ProfessionalSubscriptions",
+        "employmentId": 1,
+        "amount": 11100057,
+        "description": "Professional Subscriptions",
+        "iabdCategory": "Allowance"
+      },
+      {
+        "componentType": "HotelAndMealExpenses",
+        "employmentId": 1,
+        "amount": 11100058,
+        "description": "Hotel and Meal Expenses",
+        "iabdCategory": "Allowance"
+      },
+      {
+        "componentType": "OtherExpenses",
+        "employmentId": 1,
+        "amount": 11100059,
+        "description": "Other Expenses",
+        "iabdCategory": "Allowance"
+      },
+      {
+        "componentType": "VehicleExpenses",
+        "employmentId": 1,
+        "amount": 11100060,
+        "description": "Vehicle Expenses",
+        "iabdCategory": "Allowance"
+      },
+      {
+        "componentType": "MileageAllowanceRelief",
+        "employmentId": 1,
+        "amount": 11100061,
+        "description": "Mileage Allowance Relief",
+        "iabdCategory": "Allowance"
+      },
+      {
+        "componentType": "VentureCapitalTrust",
+        "employmentId": 1,
+        "amount": 11100090,
+        "description": "Venture Capital Trust",
+        "iabdCategory": "Allowance"
+      },
+      {
+        "componentType": "LossRelief",
+        "employmentId": 1,
+        "amount": 11100102,
+        "description": "Loss relief",
+        "iabdCategory": "Allowance"
+      },
+      {
+        "componentType": "BlindPersonsAllowance",
+        "employmentId": 1,
+        "amount": 11100014,
+        "description": "Blind Persons Allowance",
+        "iabdCategory": "Allowance"
+      },
+      {
+        "componentType": "BpaReceivedFromSpouseOrCivilPartner",
+        "employmentId": 1,
+        "amount": 11100015,
+        "description": "BPA Received from Spouse/Civil Partner",
+        "iabdCategory": "Allowance"
+      },
+      {
+        "componentType": "CommunityInvestmentTaxCredit",
+        "employmentId": 1,
+        "amount": 11100016,
+        "description": "Community Investment Tax Credit",
+        "iabdCategory": "Allowance"
+      },
+      {
+        "componentType": "GiftsSharesCharity",
+        "employmentId": 1,
+        "amount": 11100017,
+        "description": "Gifts of Shares to Charity",
+        "iabdCategory": "Allowance"
+      },
+      {
+        "componentType": "RetirementAnnuityPayments",
+        "employmentId": 1,
+        "amount": 11100018,
+        "description": "Retirement Annuity Payments",
+        "iabdCategory": "Allowance"
+      },
+      {
+        "componentType": "JobExpenses",
+        "employmentId": 1,
+        "amount": 11100055,
+        "description": "Job Expenses",
+        "iabdCategory": "Allowance"
+      },
+      {
+        "componentType": "FlatRateJobExpenses",
+        "employmentId": 1,
+        "amount": 11100056,
+        "description": "Flat Rate Job Expenses",
+        "iabdCategory": "Allowance"
+      },
+      {
+        "componentType": "ProfessionalSubscriptions",
+        "employmentId": 1,
+        "amount": 11100057,
+        "description": "Professional Subscriptions",
+        "iabdCategory": "Allowance"
+      },
+      {
+        "componentType": "HotelAndMealExpenses",
+        "employmentId": 1,
+        "amount": 11100058,
+        "description": "Hotel and Meal Expenses",
+        "iabdCategory": "Allowance"
+      },
+      {
+        "componentType": "OtherExpenses",
+        "employmentId": 1,
+        "amount": 11100059,
+        "description": "Other Expenses",
+        "iabdCategory": "Allowance"
+      },
+      {
+        "componentType": "VehicleExpenses",
+        "employmentId": 1,
+        "amount": 11100060,
+        "description": "Vehicle Expenses",
+        "iabdCategory": "Allowance"
+      },
+      {
+        "componentType": "MileageAllowanceRelief",
+        "employmentId": 1,
+        "amount": 11100061,
+        "description": "Mileage Allowance Relief",
+        "iabdCategory": "Allowance"
+      },
+      {
+        "componentType": "VentureCapitalTrust",
+        "employmentId": 1,
+        "amount": 11100090,
+        "description": "Venture Capital Trust",
+        "iabdCategory": "Allowance"
+      },
+      {
+        "componentType": "LossRelief",
+        "employmentId": 1,
+        "amount": 11100102,
+        "description": "Loss relief",
+        "iabdCategory": "Allowance"
+      },
+      {
+        "componentType": "CarFuelBenefit",
+        "employmentId": 1,
+        "amount": 11100029,
+        "description": "Car Fuel Benefit",
+        "iabdCategory": "Benefit"
+      },
+      {
+        "componentType": "MedicalInsurance",
+        "employmentId": 1,
+        "amount": 11100030,
+        "description": "Medical Insurance",
+        "iabdCategory": "Benefit"
+      },
+      {
+        "componentType": "CarBenefit",
+        "employmentId": 1,
+        "amount": 11100031,
+        "description": "Car Benefit",
+        "iabdCategory": "Benefit"
+      },
+      {
+        "componentType": "Telephone",
+        "employmentId": 1,
+        "amount": 11100032,
+        "description": "Telephone",
+        "iabdCategory": "Benefit"
+      },
+      {
+        "componentType": "ServiceBenefit",
+        "employmentId": 1,
+        "amount": 11100033,
+        "description": "Service Benefit",
+        "iabdCategory": "Benefit"
+      },
+      {
+        "componentType": "TaxableExpensesBenefit",
+        "employmentId": 1,
+        "amount": 11100034,
+        "description": "Taxable Expenses Benefit",
+        "iabdCategory": "Benefit"
+      },
+      {
+        "componentType": "VanBenefit",
+        "employmentId": 1,
+        "amount": 11100035,
+        "description": "Van Benefit",
+        "iabdCategory": "Benefit"
+      },
+      {
+        "componentType": "VanFuelBenefit",
+        "employmentId": 1,
+        "amount": 11100036,
+        "description": "Van Fuel Benefit",
+        "iabdCategory": "Benefit"
+      },
+      {
+        "componentType": "BeneficialLoan",
+        "employmentId": 1,
+        "amount": 11100037,
+        "description": "Beneficial Loan",
+        "iabdCategory": "Benefit"
+      },
+      {
+        "componentType": "NonCashBenefit",
+        "employmentId": 1,
+        "amount": 11100117,
+        "description": "Non-Cash Benefit",
+        "iabdCategory": "Benefit"
+      },
+      {
+        "componentType": "CarFuelBenefit",
+        "employmentId": 1,
+        "amount": 11100029,
+        "description": "Car Fuel Benefit",
+        "iabdCategory": "Benefit"
+      },
+      {
+        "componentType": "MedicalInsurance",
+        "employmentId": 1,
+        "amount": 11100030,
+        "description": "Medical Insurance",
+        "iabdCategory": "Benefit"
+      },
+      {
+        "componentType": "CarBenefit",
+        "employmentId": 1,
+        "amount": 11100031,
+        "description": "Car Benefit",
+        "iabdCategory": "Benefit"
+      },
+      {
+        "componentType": "Telephone",
+        "employmentId": 1,
+        "amount": 11100032,
+        "description": "Telephone",
+        "iabdCategory": "Benefit"
+      },
+      {
+        "componentType": "ServiceBenefit",
+        "employmentId": 1,
+        "amount": 11100033,
+        "description": "Service Benefit",
+        "iabdCategory": "Benefit"
+      },
+      {
+        "componentType": "TaxableExpensesBenefit",
+        "employmentId": 1,
+        "amount": 11100034,
+        "description": "Taxable Expenses Benefit",
+        "iabdCategory": "Benefit"
+      },
+      {
+        "componentType": "VanBenefit",
+        "employmentId": 1,
+        "amount": 11100035,
+        "description": "Van Benefit",
+        "iabdCategory": "Benefit"
+      },
+      {
+        "componentType": "VanFuelBenefit",
+        "employmentId": 1,
+        "amount": 11100036,
+        "description": "Van Fuel Benefit",
+        "iabdCategory": "Benefit"
+      },
+      {
+        "componentType": "BeneficialLoan",
+        "employmentId": 1,
+        "amount": 11100037,
+        "description": "Beneficial Loan",
+        "iabdCategory": "Benefit"
+      },
+      {
+        "componentType": "NonCashBenefit",
+        "employmentId": 1,
+        "amount": 11100117,
+        "description": "Non-Cash Benefit",
+        "iabdCategory": "Benefit"
+      },
+      {
+        "componentType": "CarFuelBenefit",
+        "employmentId": 1,
+        "amount": 11100029,
+        "description": "Car Fuel Benefit",
+        "iabdCategory": "Benefit"
+      },
+      {
+        "componentType": "MedicalInsurance",
+        "employmentId": 1,
+        "amount": 11100030,
+        "description": "Medical Insurance",
+        "iabdCategory": "Benefit"
+      },
+      {
+        "componentType": "CarBenefit",
+        "employmentId": 1,
+        "amount": 11100031,
+        "description": "Car Benefit",
+        "iabdCategory": "Benefit"
+      },
+      {
+        "componentType": "Telephone",
+        "employmentId": 1,
+        "amount": 11100032,
+        "description": "Telephone",
+        "iabdCategory": "Benefit"
+      },
+      {
+        "componentType": "ServiceBenefit",
+        "employmentId": 1,
+        "amount": 11100033,
+        "description": "Service Benefit",
+        "iabdCategory": "Benefit"
+      },
+      {
+        "componentType": "TaxableExpensesBenefit",
+        "employmentId": 1,
+        "amount": 11100034,
+        "description": "Taxable Expenses Benefit",
+        "iabdCategory": "Benefit"
+      },
+      {
+        "componentType": "VanBenefit",
+        "employmentId": 1,
+        "amount": 11100035,
+        "description": "Van Benefit",
+        "iabdCategory": "Benefit"
+      },
+      {
+        "componentType": "VanFuelBenefit",
+        "employmentId": 1,
+        "amount": 11100036,
+        "description": "Van Fuel Benefit",
+        "iabdCategory": "Benefit"
+      },
+      {
+        "componentType": "BeneficialLoan",
+        "employmentId": 1,
+        "amount": 11100037,
+        "description": "Beneficial Loan",
+        "iabdCategory": "Benefit"
+      },
+      {
+        "componentType": "NonCashBenefit",
+        "employmentId": 1,
+        "amount": 11100117,
+        "description": "Non-Cash Benefit",
+        "iabdCategory": "Benefit"
+      },
+      {
+        "componentType": "CarFuelBenefit",
+        "employmentId": 1,
+        "amount": 11100029,
+        "description": "Car Fuel Benefit",
+        "iabdCategory": "Benefit"
+      },
+      {
+        "componentType": "MedicalInsurance",
+        "employmentId": 1,
+        "amount": 11100030,
+        "description": "Medical Insurance",
+        "iabdCategory": "Benefit"
+      },
+      {
+        "componentType": "CarBenefit",
+        "employmentId": 1,
+        "amount": 11100031,
+        "description": "Car Benefit",
+        "iabdCategory": "Benefit"
+      },
+      {
+        "componentType": "Telephone",
+        "employmentId": 1,
+        "amount": 11100032,
+        "description": "Telephone",
+        "iabdCategory": "Benefit"
+      },
+      {
+        "componentType": "ServiceBenefit",
+        "employmentId": 1,
+        "amount": 11100033,
+        "description": "Service Benefit",
+        "iabdCategory": "Benefit"
+      },
+      {
+        "componentType": "TaxableExpensesBenefit",
+        "employmentId": 1,
+        "amount": 11100034,
+        "description": "Taxable Expenses Benefit",
+        "iabdCategory": "Benefit"
+      },
+      {
+        "componentType": "VanBenefit",
+        "employmentId": 1,
+        "amount": 11100035,
+        "description": "Van Benefit",
+        "iabdCategory": "Benefit"
+      },
+      {
+        "componentType": "VanFuelBenefit",
+        "employmentId": 1,
+        "amount": 11100036,
+        "description": "Van Fuel Benefit",
+        "iabdCategory": "Benefit"
+      },
+      {
+        "componentType": "BeneficialLoan",
+        "employmentId": 1,
+        "amount": 11100037,
+        "description": "Beneficial Loan",
+        "iabdCategory": "Benefit"
+      },
+      {
+        "componentType": "NonCashBenefit",
+        "employmentId": 1,
+        "amount": 11100117,
+        "description": "Non-Cash Benefit",
+        "iabdCategory": "Benefit"
+      },
+      {
+        "componentType": "CarFuelBenefit",
+        "employmentId": 1,
+        "amount": 11100029,
+        "description": "Car Fuel Benefit",
+        "iabdCategory": "Benefit"
+      },
+      {
+        "componentType": "MedicalInsurance",
+        "employmentId": 1,
+        "amount": 11100030,
+        "description": "Medical Insurance",
+        "iabdCategory": "Benefit"
+      },
+      {
+        "componentType": "CarBenefit",
+        "employmentId": 1,
+        "amount": 11100031,
+        "description": "Car Benefit",
+        "iabdCategory": "Benefit"
+      },
+      {
+        "componentType": "Telephone",
+        "employmentId": 1,
+        "amount": 11100032,
+        "description": "Telephone",
+        "iabdCategory": "Benefit"
+      },
+      {
+        "componentType": "ServiceBenefit",
+        "employmentId": 1,
+        "amount": 11100033,
+        "description": "Service Benefit",
+        "iabdCategory": "Benefit"
+      },
+      {
+        "componentType": "TaxableExpensesBenefit",
+        "employmentId": 1,
+        "amount": 11100034,
+        "description": "Taxable Expenses Benefit",
+        "iabdCategory": "Benefit"
+      },
+      {
+        "componentType": "VanBenefit",
+        "employmentId": 1,
+        "amount": 11100035,
+        "description": "Van Benefit",
+        "iabdCategory": "Benefit"
+      },
+      {
+        "componentType": "VanFuelBenefit",
+        "employmentId": 1,
+        "amount": 11100036,
+        "description": "Van Fuel Benefit",
+        "iabdCategory": "Benefit"
+      },
+      {
+        "componentType": "BeneficialLoan",
+        "employmentId": 1,
+        "amount": 11100037,
+        "description": "Beneficial Loan",
+        "iabdCategory": "Benefit"
+      },
+      {
+        "componentType": "NonCashBenefit",
+        "employmentId": 1,
+        "amount": 11100117,
+        "description": "Non-Cash Benefit",
+        "iabdCategory": "Benefit"
+      },
+      {
+        "componentType": "CarFuelBenefit",
+        "employmentId": 1,
+        "amount": 11100029,
+        "description": "Car Fuel Benefit",
+        "iabdCategory": "Benefit"
+      },
+      {
+        "componentType": "MedicalInsurance",
+        "employmentId": 1,
+        "amount": 11100030,
+        "description": "Medical Insurance",
+        "iabdCategory": "Benefit"
+      },
+      {
+        "componentType": "CarBenefit",
+        "employmentId": 1,
+        "amount": 11100031,
+        "description": "Car Benefit",
+        "iabdCategory": "Benefit"
+      },
+      {
+        "componentType": "Telephone",
+        "employmentId": 1,
+        "amount": 11100032,
+        "description": "Telephone",
+        "iabdCategory": "Benefit"
+      },
+      {
+        "componentType": "ServiceBenefit",
+        "employmentId": 1,
+        "amount": 11100033,
+        "description": "Service Benefit",
+        "iabdCategory": "Benefit"
+      },
+      {
+        "componentType": "TaxableExpensesBenefit",
+        "employmentId": 1,
+        "amount": 11100034,
+        "description": "Taxable Expenses Benefit",
+        "iabdCategory": "Benefit"
+      },
+      {
+        "componentType": "VanBenefit",
+        "employmentId": 1,
+        "amount": 11100035,
+        "description": "Van Benefit",
+        "iabdCategory": "Benefit"
+      },
+      {
+        "componentType": "VanFuelBenefit",
+        "employmentId": 1,
+        "amount": 11100036,
+        "description": "Van Fuel Benefit",
+        "iabdCategory": "Benefit"
+      },
+      {
+        "componentType": "BeneficialLoan",
+        "employmentId": 1,
+        "amount": 11100037,
+        "description": "Beneficial Loan",
+        "iabdCategory": "Benefit"
+      },
+      {
+        "componentType": "NonCashBenefit",
+        "employmentId": 1,
+        "amount": 11100117,
+        "description": "Non-Cash Benefit",
+        "iabdCategory": "Benefit"
+      },
+      {
+        "componentType": "BenefitInKind",
+        "employmentId": 1,
+        "amount": 11100028,
+        "description": "Benefit in Kind",
+        "iabdCategory": "Benefit"
+      }
+    ],
+    "current": [
+      {
+        "componentType": "PersonalAllowanceElderlyPAE",
+        "amount": 11500,
+        "description": "Married Couples Allowance (MAA)",
+        "iabdCategory": "Allowance",
+        "inputAmount": 10660
+      }
+    ]
+  },
+  "links": []
+}

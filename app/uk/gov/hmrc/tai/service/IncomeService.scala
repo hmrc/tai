@@ -24,10 +24,10 @@ import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.{HeaderCarrier, UpstreamErrorResponse}
 import uk.gov.hmrc.tai.audit.Auditor
 import uk.gov.hmrc.tai.connectors.{CitizenDetailsConnector, TaxAccountConnector}
-import uk.gov.hmrc.tai.controllers.auth.AuthenticatedRequest
 import uk.gov.hmrc.tai.model.domain.*
 import uk.gov.hmrc.tai.model.domain.income.*
 import uk.gov.hmrc.tai.model.domain.response.*
+import uk.gov.hmrc.tai.model.hip.reads.OtherNonTaxCodeIncomeHipReads
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.service.helper.TaxCodeIncomeHelper
 
@@ -173,8 +173,7 @@ class IncomeService @Inject() (
     }
 
   def updateTaxCodeIncome(nino: Nino, year: TaxYear, employmentId: Int, amount: Int)(implicit
-    hc: HeaderCarrier,
-    request: AuthenticatedRequest[_]
+    hc: HeaderCarrier
   ): Future[IncomeUpdateResponse] = {
 
     val auditEventForIncomeUpdate: String => Unit = (currentAmount: String) =>

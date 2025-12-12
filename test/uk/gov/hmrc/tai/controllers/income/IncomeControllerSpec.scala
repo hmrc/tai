@@ -504,7 +504,7 @@ class IncomeControllerSpec extends BaseSpec {
   private def setup(response: Future[IncomeUpdateResponse]): IncomeController = {
     val mockIncomeService: IncomeService = {
       val mockIncomeService: IncomeService = mock[IncomeService]
-      when(mockIncomeService.updateTaxCodeIncome(any(), any(), any(), any())(any(), any())).thenReturn(response)
+      when(mockIncomeService.updateTaxCodeIncome(any(), any(), any(), any())(any())).thenReturn(response)
       mockIncomeService
     }
     createSUT(mockIncomeService)

@@ -25,7 +25,8 @@ class ApplicationStartUp {
       RtiCallToggle,
       HipIabdsUpdateExpensesToggle,
       HipGetIabdsExpensesToggle,
-      HipTaxAccountHistoryToggle
+      HipTaxAccountHistoryToggle,
+      UseApacheFopLibrary
     )
   )
 }

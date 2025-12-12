@@ -27,7 +27,7 @@ import uk.gov.hmrc.tai.model.domain.calculation.CodingComponent
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.model.templates.RemoveCompanyBenefitViewModel
 import uk.gov.hmrc.tai.service.*
-import uk.gov.hmrc.tai.templates.html.RemoveCompanyBenefitIForm
+import uk.gov.hmrc.tai.service.PdfService.RemoveCompanyBenefitIFormRequest
 import uk.gov.hmrc.tai.util.IFormConstants
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -61,7 +61,7 @@ class BenefitsService @Inject() (
       "TES1",
       (person: Person) =>
         Future.successful(
-          RemoveCompanyBenefitIForm(RemoveCompanyBenefitViewModel(person, removeCompanyBenefit)).toString
+          RemoveCompanyBenefitIFormRequest(RemoveCompanyBenefitViewModel(person, removeCompanyBenefit))
         )
     ) map { envelopeId =>
       logger.info("Envelope Id for RemoveCompanyBenefit- " + envelopeId)

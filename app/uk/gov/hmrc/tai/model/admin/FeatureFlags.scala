@@ -49,3 +49,11 @@ case object HipTaxAccountHistoryToggle extends FeatureFlagName {
   )
   override val lockedEnvironments: Seq[Environment] = Seq(Local, Staging, Qa, Production)
 }
+
+case object UseApacheFopLibrary extends FeatureFlagName {
+  override val name: String = "use-apache-fop-library"
+  override val description: Option[String] = Some(
+    "Use ApacheFopLibrary instead of PDF_GENERATOR_SERVICE"
+  )
+  override val lockedEnvironments: Seq[Environment] = Seq(Local, Staging, Qa, Production)
+}

@@ -17,26 +17,25 @@
 package uk.gov.hmrc.tai.controllers.auth
 
 import com.google.inject.{ImplementedBy, Inject}
-import play.api.mvc.{ActionBuilder, AnyContent, DefaultActionBuilder}
+import play.api.mvc.{ActionBuilder, AnyContent, DefaultActionBuilder, Request}
 
 @ImplementedBy(classOf[AuthJourneyImpl])
 trait AuthJourney {
-  val authWithUserDetails: ActionBuilder[AuthenticatedRequest, AnyContent]
+  val authWithUserDetails: ActionBuilder[Request, AnyContent]
 
-  val authForEmployeeExpenses: ActionBuilder[AuthenticatedRequest, AnyContent]
+  val authForEmployeeExpenses: ActionBuilder[Request, AnyContent]
 }
 
 class AuthJourneyImpl @Inject() (
-  authAction: AuthRetrievals,
   pertaxAuthAction: PertaxAuthAction,
   pertaxAuthActionForEmployeeExpenses: PertaxAuthActionForEmployeeExpenses,
   defaultActionBuilder: DefaultActionBuilder
 ) extends AuthJourney {
 
-  val authWithUserDetails: ActionBuilder[AuthenticatedRequest, AnyContent] =
-    defaultActionBuilder andThen pertaxAuthAction andThen authAction
+  val authWithUserDetails: ActionBuilder[Request, AnyContent] =
+    defaultActionBuilder andThen pertaxAuthAction
 
-  val authForEmployeeExpenses: ActionBuilder[AuthenticatedRequest, AnyContent] =
-    defaultActionBuilder andThen pertaxAuthActionForEmployeeExpenses andThen authAction
+  val authForEmployeeExpenses: ActionBuilder[Request, AnyContent] =
+    defaultActionBuilder andThen pertaxAuthActionForEmployeeExpenses
 
 }

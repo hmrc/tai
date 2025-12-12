@@ -1,0 +1,111 @@
+{
+  "nationalInsuranceNumber":"$NINO",
+  "date":"2014-12-10",
+  "taxYear":"<CY>",
+  "totalEstimatedTax":1360.6,
+  "totalEstimatedPayDetails":{
+    "amount":7853,
+    "summaryIABDDetailsList":[],
+    "summaryIABDEstimatedPayDetailsList":[]
+  },
+  "adjustedNetIncomeDetails":{
+    "amount":17467,
+    "summaryIABDDetailsList":[],
+    "summaryIABDEstimatedPayDetailsList":[]
+  },
+  "totalLiabilityDetails":{
+    "nonSavings":{
+      "totalIncomeDetails":{
+        "amount":23400,
+        "summaryIABDDetailsList":[]
+      },
+      "allowanceReliefDeductionsDetails":{
+        "amount":11500
+      },
+      "totalTax":2380,
+      "totalTaxableIncome":11900,
+      "taxBandDetails":[
+        {
+          "bandType":"B",
+          "taxCode":"BR",
+          "income":11900,
+          "tax":2380,
+          "lowerBand":0,
+          "upperBand":35100,
+          "rate":20
+        }
+      ]
+    },
+    "untaxedInterest":{
+
+    },
+    "bankInterest":{
+
+    },
+    "ukDividends":{
+
+    },
+    "foreignInterest":{
+
+    },
+    "foreignDividends":{
+
+    },
+    "basicRateExtensionsDetails":{
+      "amount":0,
+      "summaryIABDDetailsList":[
+
+      ]
+    },
+    "otherTaxDueDetails":{
+      "summaryIABDDetailsList":[
+
+      ]
+    },
+    "totalLiability":2380
+  },
+  "employmentDetailsList":[
+    {
+      "employmentSequenceNumber":1,
+      "employmentRecordType":"PRIMARY",
+      "employmentStatus":"Live",
+      "jobSeekersAllowance":false,
+      "activePension":true,
+      "otherIncome":false,
+      "payeSchemeOperatorName":"TEST PENSIONS",
+      "taxCode":"1150L",
+      "allowancesDetails":[],
+      "payAndTax":{
+        "totalIncomeDetails":{
+          "amount":23400,
+          "summaryIABDDetailsList":[],
+          "summaryIABDEstimatedPayDetailsList":[]
+        },
+        "allowanceReliefDeductionsDetails":{
+          "amount":1049.36
+        },
+        "totalTax":250.8,
+        "totalTaxableIncome":1254,
+        "taxBandDetails":[
+          {
+            "income":1254,
+            "tax":250.8,
+            "lowerBand":0,
+            "upperBand":31865,
+            "rate":20
+          },
+          {
+            "lowerBand":31865,
+            "upperBand":150000,
+            "rate":40
+          },
+          {
+            "lowerBand":150000,
+            "upperBand":0,
+            "rate":45
+          }
+        ]
+      }
+    }
+  ]
+}

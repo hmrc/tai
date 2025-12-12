@@ -16,22 +16,20 @@
 
 package uk.gov.hmrc.tai.service.expenses
 
-import org.mockito.ArgumentMatchers.any
+import org.mockito.ArgumentMatchers.{any, eq as eqTo}
 import org.mockito.Mockito.{reset, times, verify, when}
+import play.api.libs.json.*
 import play.api.mvc.AnyContentAsEmpty
 import play.api.test.FakeRequest
 import uk.gov.hmrc.http.{BadRequestException, HttpResponse}
+import uk.gov.hmrc.mongoFeatureToggles.model.{FeatureFlag, FeatureFlagName}
+import uk.gov.hmrc.mongoFeatureToggles.services.FeatureFlagService
 import uk.gov.hmrc.tai.connectors.*
-import uk.gov.hmrc.tai.controllers.auth.AuthenticatedRequest
 import uk.gov.hmrc.tai.model.UpdateIabdEmployeeExpense
-import uk.gov.hmrc.tai.model.nps.NpsIabdRoot
+import uk.gov.hmrc.tai.model.admin.HipGetIabdsExpensesToggle
+import uk.gov.hmrc.tai.model.domain.IabdDetails
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.util.BaseSpec
-import uk.gov.hmrc.mongoFeatureToggles.services.FeatureFlagService
-import uk.gov.hmrc.tai.model.admin.HipGetIabdsExpensesToggle
-import uk.gov.hmrc.mongoFeatureToggles.model.{FeatureFlag, FeatureFlagName}
-import org.mockito.ArgumentMatchers.eq as eqTo
-import play.api.libs.json._
 
 import scala.concurrent.Future
 
@@ -46,10 +44,10 @@ class EmployeeExpensesServiceSpec extends BaseSpec {
   private val updateIabdEmployeeExpense = UpdateIabdEmployeeExpense(100, None)
   private val iabd = 56
 
-  private val validNpsIabd: List[NpsIabdRoot] = List(
-    NpsIabdRoot(
-      nino = nino.withoutSuffix,
-      `type` = iabd,
+  private val validNpsIabd: List[IabdDetails] = List(
+    IabdDetails(
+      nino = Some(nino.withoutSuffix),
+      `type` = Some(iabd),
       grossAmount = Some(100.00)
     )
   )
@@ -76,14 +74,13 @@ class EmployeeExpensesServiceSpec extends BaseSpec {
     reset(mockIabdConnector, mockFeatureFlagService)
   }
 
-  implicit val authenticatedRequest: AuthenticatedRequest[AnyContentAsEmpty.type] =
-    AuthenticatedRequest(FakeRequest(), nino)
+  implicit val fakeRequest: FakeRequest[AnyContentAsEmpty.type] = FakeRequest()
 
   "updateEmployeeExpensesData" must {
 
     "return 200" when {
       "success response from des connector" in {
-        when(mockIabdConnector.updateExpensesData(any(), any(), any(), any(), any(), any())(any(), any()))
+        when(mockIabdConnector.updateExpensesData(any(), any(), any(), any(), any(), any())(any()))
           .thenReturn(Future.successful(HttpResponse(200, responseBody)))
 
         service
@@ -95,7 +92,7 @@ class EmployeeExpensesServiceSpec extends BaseSpec {
 
     "return 500" when {
       "failure response from des connector" in {
-        when(mockIabdConnector.updateExpensesData(any(), any(), any(), any(), any(), any())(any(), any()))
+        when(mockIabdConnector.updateExpensesData(any(), any(), any(), any(), any(), any())(any()))
           .thenReturn(Future.successful(HttpResponse(500, responseBody)))
 
         service
@@ -162,7 +159,7 @@ class EmployeeExpensesServiceSpec extends BaseSpec {
         val service =
           new EmployeeExpensesService(iabdConnector = mockIabdConnector, featureFlagService = mockFeatureFlagService)
 
-        val result: Future[List[NpsIabdRoot]] = service.getEmployeeExpenses(nino, taxYear, iabd)
+        val result: Future[List[IabdDetails]] = service.getEmployeeExpenses(nino, taxYear, iabd)
 
         result.futureValue mustBe validNpsIabd
 
@@ -181,7 +178,7 @@ class EmployeeExpensesServiceSpec extends BaseSpec {
         val service =
           new EmployeeExpensesService(iabdConnector = mockIabdConnector, featureFlagService = mockFeatureFlagService)
 
-        val result: Future[List[NpsIabdRoot]] = service.getEmployeeExpenses(nino, taxYear, iabd)
+        val result: Future[List[IabdDetails]] = service.getEmployeeExpenses(nino, taxYear, iabd)
 
         result.futureValue mustBe List.empty
 
@@ -200,7 +197,7 @@ class EmployeeExpensesServiceSpec extends BaseSpec {
         val service =
           new EmployeeExpensesService(iabdConnector = mockIabdConnector, featureFlagService = mockFeatureFlagService)
 
-        val result: Future[List[NpsIabdRoot]] = service.getEmployeeExpenses(nino, taxYear, iabd)
+        val result: Future[List[IabdDetails]] = service.getEmployeeExpenses(nino, taxYear, iabd)
 
         result.futureValue mustBe List.empty
 

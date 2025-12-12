@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 HM Revenue & Customs
+ * Copyright 2025 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,69 +17,67 @@
 package uk.gov.hmrc.tai.model.domain
 
 import play.api.Logging
-import play.api.libs.functional.syntax.toFunctionalBuilderOps
+import play.api.libs.functional.syntax.*
 import play.api.libs.json.*
-import play.api.libs.json.Reads.localDateReads
-import uk.gov.hmrc.tai.model.domain.income.IabdUpdateSource
-import uk.gov.hmrc.tai.util.IabdTypeConstants
+import uk.gov.hmrc.tai.util.JsonHelper
 import uk.gov.hmrc.tai.util.JsonHelper.readsTypeTuple
 
 import java.time.LocalDate
-import uk.gov.hmrc.tai.util.JsonHelper
-
 import java.time.format.DateTimeFormatter
+import scala.util.Try
 
 case class IabdDetails(
-  employmentSequenceNumber: Option[Int],
-  source: Option[Int], // iabdUpdateSource source.flatMap(code => IabdUpdateSource.fromCode(code)
-  `type`: Option[Int],
-  receiptDate: Option[LocalDate], // updateNotificationDate
-  captureDate: Option[LocalDate], // updateActionDate
-  grossAmount: Option[BigDecimal] = None
+  nino: Option[String] = None,
+  employmentSequenceNumber: Option[Int] = None,
+  source: Option[Int] = None,
+  `type`: Option[Int] = None,
+  receiptDate: Option[LocalDate] = None,
+  captureDate: Option[LocalDate] = None,
+  grossAmount: Option[BigDecimal] = None,
+  netAmount: Option[BigDecimal] = None
 )
 
-object IabdDetails extends IabdTypeConstants with Logging {
-  private val dateReads: Reads[LocalDate] = localDateReads("yyyy-MM-dd")
-  private val dateWrites: Writes[LocalDate] = new Writes[LocalDate] {
-    val dateFormat: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
-    override def writes(date: LocalDate): JsValue =
-      JsString(date.format(dateFormat))
+object IabdDetails extends Logging {
+
+  private val isoFmt: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
+  private val npsFmt: DateTimeFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy")
+
+  private val lenientLocalDateReads: Reads[LocalDate] = Reads {
+    case JsString(s) =>
+      def parse(fmt: DateTimeFormatter): Option[LocalDate] =
+        Try(LocalDate.parse(s, fmt)).toOption
+
+      parse(isoFmt)
+        .orElse(parse(npsFmt))
+        .map(JsSuccess(_))
+        .getOrElse(JsError(s"Invalid date format: $s (expected yyyy-MM-dd or dd/MM/yyyy)"))
+
+    case other => JsError(s"Invalid JSON for LocalDate: $other")
   }
 
-  private def removeNulls(jsObject: JsObject): JsObject =
-    JsObject(jsObject.fields.collect {
-      case (s, j: JsObject) =>
-        (s, removeNulls(j))
-      case other if other._2 != JsNull =>
-        other
-    })
+  private val isoDateWrites: Writes[LocalDate] = Writes(d => JsString(d.format(isoFmt)))
+  private val dmyDateWrites: Writes[LocalDate] = Writes(d => JsString(d.format(npsFmt)))
 
-  val writesIabds: OWrites[IabdDetails] = new OWrites[IabdDetails] {
-    def writes(iabd: IabdDetails): JsObject =
-      removeNulls(
-        Json.obj(
-          "employmentSequenceNumber" -> iabd.employmentSequenceNumber,
-          "source"                   -> iabd.source.map(source => IabdUpdateSource.fromCode(source)),
-          "type"                     -> iabd.`type`,
-          "receiptDate"              -> iabd.receiptDate.map(receiptDate => Json.toJson(receiptDate)(dateWrites)),
-          "captureDate"              -> iabd.captureDate.map(captureDate => Json.toJson(captureDate)(dateWrites)),
-          "grossAmount"              -> iabd.grossAmount
-        )
-      )
-  }
+  private def removeNulls(js: JsObject): JsObject =
+    JsObject(
+      js.fields.collect {
+        case (k, v: JsObject)      => k -> removeNulls(v)
+        case (k, v) if v != JsNull => k -> v
+      }
+    )
 
-  def sourceReads: Reads[Option[Int]] = {
+  def sourceReads: Reads[Option[Int]] = Reads {
     case JsString(n) =>
       mapIabdSource.get(n) match {
-        case Some(iabdSource) => JsSuccess(Some(iabdSource))
-        case _ =>
-          val errorMessage = s"Unknown iabd source: $n"
-          logger.warn(errorMessage, new RuntimeException(errorMessage))
+        case Some(code) => JsSuccess(Some(code))
+        case None =>
+          val msg = s"Unknown iabd source: $n"
+          logger.warn(msg, new RuntimeException(msg))
           JsSuccess(None)
-
       }
-    case e =>
-      JsError(s"Invalid iabd source: $e")
+    case JsNumber(n) if n.isValidInt => JsSuccess(Some(n.toInt))
+    case JsNull                      => JsSuccess(None)
+    case _                           => JsError("Invalid iabd source")
   }
 
   private lazy val mapIabdSource: Map[String, Int] = Map(
@@ -139,26 +137,222 @@ object IabdDetails extends IabdTypeConstants with Logging {
     "HICBC PAYE"            -> 53
   )
 
-  private val iabdReads: Reads[IabdDetails] =
-    ((JsPath \ "employmentSequenceNumber").readNullable[Int] and
-      (JsPath \ "source").readNullable[Option[Int]](sourceReads) and
-      (JsPath \ "type").read[(String, Int)](readsTypeTuple) and
-      (JsPath \ "receiptDate").readNullable[LocalDate](dateReads) and
-      (JsPath \ "captureDate").readNullable[LocalDate](dateReads) and
-      (JsPath \ "grossAmount").readNullable[BigDecimal])(
-      (employmentSequenceNumber, source, iabdType, receiptDate, captureDate, grossAmount) =>
-        IabdDetails
-          .apply(
-            employmentSequenceNumber,
-            source.flatten,
-            Some(iabdType._2),
-            receiptDate,
-            captureDate,
-            grossAmount
-          )
+  val publicWrites: OWrites[IabdDetails] = OWrites[IabdDetails] { i =>
+    removeNulls(
+      Json.obj(
+        "nino"        -> i.nino,
+        "type"        -> i.`type`,
+        "grossAmount" -> i.grossAmount,
+        "source"      -> i.source,
+        "receiptDate" -> i.receiptDate.map(d => Json.toJson(d)(dmyDateWrites)),
+        "captureDate" -> i.captureDate.map(d => Json.toJson(d)(dmyDateWrites))
+      )
     )
+  }
 
-  val reads: Reads[Seq[IabdDetails]] =
-    (JsPath \ "iabdDetails").readNullable(Reads.seq(iabdReads)).map(_.getOrElse(Seq.empty))
+  val hipWrites: OWrites[IabdDetails] = OWrites[IabdDetails] { i =>
+    removeNulls(
+      Json.obj(
+        "nationalInsuranceNumber"  -> i.nino,
+        "employmentSequenceNumber" -> i.employmentSequenceNumber,
+        "type"                     -> i.`type`,
+        "receiptDate"              -> i.receiptDate.map(d => Json.toJson(d)(isoDateWrites)),
+        "captureDate"              -> i.captureDate.map(d => Json.toJson(d)(isoDateWrites)),
+        "grossAmount"              -> i.grossAmount,
+        "netAmount"                -> i.netAmount
+      )
+    )
+  }
 
+  private val typeReadsFlexible: Reads[Option[Int]] = Reads { json =>
+    (json \ "type") match {
+      case JsDefined(JsString(s)) =>
+        readsTypeTuple.reads(JsString(s)).map { case (_, code) => Some(code) }
+      case JsDefined(JsNumber(n)) if n.isValidInt =>
+        JsSuccess(Some(n.toInt))
+      case JsDefined(JsNull) =>
+        JsSuccess(None)
+      case _: JsUndefined =>
+        JsSuccess(None)
+      case JsDefined(other) =>
+        JsError(s"Invalid type format: $other")
+    }
+  }
+
+  private val singleReads: Reads[IabdDetails] = {
+
+    val ninoReads: Reads[Option[String]] =
+      (
+        (JsPath \ "nino").readNullable[String] and
+          (JsPath \ "nationalInsuranceNumber").readNullable[String]
+      )((nino, nin) => nino.orElse(nin).map(_.take(8)))
+
+    (
+      ninoReads and
+        (JsPath \ "employmentSequenceNumber").readNullable[Int] and
+        (JsPath \ "source").readNullable[Option[Int]](sourceReads).map(_.flatten) and
+        typeReadsFlexible and
+        (JsPath \ "receiptDate").readNullable[LocalDate](lenientLocalDateReads) and
+        (JsPath \ "captureDate").readNullable[LocalDate](lenientLocalDateReads) and
+        (JsPath \ "grossAmount").readNullable[BigDecimal] and
+        (JsPath \ "netAmount").readNullable[BigDecimal]
+    )(IabdDetails.apply _)
+  }
+
+  implicit val readsSingle: Reads[IabdDetails] = singleReads
+
+  implicit val listReads: Reads[List[IabdDetails]] =
+    Reads.list(readsSingle)
+
+  implicit val reads: Reads[Seq[IabdDetails]] =
+    (JsPath \ "iabdDetails").readNullable(Reads.seq(singleReads)).map(_.getOrElse(Seq.empty))
+
+  val singleObjectReads: Reads[IabdDetails] = singleReads
+
+  private lazy val iabdList: List[String] = List(
+    "Gift Aid Payments (001)",
+    "Gift Aid treated as paid in previous tax year (002)",
+    "One off Gift Aid Payments (003)",
+    "Gift Aid after end of tax year (004)",
+    "Personal Pension Payments (005)",
+    "Maintenance Payments (006)",
+    "Total gift aid Payments (007)",
+    "Employer Provided Services (008)",
+    "Widows and Orphans (009)",
+    "Balancing Charge (010)",
+    "Loan Interest Amount (011)",
+    "Death, Sickness or Funeral Benefits (012)",
+    "Married Couples Allowance (MAA) (013)",
+    "Blind Persons Allowance (014)",
+    "BPA Received from Spouse/Civil Partner (015)",
+    "Community Investment Tax Credit (016)",
+    "Gifts of Shares to Charity (017)",
+    "Retirement Annuity Payments (018)",
+    "Non-Coded Income (019)",
+    "Commission (020)",
+    "Other Income (Earned) (021)",
+    "Other Income (Not Earned) (022)",
+    "Part Time Earnings (023)",
+    "Tips (024)",
+    "Other Earnings (025)",
+    "Casual Earnings (026)",
+    "New Estimated Pay (027)",
+    "Benefit in Kind (028)",
+    "Car Fuel Benefit (029)",
+    "Medical Insurance (030)",
+    "Car Benefit (031)",
+    "Telephone (032)",
+    "Service Benefit (033)",
+    "Taxable Expenses Benefit (034)",
+    "Van Benefit (035)",
+    "Van Fuel Benefit (036)",
+    "Beneficial Loan (037)",
+    "Accommodation (038)",
+    "Assets (039)",
+    "Asset Transfer (040)",
+    "Educational Services (041)",
+    "Entertaining (042)",
+    "Expenses (043)",
+    "Mileage (044)",
+    "Non-qualifying Relocation Expenses (045)",
+    "Nursery Places (046)",
+    "Other Items (047)",
+    "Payments on Employee's Behalf (048)",
+    "Personal Incidental Expenses (049)",
+    "Qualifying Relocation Expenses (050)",
+    "Employer Provided Professional Subscription (051)",
+    "Income Tax Paid but not deducted from Director's Remuneration (052)",
+    "Travel and Subsistence (053)",
+    "Vouchers and Credit Cards (054)",
+    "Job Expenses (055)",
+    "Flat Rate Job Expenses (056)",
+    "Professional Subscriptions (057)",
+    "Hotel and Meal Expenses (058)",
+    "Other Expenses (059)",
+    "Vehicle Expenses (060)",
+    "Mileage Allowance Relief (061)",
+    "Foreign Dividend Income (062)",
+    "Foreign Property Income (063)",
+    "Foreign Interest & Other Savings (064)",
+    "Foreign Pensions & Other Income (065)",
+    "State Pension (066)",
+    "Occupational Pension (067)",
+    "Public Services Pension (068)",
+    "Forces Pension (069)",
+    "Personal Pension Annuity (070)",
+    "Lump Sum Deferral (071)",
+    "Profit (072)",
+    "Loss (073)",
+    "Loss Brought Forward from earlier tax year (074)",
+    "Taxed Interest (075)",
+    "UK Dividend (076)",
+    "Unit Trust (077)",
+    "Stock Dividend (078)",
+    "National Savings (079)",
+    "Savings Bond (080)",
+    "Purchased Life Annuities (081)",
+    "Untaxed Interest (082)",
+    "Incapacity Benefit (083)",
+    "Job Seekers Allowance (084)",
+    "Other Benefit (085)",
+    "Trusts, Settlements & Estates at Trust Rate (086)",
+    "Trusts, Settlements & Estates at Basic Rate (087)",
+    "Trusts, Settlements & Estates at Lower Rate (088)",
+    "Trusts, Settlements & Estates at Non-payable Dividend Rate (089)",
+    "Venture Capital Trust (090)",
+    "BPA Transferred to Spouse/Civil Partner (091)",
+    "Trade Union Subscriptions (093)",
+    "Chargeable Event Gain (094)",
+    "Gift Aid Adjustment (095)",
+    "Widows and Orphans Adjustment (096)",
+    "Married Couples Allowance to Wife (MAW) (097)",
+    "Double Taxation Relief (098)",
+    "Concession Relief (099)",
+    "Enterprise Investment Scheme (100)",
+    "Early Years Adjustment (101)",
+    "Loss relief (102)",
+    "Estimated Income (103)",
+    "Foreign Pension Allowance (104)",
+    "Allowances Allocated Elsewhere (105)",
+    "Allowances Allocated Here (106)",
+    "Estimated NIB (107)",
+    "Estimated IB (108)",
+    "Married Couples Allowance (MAE) (109)",
+    "Married Couples Allowance (MCCP) (110)",
+    "Surplus Married Couples Allowance (MAT) (111)",
+    "Surplus Married Couples Allowance to Wife (WAA) (112)",
+    "Surplus Married Couples Allowance to Wife (WAE) (113)",
+    "Married Couples Allowance to Wife (WMA) (114)",
+    "Friendly Society Subscriptions (115)",
+    "Higher Rate Adjustment (116)",
+    "Non-Cash Benefit (117)",
+    "Personal Allowance (PA) (118)",
+    "Personal Allowance Aged (PAA) (119)",
+    "Personal Allowance Elderly (PAE) (120)",
+    "Starting Rate Adjustment (LRA) (121)",
+    "Starting Rate Band Adjustment (ELR) (122)",
+    "Employment and Support Allowance (123)",
+    "Child Benefit (124)",
+    "Bereavement Allowance (125)",
+    "PA transferred to spouse/civil partner (126)",
+    "PA received from spouse/civil partner (127)",
+    "Personal Savings Allowance (128)",
+    "Dividend Tax (129)",
+    "Relief At Source (RAS) (130)",
+    "HICBC PAYE (131)"
+  )
+
+  private lazy val iabdCodeToLabel: Map[Int, String] =
+    iabdList.flatMap { s =>
+      JsonHelper.parseType(s) match {
+        case Some((_, code)) => Some(code -> s)
+        case None =>
+          val ex = new RuntimeException(s"Failed to parse IABD type from string: $s")
+          logger.error(ex.getMessage, ex)
+          None
+      }
+    }.toMap
+
+  def iabdTypeToString(sourceType: Int): Option[String] =
+    iabdCodeToLabel.get(sourceType)
 }

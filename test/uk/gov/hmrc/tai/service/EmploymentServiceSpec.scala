@@ -28,14 +28,13 @@ import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse, UpstreamErrorResponse}
 import uk.gov.hmrc.mongoFeatureToggles.services.FeatureFlagService
 import uk.gov.hmrc.tai.audit.Auditor
-import uk.gov.hmrc.tai.connectors.{DefaultEmploymentDetailsConnector, RtiConnector}
+import uk.gov.hmrc.tai.connectors.{CitizenDetailsConnector, DefaultEmploymentDetailsConnector, RtiConnector}
 import uk.gov.hmrc.tai.model.HodResponse
 import uk.gov.hmrc.tai.model.api.EmploymentCollection
 import uk.gov.hmrc.tai.model.api.EmploymentCollection.employmentHodReads
 import uk.gov.hmrc.tai.model.domain.*
 import uk.gov.hmrc.tai.model.domain.income.Live
 import uk.gov.hmrc.tai.model.tai.TaxYear
-import uk.gov.hmrc.tai.repositories.deprecated.PersonRepository
 import uk.gov.hmrc.tai.util.{BaseSpec, IFormConstants}
 
 import java.nio.file.{Files, Paths}
@@ -106,8 +105,8 @@ class EmploymentServiceSpec extends BaseSpec {
   private def createSut(
     employmentDetailsConnector: DefaultEmploymentDetailsConnector,
     rtiConnector: RtiConnector,
+    citizenDetailsConnector: CitizenDetailsConnector,
     employmentBuilder: EmploymentBuilder,
-    personRepository: PersonRepository,
     iFormSubmissionService: IFormSubmissionService,
     fileUploadService: FileUploadService,
     pdfService: PdfService,
@@ -116,8 +115,8 @@ class EmploymentServiceSpec extends BaseSpec {
     new EmploymentService(
       employmentDetailsConnector,
       rtiConnector,
+      citizenDetailsConnector,
       employmentBuilder,
-      personRepository,
       iFormSubmissionService,
       fileUploadService,
       pdfService,
@@ -152,8 +151,8 @@ class EmploymentServiceSpec extends BaseSpec {
       val sut = createSut(
         mockEmploymentDetailsConnector,
         mockRtiConnector,
+        mock[CitizenDetailsConnector],
         mockEmploymentBuilder,
-        mock[PersonRepository],
         mock[IFormSubmissionService],
         mock[FileUploadService],
         mock[PdfService],
@@ -206,8 +205,8 @@ class EmploymentServiceSpec extends BaseSpec {
       val sut = createSut(
         mockEmploymentDetailsConnector,
         mockRtiConnector,
+        mock[CitizenDetailsConnector],
         mockEmploymentBuilder,
-        mock[PersonRepository],
         mock[IFormSubmissionService],
         mock[FileUploadService],
         mock[PdfService],
@@ -258,8 +257,8 @@ class EmploymentServiceSpec extends BaseSpec {
       val sut = createSut(
         mockEmploymentDetailsConnector,
         mockRtiConnector,
+        mock[CitizenDetailsConnector],
         mockEmploymentBuilder,
-        mock[PersonRepository],
         mock[IFormSubmissionService],
         mock[FileUploadService],
         mock[PdfService],
@@ -286,8 +285,8 @@ class EmploymentServiceSpec extends BaseSpec {
       val sut = createSut(
         mockEmploymentDetailsConnector,
         mockRtiConnector,
+        mock[CitizenDetailsConnector],
         mockEmploymentBuilder,
-        mock[PersonRepository],
         mock[IFormSubmissionService],
         mock[FileUploadService],
         mock[PdfService],
@@ -304,8 +303,8 @@ class EmploymentServiceSpec extends BaseSpec {
       "given valid inputs" in {
         val endEmployment = EndEmployment(LocalDate.of(2017, 6, 20), "1234", Some("123456789"))
 
-        val mockPersonRepository = mock[PersonRepository]
-        when(mockPersonRepository.getPerson(any())(any()))
+        val mockCitizenDetailsConnector = mock[CitizenDetailsConnector]
+        when(mockCitizenDetailsConnector.getPerson(any())(any()))
           .thenReturn(Future.successful(person))
 
         val mockPdfService = mock[PdfService]
@@ -336,8 +335,8 @@ class EmploymentServiceSpec extends BaseSpec {
         val sut = createSut(
           mockEmploymentDetailsConnector,
           mockRtiConnector,
+          mockCitizenDetailsConnector,
           inject[EmploymentBuilder],
-          mockPersonRepository,
           mock[IFormSubmissionService],
           mockFileUploadService,
           mockPdfService,
@@ -371,8 +370,8 @@ class EmploymentServiceSpec extends BaseSpec {
         Employments(Seq.empty, None)
       )
 
-      val mockPersonRepository = mock[PersonRepository]
-      when(mockPersonRepository.getPerson(any())(any()))
+      val mockCitizenDetailsConnector = mock[CitizenDetailsConnector]
+      when(mockCitizenDetailsConnector.getPerson(any())(any()))
         .thenReturn(Future.successful(person))
 
       val mockPdfService = mock[PdfService]
@@ -393,8 +392,8 @@ class EmploymentServiceSpec extends BaseSpec {
       val sut = createSut(
         mockEmploymentDetailsConnector,
         mockRtiConnector,
+        mockCitizenDetailsConnector,
         inject[EmploymentBuilder],
-        mockPersonRepository,
         mock[IFormSubmissionService],
         mockFileUploadService,
         mockPdfService,
@@ -414,8 +413,8 @@ class EmploymentServiceSpec extends BaseSpec {
       "given valid inputs" in {
         val addEmployment = AddEmployment("testName", LocalDate.of(2017, 8, 1), "1234", "Yes", Some("123456789"))
 
-        val mockPersonRepository = mock[PersonRepository]
-        when(mockPersonRepository.getPerson(any())(any()))
+        val mockCitizenDetailsConnector = mock[CitizenDetailsConnector]
+        when(mockCitizenDetailsConnector.getPerson(any())(any()))
           .thenReturn(Future.successful(person))
 
         val mockPdfService = mock[PdfService]
@@ -436,8 +435,8 @@ class EmploymentServiceSpec extends BaseSpec {
         val sut = createSut(
           mockEmploymentDetailsConnector,
           mockRtiConnector,
+          mockCitizenDetailsConnector,
           mockEmploymentBuilder,
-          mockPersonRepository,
           mock[IFormSubmissionService],
           mockFileUploadService,
           mockPdfService,
@@ -459,8 +458,8 @@ class EmploymentServiceSpec extends BaseSpec {
     "Send add journey audit event for envelope id" in {
       val addEmployment = AddEmployment("testName", LocalDate.of(2017, 8, 1), "1234", "Yes", Some("123456789"))
 
-      val mockPersonRepository = mock[PersonRepository]
-      when(mockPersonRepository.getPerson(any())(any()))
+      val mockCitizenDetailsConnector = mock[CitizenDetailsConnector]
+      when(mockCitizenDetailsConnector.getPerson(any())(any()))
         .thenReturn(Future.successful(person))
 
       val mockPdfService = mock[PdfService]
@@ -481,8 +480,8 @@ class EmploymentServiceSpec extends BaseSpec {
       val sut = createSut(
         mockEmploymentDetailsConnector,
         mockRtiConnector,
+        mockCitizenDetailsConnector,
         mockEmploymentBuilder,
-        mockPersonRepository,
         mock[IFormSubmissionService],
         mockFileUploadService,
         mockPdfService,
@@ -525,8 +524,8 @@ class EmploymentServiceSpec extends BaseSpec {
         val sut = createSut(
           mockEmploymentDetailsConnector,
           mockRtiConnector,
+          mock[CitizenDetailsConnector],
           mockEmploymentBuilder,
-          mock[PersonRepository],
           mockIFormSubmissionService,
           mock[FileUploadService],
           mock[PdfService],
@@ -563,8 +562,8 @@ class EmploymentServiceSpec extends BaseSpec {
       val sut = createSut(
         mockEmploymentDetailsConnector,
         mockRtiConnector,
+        mock[CitizenDetailsConnector],
         mockEmploymentBuilder,
-        mock[PersonRepository],
         mockIFormSubmissionService,
         mock[FileUploadService],
         mock[PdfService],
@@ -599,8 +598,8 @@ class EmploymentServiceSpec extends BaseSpec {
         val sut = createSut(
           mockEmploymentDetailsConnector,
           mockRtiConnector,
+          mock[CitizenDetailsConnector],
           mockEmploymentBuilder,
-          mock[PersonRepository],
           mockIFormSubmissionService,
           mock[FileUploadService],
           mock[PdfService],
@@ -638,8 +637,8 @@ class EmploymentServiceSpec extends BaseSpec {
       val sut = createSut(
         mockEmploymentDetailsConnector,
         mockRtiConnector,
+        mock[CitizenDetailsConnector],
         mockEmploymentBuilder,
-        mock[PersonRepository],
         mockIFormSubmissionService,
         mock[FileUploadService],
         mock[PdfService],
@@ -663,8 +662,8 @@ class EmploymentServiceSpec extends BaseSpec {
       val sut = createSut(
         mockEmploymentDetailsConnector,
         mockRtiConnector,
+        mock[CitizenDetailsConnector],
         mockEmploymentBuilder,
-        mock[PersonRepository],
         mock[IFormSubmissionService],
         mock[FileUploadService],
         mock[PdfService],
@@ -688,8 +687,8 @@ class EmploymentServiceSpec extends BaseSpec {
       val sut = createSut(
         mockEmploymentDetailsConnector,
         mockRtiConnector,
+        mock[CitizenDetailsConnector],
         mockEmploymentBuilder,
-        mock[PersonRepository],
         mock[IFormSubmissionService],
         mock[FileUploadService],
         mock[PdfService],
@@ -714,8 +713,8 @@ class EmploymentServiceSpec extends BaseSpec {
       val sut = createSut(
         mockEmploymentDetailsConnector,
         mockRtiConnector,
+        mock[CitizenDetailsConnector],
         mockEmploymentBuilder,
-        mock[PersonRepository],
         mock[IFormSubmissionService],
         mock[FileUploadService],
         mock[PdfService],
@@ -751,8 +750,8 @@ class EmploymentServiceSpec extends BaseSpec {
       val sut = createSut(
         mockEmploymentDetailsConnector,
         mockRtiConnector,
+        mock[CitizenDetailsConnector],
         mockEmploymentBuilder,
-        mock[PersonRepository],
         mock[IFormSubmissionService],
         mock[FileUploadService],
         mock[PdfService],

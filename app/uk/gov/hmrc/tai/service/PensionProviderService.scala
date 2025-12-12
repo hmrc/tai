@@ -25,7 +25,7 @@ import uk.gov.hmrc.tai.audit.Auditor
 import uk.gov.hmrc.tai.model.domain.{AddPensionProvider, IncorrectPensionProvider, Person}
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.model.templates.EmploymentPensionViewModel
-import uk.gov.hmrc.tai.templates.html.{EmploymentIForm, PensionProviderIForm}
+import uk.gov.hmrc.tai.service.PdfService.{EmploymentIFormReportRequest, PensionProviderIFormRequest}
 import uk.gov.hmrc.tai.util.IFormConstants
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -64,7 +64,7 @@ class PensionProviderService @Inject() (
 
   private[service] def addPensionProviderForm(pensionProvider: AddPensionProvider) = (person: Person) =>
     val templateModel = EmploymentPensionViewModel(TaxYear(), person, pensionProvider)
-    Future.successful(PensionProviderIForm(templateModel).toString)
+    Future.successful(PensionProviderIFormRequest(templateModel))
 
   def incorrectPensionProvider(nino: Nino, id: Int, incorrectPensionProvider: IncorrectPensionProvider)(implicit
     hc: HeaderCarrier,
@@ -102,7 +102,7 @@ class PensionProviderService @Inject() (
       .map {
         case Some(employment) =>
           val templateModel = EmploymentPensionViewModel(TaxYear(), person, incorrectPensionProvider, employment)
-          EmploymentIForm(templateModel).toString
+          EmploymentIFormReportRequest(templateModel)
         case None => throw new RuntimeException(s"employment id: $id not found in list of employments")
       }
       .foldF(Future.failed, Future.successful)
