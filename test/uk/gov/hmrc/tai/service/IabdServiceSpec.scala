@@ -66,17 +66,17 @@ class IabdServiceSpec extends BaseSpec {
           )
         )
 
-      val json = Json.parse(
-        s"""{
-           |   "iabdDetails": ${Json.stringify(iabdJson)}
-           |}""".stripMargin
-      )
+        val json = Json.parse(
+          s"""{
+             |   "iabdDetails": ${Json.stringify(iabdJson)}
+             |}""".stripMargin
+        )
 
-      when(mockIabdConnector.iabds(any(), any(), any())(any()))
-        .thenReturn(Future.successful(json))
+        when(mockIabdConnector.iabds(any(), any(), any())(any()))
+          .thenReturn(Future.successful(json))
 
-      val sut = createSut(mockIabdConnector)
-      val result = sut.retrieveIabdDetails(nino, TaxYear()).futureValue
+        val sut = createSut(mockIabdConnector)
+        val result = sut.retrieveIabdDetails(nino, TaxYear()).futureValue
 
         result mustBe Seq(
           IabdDetails(
@@ -105,24 +105,24 @@ class IabdServiceSpec extends BaseSpec {
       "not filter when an explicit type is supplied (service returns whatever the connector gives)" in {
         val iabdJson = Json.arr(
           Json.obj(
-            "nationalInsuranceNumber"  -> "AA111111A",
+            "nationalInsuranceNumber"  -> s"${nino.nino}",
             "employmentSequenceNumber" -> 1,
             "taxYear"                  -> 2017,
             "type"                     -> "New Estimated Pay (027)",
             "source"                   -> "EMAIL",
-            "grossAmount"              -> 1234,
+            "grossAmount"              -> 12345,
             "receiptDate"              -> "2017-04-10",
             "captureDate"              -> "2017-04-10",
             "typeDescription"          -> "New Estimated Pay",
             "netAmount"                -> 1234
           ),
           Json.obj(
-            "nationalInsuranceNumber"  -> "AA222222A",
+            "nationalInsuranceNumber"  -> s"${nino.nino}",
             "employmentSequenceNumber" -> 2,
             "taxYear"                  -> 2017,
             "type"                     -> "Some Other (999)",
             "source"                   -> "LETTER",
-            "grossAmount"              -> 2222,
+            "grossAmount"              -> 22222,
             "receiptDate"              -> "2017-05-01",
             "captureDate"              -> "2017-05-02",
             "typeDescription"          -> "Other",
@@ -144,20 +144,24 @@ class IabdServiceSpec extends BaseSpec {
 
         result mustBe Seq(
           IabdDetails(
+            nino = Some(nino.value.take(8)),
             employmentSequenceNumber = Some(1),
             source = Some(17),
             `type` = Some(27),
             receiptDate = Some(LocalDate.parse("2017-04-10")),
             captureDate = Some(LocalDate.parse("2017-04-10")),
-            grossAmount = Some(BigDecimal(1234))
+            grossAmount = Some(BigDecimal(12345)),
+            netAmount = Some(BigDecimal(1234))
           ),
           IabdDetails(
+            nino = Some(nino.value.take(8)),
             employmentSequenceNumber = Some(2),
             source = Some(16),
             `type` = Some(999),
             receiptDate = Some(LocalDate.parse("2017-05-01")),
             captureDate = Some(LocalDate.parse("2017-05-02")),
-            grossAmount = Some(BigDecimal(2222))
+            grossAmount = Some(BigDecimal(22222)),
+            netAmount = Some(BigDecimal(2222))
           )
         )
       }
