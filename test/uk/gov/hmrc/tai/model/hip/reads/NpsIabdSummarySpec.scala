@@ -18,15 +18,13 @@ package uk.gov.hmrc.tai.model.hip.reads
 
 import org.scalatestplus.play.PlaySpec
 import play.api.libs.json.{JsArray, JsObject, Json}
-import uk.gov.hmrc.domain.{Generator, Nino}
+import uk.gov.hmrc.domain.{Nino, NinoGenerator}
 import uk.gov.hmrc.tai.model.domain.NpsIabdSummary
 import uk.gov.hmrc.tai.model.hip.reads.NpsIabdSummaryHipReads.iabdsFromTotalLiabilityReads
 
-import scala.util.Random
-
 class NpsIabdSummarySpec extends PlaySpec {
 
-  private val nino: Nino = new Generator(new Random).nextNino
+  private val nino: Nino = NinoGenerator().nextNino
 
   private def npsIabdSummaries(noOfIabds: Int, iabdType: Int = 1): Seq[JsObject] =
     for {

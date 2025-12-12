@@ -22,7 +22,8 @@ object AppDependencies {
   val test: Seq[ModuleID] = Seq(
     "org.scalatestplus" %% "scalacheck-1-18"                                 % "3.2.19.0",
     "uk.gov.hmrc"       %% s"mongo-feature-toggles-client-test-$playVersion" % mongoClientVersion,
-   "org.apache.pdfbox"  % "pdfbox"                                           % "3.0.6",
+    "uk.gov.hmrc"       %% s"domain-test-$playVersion"                       % "13.0.0",
+    "org.apache.pdfbox"  % "pdfbox"                                          % "3.0.6",
   ).map(_ % "test")
 
   val all: Seq[ModuleID] = compile ++ test

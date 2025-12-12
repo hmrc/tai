@@ -17,13 +17,12 @@
 package data
 
 import play.api.libs.json.{JsValue, Json}
-import uk.gov.hmrc.domain.{Generator, Nino}
+import uk.gov.hmrc.domain.{Nino, NinoGenerator}
 import uk.gov.hmrc.tai.model.TaxSummaryDetails
 import uk.gov.hmrc.tai.model.nps2.NpsFormatter
 
 import java.io.File
 import scala.io.BufferedSource
-import scala.util.Random
 
 object NpsData extends NpsFormatter {
 
@@ -37,7 +36,7 @@ object NpsData extends NpsFormatter {
 
   private val basePath = "test/resources/data/"
 
-  private val nino: Nino = new Generator(new Random).nextNino
+  private val nino: Nino = NinoGenerator().nextNino
 
   private def getJson(fileName: String): JsValue = {
     val jsonFilePath = basePath + fileName

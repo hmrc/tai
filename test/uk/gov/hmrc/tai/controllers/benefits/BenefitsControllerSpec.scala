@@ -21,7 +21,7 @@ import org.mockito.Mockito.when
 import play.api.libs.json.Json
 import play.api.test.Helpers.{status, *}
 import play.api.test.{FakeHeaders, FakeRequest}
-import uk.gov.hmrc.domain.{Generator, Nino}
+import uk.gov.hmrc.domain.{Nino, NinoGenerator}
 import uk.gov.hmrc.tai.model.api.ApiResponse
 import uk.gov.hmrc.tai.model.domain.benefits.*
 import uk.gov.hmrc.tai.model.domain.{Accommodation, Assets}
@@ -31,7 +31,6 @@ import uk.gov.hmrc.tai.util.BaseSpec
 
 import java.time.LocalDate
 import scala.concurrent.Future
-import scala.util.Random
 
 class BenefitsControllerSpec extends BaseSpec {
 
@@ -162,5 +161,5 @@ class BenefitsControllerSpec extends BaseSpec {
     }
   }
 
-  def randomNino: Nino = new Generator(new Random).nextNino
+  def randomNino: Nino = NinoGenerator().nextNino
 }
