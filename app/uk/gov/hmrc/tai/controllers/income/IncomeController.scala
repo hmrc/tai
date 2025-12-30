@@ -74,17 +74,6 @@ class IncomeController @Inject() (
       .merge
   }
 
-  def nonMatchingCeasedEmployments(nino: Nino, year: TaxYear): Action[AnyContent] =
-    authentication.authWithUserDetails.async { implicit request =>
-      incomeService
-        .nonMatchingCeasedEmployments(nino, year)
-        .bimap(
-          error => customErrorHandler.handleControllerErrorStatuses(error),
-          result => Ok(Json.toJson(ApiResponse(Json.toJson(result), Seq.empty[ApiLink])))
-        )
-        .merge
-    }
-
   def income(nino: Nino, year: TaxYear): Action[AnyContent] = authentication.authWithUserDetails.async {
     implicit request =>
       incomeService.incomes(nino, year).map { income =>

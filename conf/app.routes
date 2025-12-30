@@ -8,7 +8,6 @@ POST          /calculator/calculate-estimated-pay                               
 # Employments
 GET           /:nino/employments/years/:year                                                                          @uk.gov.hmrc.tai.controllers.EmploymentsController.employments(nino: Nino, year: uk.gov.hmrc.tai.model.tai.TaxYear)
 POST          /:nino/employments/years/:year/update                                                                   @uk.gov.hmrc.tai.controllers.EmploymentsController.updatePreviousYearIncome(nino: Nino, year: uk.gov.hmrc.tai.model.tai.TaxYear)
-GET           /:nino/employments/:id                                                                                  @uk.gov.hmrc.tai.controllers.EmploymentsController.employment(nino: Nino, id: Int)
 POST          /:nino/employments                                                                                      @uk.gov.hmrc.tai.controllers.EmploymentsController.addEmployment(nino: Nino)
 PUT           /:nino/employments/:id/end-date                                                                         @uk.gov.hmrc.tai.controllers.EmploymentsController.endEmployment(nino: Nino, id: Int)
 POST          /:nino/employments/:id/reason                                                                           @uk.gov.hmrc.tai.controllers.EmploymentsController.incorrectEmployment(nino: Nino, id: Int)
@@ -33,7 +32,6 @@ GET           /:nino/tax-account/:year/income                                   
 PUT           /:nino/tax-account/snapshots/:snapshotId/incomes/tax-code-incomes/:employmentId/estimated-pay           @uk.gov.hmrc.tai.controllers.income.IncomeController.updateTaxCodeIncome(nino: Nino, snapshotId: uk.gov.hmrc.tai.model.tai.TaxYear, employmentId:Int)
 GET           /:nino/tax-account/year/:year/income/:incomeType/status/:status                                         @uk.gov.hmrc.tai.controllers.income.IncomeController.matchedTaxCodeIncomesForYear(nino: Nino, year: uk.gov.hmrc.tai.model.tai.TaxYear, incomeType: TaxCodeIncomeComponentType, status: TaxCodeIncomeStatus)
 GET           /:nino/employments/year/:year/income/:incomeType/status/:status                                         @uk.gov.hmrc.tai.controllers.EmploymentsController.getEmploymentsByStatusAndType(nino: Nino, year: uk.gov.hmrc.tai.model.tai.TaxYear, incomeType: TaxCodeIncomeComponentType, status: TaxCodeIncomeStatus)
-GET           /:nino/employments/year/:year/status/ceased                                                             @uk.gov.hmrc.tai.controllers.income.IncomeController.nonMatchingCeasedEmployments(nino: Nino, year: uk.gov.hmrc.tai.model.tai.TaxYear)
 
 # Expenses
 POST          /:nino/tax-account/:year/expenses/employee-expenses/:iabd                                               @uk.gov.hmrc.tai.controllers.expenses.EmployeeExpensesController.updateEmployeeExpensesData(nino: Nino, year: uk.gov.hmrc.tai.model.tai.TaxYear, iabd: Int)
