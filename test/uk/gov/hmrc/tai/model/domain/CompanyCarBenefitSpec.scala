@@ -18,16 +18,15 @@ package uk.gov.hmrc.tai.model.domain
 
 import org.scalatestplus.play.PlaySpec
 import play.api.libs.json.{JsResultException, Json}
-import uk.gov.hmrc.domain.{Generator, Nino}
+import uk.gov.hmrc.domain.{Nino, NinoGenerator}
 import uk.gov.hmrc.tai.model.domain.benefits.CompanyCar.companyCarReadsFromHod
 import uk.gov.hmrc.tai.model.domain.benefits.CompanyCarBenefit.companyCarBenefitReadsFromHod
 import uk.gov.hmrc.tai.model.domain.benefits.{CompanyCar, CompanyCarBenefit}
 
 import java.time.LocalDate
-import scala.util.Random
 
 class CompanyCarBenefitSpec extends PlaySpec {
-  private val nino: Nino = new Generator(new Random).nextNino
+  private val nino: Nino = NinoGenerator().nextNino
 
   "companyCarBenefitReads" must {
     "be able to read correct companyCarBenefit json" when {

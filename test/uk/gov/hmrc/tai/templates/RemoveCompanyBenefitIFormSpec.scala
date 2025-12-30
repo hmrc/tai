@@ -19,14 +19,12 @@ package uk.gov.hmrc.tai.templates
 import org.jsoup.Jsoup
 import org.scalatestplus.play.PlaySpec
 import play.twirl.api.Html
-import uk.gov.hmrc.domain.Generator
+import uk.gov.hmrc.domain.NinoGenerator
 import uk.gov.hmrc.tai.model.templates.RemoveCompanyBenefitViewModel
-
-import scala.util.Random
 
 class RemoveCompanyBenefitIFormSpec extends PlaySpec {
 
-  private val nino = new Generator(new Random()).nextNino
+  private val nino = NinoGenerator().nextNino
   private val removeCompanyBenefitModel: RemoveCompanyBenefitViewModel =
     RemoveCompanyBenefitViewModel(
       nino.nino,

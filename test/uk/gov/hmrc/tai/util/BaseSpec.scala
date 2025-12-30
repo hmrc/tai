@@ -27,7 +27,7 @@ import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.mvc.{ControllerComponents, Result}
 import play.api.test.Helpers.stubControllerComponents
 import play.api.test.{FakeRequest, Injecting}
-import uk.gov.hmrc.domain.{Generator, Nino}
+import uk.gov.hmrc.domain.{Nino, NinoGenerator}
 import uk.gov.hmrc.http.{BadGatewayException, BadRequestException, HeaderCarrier, InternalServerException, NotFoundException, SessionId}
 import uk.gov.hmrc.tai.config.CustomErrorHandler
 import uk.gov.hmrc.tai.connectors.cache.CacheId
@@ -36,7 +36,7 @@ import uk.gov.hmrc.tai.controllers.auth.AuthJourney
 
 import scala.concurrent.duration.Duration
 import scala.concurrent.{Await, ExecutionContext, Future}
-import scala.util.{Failure, Random, Try}
+import scala.util.{Failure, Try}
 
 trait BaseSpec
     extends PlaySpec with MockitoSugar with FakeTaiPlayApplication with ScalaFutures with Injecting
@@ -51,8 +51,8 @@ trait BaseSpec
 
   val sessionIdValue: String = "some session id"
   implicit lazy val hc: HeaderCarrier = HeaderCarrier(sessionId = Some(SessionId(sessionIdValue)))
-  val nino: Nino = new Generator(Random).nextNino
-  val otherNino: Nino = new Generator(Random).nextNino
+  val nino: Nino = NinoGenerator().nextNino
+  val otherNino: Nino = NinoGenerator().nextNino
   val cacheId: CacheId = CacheId(nino)
   val cacheIdNoSession: CacheId = CacheId.noSession(nino)
 

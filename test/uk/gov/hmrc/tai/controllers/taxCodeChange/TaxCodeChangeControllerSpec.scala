@@ -22,7 +22,7 @@ import play.api.libs.json.Json
 import play.api.mvc.Result
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{status, *}
-import uk.gov.hmrc.domain.{Generator, Nino}
+import uk.gov.hmrc.domain.{Nino, NinoGenerator}
 import uk.gov.hmrc.http.InternalServerException
 import uk.gov.hmrc.tai.model.api.{TaxCodeChange, TaxCodeSummary}
 import uk.gov.hmrc.tai.model.tai.TaxYear
@@ -32,7 +32,6 @@ import uk.gov.hmrc.tai.util.{BaseSpec, TaxCodeHistoryConstants}
 
 import java.time.LocalDate
 import scala.concurrent.Future
-import scala.util.Random
 
 class TaxCodeChangeControllerSpec extends BaseSpec with TaxCodeHistoryConstants {
 
@@ -42,7 +41,7 @@ class TaxCodeChangeControllerSpec extends BaseSpec with TaxCodeHistoryConstants 
 
   private def controller = new TaxCodeChangeController(loggedInAuthenticationAuthJourney, taxCodeService, cc)
 
-  private def ninoGenerator = new Generator(new Random).nextNino
+  private def ninoGenerator = NinoGenerator().nextNino
 
   "hasTaxCodeChanged" must {
 

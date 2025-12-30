@@ -18,19 +18,18 @@ package uk.gov.hmrc.tai.model.tai
 
 import org.scalacheck.Gen
 import org.scalatestplus.play.PlaySpec
-import uk.gov.hmrc.domain.{Generator, Nino}
+import uk.gov.hmrc.domain.{Nino, NinoGenerator}
 import uk.gov.hmrc.tai.model.enums.BasisOperation
 import uk.gov.hmrc.tai.model.nps2.Income.{IncomeType, Status}
 import uk.gov.hmrc.tai.model.nps2.{Income, NpsEmployment, TaxAccount}
 import uk.gov.hmrc.tai.model.rti.*
 
 import java.time.LocalDate
-import scala.util.Random
 
 class AnnualAccountSpec extends PlaySpec {
 
   val rtiSampleEmployments: Gen[RtiEmployment] = RtiGenerator.employment
-  private val nino: Nino = new Generator(new Random).nextNino
+  private val nino: Nino = NinoGenerator().nextNino
 
   private val date = LocalDate.parse("2017-12-12")
 
