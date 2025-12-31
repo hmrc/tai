@@ -20,14 +20,13 @@ import org.mockito.ArgumentMatchers.{any, eq as meq}
 import org.mockito.Mockito.{times, verify}
 import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
-import uk.gov.hmrc.domain.{Generator, Nino}
+import uk.gov.hmrc.domain.{Nino, NinoGenerator}
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.tai.audit.Auditor
 import uk.gov.hmrc.tai.model.domain.income.Live
 import uk.gov.hmrc.tai.model.tai.TaxYear
 
 import java.time.LocalDate
-import scala.util.Random
 
 class EmploymentBuilderSpec extends PlaySpec with MockitoSugar {
 
@@ -35,7 +34,7 @@ class EmploymentBuilderSpec extends PlaySpec with MockitoSugar {
   val auditTransactionName = "NPS RTI Data Mismatch"
 
   trait EmploymentBuilderSetup {
-    val nino: Nino = new Generator(new Random).nextNino
+    val nino: Nino = NinoGenerator().nextNino
     val mockAuditor: Auditor = mock[Auditor]
     val testEmploymentBuilder = new EmploymentBuilder(mockAuditor)
   }

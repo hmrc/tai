@@ -18,14 +18,12 @@ package uk.gov.hmrc.tai.model.hip.reads
 
 import org.scalatestplus.play.PlaySpec
 import play.api.libs.json.{JsNull, JsObject, Json}
-import uk.gov.hmrc.domain.{Generator, Nino}
+import uk.gov.hmrc.domain.{Nino, NinoGenerator}
 import uk.gov.hmrc.tai.model.domain.*
 import uk.gov.hmrc.tai.model.domain.income.OtherNonTaxCodeIncome
 
-import scala.util.Random
-
 class OtherNonTaxCodeIncomeHipReadsSpec extends PlaySpec {
-  private val nino: Nino = new Generator(new Random).nextNino
+  private val nino: Nino = NinoGenerator().nextNino
   "otherNonTaxCodeIncomeReads" must {
     "return empty sequence" when {
       "there is no total liability present in tax account" in {

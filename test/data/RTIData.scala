@@ -17,13 +17,12 @@
 package data
 
 import play.api.libs.json.Json
-import uk.gov.hmrc.domain.{Generator, Nino}
+import uk.gov.hmrc.domain.{Nino, NinoGenerator}
 import uk.gov.hmrc.tai.model.rti.RtiData
 import uk.gov.hmrc.tai.model.tai.TaxYear
 
 import java.time.LocalDate
 import scala.io.Source
-import scala.util.Random
 
 object RTIData {
 
@@ -31,7 +30,7 @@ object RTIData {
 
   private val basePath = "test/resources/data/"
 
-  val nino: Nino = new Generator(new Random).nextNino
+  val nino: Nino = NinoGenerator().nextNino
 
   private def getRTIData(fileName: String): RtiData = {
     val jsonFilePath = basePath + fileName

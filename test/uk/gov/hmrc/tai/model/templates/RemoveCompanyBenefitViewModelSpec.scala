@@ -17,17 +17,16 @@
 package uk.gov.hmrc.tai.model.templates
 
 import org.scalatestplus.play.PlaySpec
-import uk.gov.hmrc.domain.Generator
+import uk.gov.hmrc.domain.NinoGenerator
 import uk.gov.hmrc.tai.model.domain.benefits.RemoveCompanyBenefit
 import uk.gov.hmrc.tai.model.domain.{Address, Person}
 import uk.gov.hmrc.tai.util.IFormConstants.{No, Yes}
 
 import java.time.LocalDate
-import scala.util.Random
 
 class RemoveCompanyBenefitViewModelSpec extends PlaySpec {
 
-  private val nino = new Generator(new Random()).nextNino
+  private val nino = NinoGenerator().nextNino
 
   private val person = Person(
     nino,
