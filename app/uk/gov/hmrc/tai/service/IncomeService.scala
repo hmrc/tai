@@ -45,34 +45,6 @@ class IncomeService @Inject() (
 )(implicit ec: ExecutionContext)
     extends Logging {
 
-  def nonMatchingCeasedEmployments(nino: Nino, year: TaxYear)(implicit
-    hc: HeaderCarrier,
-    request: Request[_]
-  ): EitherT[Future, UpstreamErrorResponse, Seq[Employment]] = {
-    def filterNonMatchingCeasedEmploymentsWithEndDate(
-      employments: Seq[Employment],
-      taxCodeIncomes: Seq[TaxCodeIncome]
-    ): Seq[Employment] =
-      /* Employment filtering uses data from the Employment Details and Payrolled Benefits API, not the Tax Account Details API.
-         The Tax Account Details API retains employment records from the last coding, meaning deleted employments
-         remain with their last-known status (e.g., 'live'). In contrast, the Employment Details and Payrolled Benefits API
-         does not include deleted employments, ensuring accurate filtering.
-       */
-      employments
-        .filter(emp => emp.employmentStatus != Live)
-        .filter(emp => !taxCodeIncomes.exists(tci => tci.employmentId.contains(emp.sequenceNumber)))
-        .filter(_.endDate.isDefined)
-
-    for {
-      taxCodeIncomes <- EitherT[Future, UpstreamErrorResponse, Seq[TaxCodeIncome]](
-                          taxCodeIncomeHelper.fetchTaxCodeIncomes(nino, year).map(Right(_))
-                        )
-      filteredTaxCodeIncomes = taxCodeIncomes.filter(income => income.componentType == EmploymentIncome)
-      employments <- employmentService.employmentsAsEitherT(nino, year)
-      result = filterNonMatchingCeasedEmploymentsWithEndDate(employments.employments, filteredTaxCodeIncomes)
-    } yield result
-  }
-
   def matchedTaxCodeIncomesForYear(
     nino: Nino,
     year: TaxYear,

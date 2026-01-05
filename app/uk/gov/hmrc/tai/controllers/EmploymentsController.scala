@@ -107,23 +107,6 @@ class EmploymentsController @Inject() (
       .merge
   }
 
-  def employment(nino: Nino, id: Int): Action[AnyContent] = authentication.authWithUserDetails.async {
-    implicit request =>
-      employmentService
-        .employmentAsEitherT(nino, id)
-        .bimap(
-          error => customErrorHandler.handleControllerErrorStatuses(error),
-          {
-            case Some(employment) => Ok(Json.toJson(ApiResponse(employment, Nil)))
-            case None =>
-              val message = s"employment id: $id not found in list of employments"
-              logger.warn(message)
-              customErrorHandler.handleControllerErrorStatuses(UpstreamErrorResponse(message, NOT_FOUND))
-          }
-        )
-        .merge
-  }
-
   def endEmployment(nino: Nino, id: Int): Action[JsValue] = authentication.authWithUserDetails.async(parse.json) {
     implicit request =>
       withJsonBody[EndEmployment] { endEmployment =>
