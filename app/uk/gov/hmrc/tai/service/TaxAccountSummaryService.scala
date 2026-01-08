@@ -42,12 +42,17 @@ class TaxAccountSummaryService @Inject() (
     hc: HeaderCarrier,
     request: Request[_]
   ): Future[TaxAccountSummary] =
+    // This is really bad if for some reason the cache does not work properly.
+    // It generates a large number of http calls to the same API.
+    // The calls are sequential so there is no race condition to the cache.
+    // todo: refactor all different calls to taxAccount connector into a single call and the proper reads.
     for {
       totalEstimatedTax       <- taxAccountHelper.totalEstimatedTax(nino, year)
       taxFreeAmountComponents <- codingComponentService.codingComponents(nino, year)
       taxCodeIncomes          <- incomeService.taxCodeIncomes(nino, year)
       totalTax                <- totalTaxService.totalTax(nino, year)
       taxFreeAllowance        <- totalTaxService.taxFreeAllowance(nino, year)
+      date                    <- taxAccountHelper.dateOfTaxAccount(nino, year)
     } yield {
 
       val taxFreeAmount = taxFreeAmountCalculation(taxFreeAmountComponents)
@@ -66,7 +71,8 @@ class TaxAccountSummaryService @Inject() (
         totalIya,
         totalIyatIntoCYPlusOne,
         totalEstimatedIncome,
-        taxFreeAllowance
+        taxFreeAllowance,
+        date
       )
     }
 
