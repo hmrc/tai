@@ -26,6 +26,7 @@ import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.service.helper.TaxAccountHelper
 import uk.gov.hmrc.tai.util.BaseSpec
 
+import java.time.LocalDate
 import scala.concurrent.Future
 
 class TaxAccountSummaryServiceSpec extends BaseSpec {
@@ -100,6 +101,7 @@ class TaxAccountSummaryServiceSpec extends BaseSpec {
   "TaxAccountSummary" must {
     "return zero value in year adjustment figures" when {
       "no in year adjustment values are present on individual TaxCodeIncomeSource's" in {
+
         val taxCodeIncomes = Seq(
           TaxCodeIncome(
             PensionIncome,
@@ -139,6 +141,9 @@ class TaxAccountSummaryServiceSpec extends BaseSpec {
           .thenReturn(Future.successful(BigDecimal(1111)))
         when(mockTotalTaxService.totalTax(any(), any())(any())).thenReturn(Future.successful(totalTaxDetails))
         when(mockTotalTaxService.taxFreeAllowance(any(), any())(any())).thenReturn(Future.successful(BigDecimal(100)))
+        when(mockTaxAccountHelper.dateOfTaxAccount(any(), any())(any())).thenReturn(
+          Future.successful(Some(LocalDate.of(2026, 1, 1)))
+        )
 
         val result = createSUT().taxAccountSummary(nino, TaxYear())(implicitly, FakeRequest()).futureValue
 
@@ -198,6 +203,9 @@ class TaxAccountSummaryServiceSpec extends BaseSpec {
           .thenReturn(Future.successful(BigDecimal(1111)))
         when(mockTotalTaxService.totalTax(any(), any())(any())).thenReturn(Future.successful(totalTaxDetails))
         when(mockTotalTaxService.taxFreeAllowance(any(), any())(any())).thenReturn(Future.successful(BigDecimal(100)))
+        when(mockTaxAccountHelper.dateOfTaxAccount(any(), any())(any())).thenReturn(
+          Future.successful(Some(LocalDate.of(2026, 1, 1)))
+        )
 
         val result = createSUT().taxAccountSummary(nino, TaxYear())(implicitly, FakeRequest()).futureValue
 
@@ -248,6 +256,9 @@ class TaxAccountSummaryServiceSpec extends BaseSpec {
           .thenReturn(Future.successful(BigDecimal(1111)))
         when(mockTotalTaxService.totalTax(any(), any())(any())).thenReturn(Future.successful(totalTaxDetails))
         when(mockTotalTaxService.taxFreeAllowance(any(), any())(any())).thenReturn(Future.successful(BigDecimal(100)))
+        when(mockTaxAccountHelper.dateOfTaxAccount(any(), any())(any())).thenReturn(
+          Future.successful(Some(LocalDate.of(2026, 1, 1)))
+        )
 
         val result = createSUT().taxAccountSummary(nino, TaxYear())(implicitly, FakeRequest()).futureValue
 
@@ -309,6 +320,9 @@ class TaxAccountSummaryServiceSpec extends BaseSpec {
 
         when(mockTotalTaxService.totalTax(any(), any())(any())).thenReturn(Future.successful(totalTaxDetails))
         when(mockTotalTaxService.taxFreeAllowance(any(), any())(any())).thenReturn(Future.successful(BigDecimal(10000)))
+        when(mockTaxAccountHelper.dateOfTaxAccount(any(), any())(any())).thenReturn(
+          Future.successful(Some(LocalDate.of(2026, 1, 1)))
+        )
 
         val result = createSUT().taxAccountSummary(nino, TaxYear())(implicitly, FakeRequest()).futureValue
 
@@ -319,7 +333,8 @@ class TaxAccountSummaryServiceSpec extends BaseSpec {
           BigDecimal(0),
           BigDecimal(0),
           BigDecimal(0),
-          BigDecimal(10000)
+          BigDecimal(10000),
+          Some(LocalDate.of(2026, 1, 1))
         )
       }
     }
@@ -337,6 +352,10 @@ class TaxAccountSummaryServiceSpec extends BaseSpec {
 
         when(mockTaxAccountHelper.totalEstimatedTax(meq(nino), any())(any()))
           .thenReturn(Future.successful(BigDecimal(1111)))
+
+        when(mockTaxAccountHelper.dateOfTaxAccount(any(), any())(any())).thenReturn(
+          Future.successful(Some(LocalDate.of(2026, 1, 1)))
+        )
 
         val incomeCategories = Seq(
           IncomeCategory(NonSavingsIncomeCategory, BigDecimal(0), BigDecimal(1000), BigDecimal(0), Seq.empty[TaxBand]),

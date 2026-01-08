@@ -18,6 +18,8 @@ package uk.gov.hmrc.tai.model.domain
 
 import play.api.libs.json.{Json, OFormat}
 
+import java.time.LocalDate
+
 case class TaxAccountSummary(
   totalEstimatedTax: BigDecimal,
   taxFreeAmount: BigDecimal,
@@ -25,7 +27,8 @@ case class TaxAccountSummary(
   totalInYearAdjustment: BigDecimal,
   totalInYearAdjustmentIntoCYPlusOne: BigDecimal,
   totalEstimatedIncome: BigDecimal,
-  taxFreeAllowance: BigDecimal
+  taxFreeAllowance: BigDecimal,
+  date: Option[LocalDate]
 )
 
 object TaxAccountSummary {
