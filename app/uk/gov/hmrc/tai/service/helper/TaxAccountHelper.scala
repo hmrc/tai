@@ -17,7 +17,8 @@
 package uk.gov.hmrc.tai.service.helper
 
 import com.google.inject.{Inject, Singleton}
-import play.api.libs.json.JsValue
+import play.api.Logging
+import play.api.libs.json.{JsError, JsValue, Reads}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.tai.connectors.TaxAccountConnector
@@ -27,12 +28,43 @@ import uk.gov.hmrc.tai.model.domain.taxAdjustments.{TaxAdjustment, *}
 import uk.gov.hmrc.tai.model.hip.reads.{CodingComponentHipReads, TaxAdjustmentComponentHipReads, TaxOnOtherIncomeHipReads}
 import uk.gov.hmrc.tai.model.tai.TaxYear
 
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 import scala.concurrent.{ExecutionContext, Future}
+import scala.util.control.NonFatal
 
 @Singleton
 class TaxAccountHelper @Inject() (taxAccountConnector: TaxAccountConnector)(implicit
   ec: ExecutionContext
-) {
+) extends Logging {
+
+  def dateOfTaxAccount(nino: Nino, year: TaxYear)(implicit hc: HeaderCarrier): Future[Option[LocalDate]] = {
+    val dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
+
+    val localDateOptionReads: Reads[Option[LocalDate]] = Reads[Option[LocalDate]] { jsValue =>
+      jsValue
+        .validate[String]
+        .map { str =>
+          try
+            Some(LocalDate.parse(str, dateFormatter))
+          catch {
+            case NonFatal(ex) =>
+              logger.error(s"Failed to parse date '$str': ${ex.getMessage}", ex)
+              None
+          }
+        }
+        .recover { case _ =>
+          None
+        }
+    }
+
+    taxAccountConnector
+      .taxAccount(nino, year)
+      .map { taxAccount =>
+        (taxAccount \ "date").asOpt[Option[LocalDate]](localDateOptionReads).flatten
+      }
+  }
+
   def totalEstimatedTax(nino: Nino, year: TaxYear)(implicit hc: HeaderCarrier): Future[BigDecimal] = {
     val componentTypesCanAffectTotalEst: Seq[TaxComponentType] =
       Seq(UnderPaymentFromPreviousYear, OutstandingDebt, EstimatedTaxYouOweThisYear)

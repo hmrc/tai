@@ -17,14 +17,19 @@
 package uk.gov.hmrc.tai.service.helper
 
 import org.mockito.ArgumentMatchers.any
+import org.mockito.Mockito
 import org.mockito.Mockito.when
 import play.api.libs.json.{JsArray, JsObject, Json}
+import play.api.test.Helpers.await
 import uk.gov.hmrc.tai.connectors.TaxAccountConnector
 import uk.gov.hmrc.tai.model.domain.taxAdjustments.*
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.util.BaseSpec
 
 import scala.concurrent.Future
+import play.api.test.Helpers.defaultAwaitTimeout
+
+import java.time.LocalDate
 
 class TaxAccountHelperSpec extends BaseSpec {
   private val mockTaxAccountConnector = mock[TaxAccountConnector]
@@ -102,6 +107,11 @@ class TaxAccountHelperSpec extends BaseSpec {
   private def createJsonWithDeductions(deductions: JsArray) = {
     val incomeSources = Json.arr(Json.obj("deductionsDetails" -> deductions))
     taxAccountSummaryNpsJson ++ Json.obj("employmentDetailsList" -> incomeSources)
+  }
+
+  override def beforeEach(): Unit = {
+    super.beforeEach()
+    Mockito.reset(mockTaxAccountConnector)
   }
 
   "TotalEstimatedTax" must {
@@ -409,6 +419,41 @@ class TaxAccountHelperSpec extends BaseSpec {
 
         result mustBe None
       }
+    }
+  }
+
+  "dateOfTaxAccount" must {
+    "return LocalDate" in {
+      when(mockTaxAccountConnector.taxAccount(any(), any())(any())).thenReturn(
+        Future.successful(Json.obj("date" -> "2026-01-01"))
+      )
+
+      val sut = createSUT()
+      val result = await(sut.dateOfTaxAccount(nino, TaxYear()))
+
+      result mustBe Some(LocalDate.of(2026, 1, 1))
+    }
+
+    "default to None if date is in incorrect format" in {
+      when(mockTaxAccountConnector.taxAccount(any(), any())(any())).thenReturn(
+        Future.successful(Json.obj("date" -> "01/01/2029"))
+      )
+
+      val sut = createSUT()
+      val result = await(sut.dateOfTaxAccount(nino, TaxYear()))
+
+      result mustBe None
+    }
+
+    "default to None if date is missing" in {
+      when(mockTaxAccountConnector.taxAccount(any(), any())(any())).thenReturn(
+        Future.successful(Json.obj())
+      )
+
+      val sut = createSUT()
+      val result = await(sut.dateOfTaxAccount(nino, TaxYear()))
+
+      result mustBe None
     }
   }
 }
