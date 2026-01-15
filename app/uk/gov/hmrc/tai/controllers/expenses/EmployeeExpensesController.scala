@@ -25,6 +25,7 @@ import uk.gov.hmrc.tai.controllers.auth.AuthJourney
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.model.{IabdUpdateExpensesRequest, UpdateIabdEmployeeExpense}
 import uk.gov.hmrc.tai.model.domain.IabdDetails
+import uk.gov.hmrc.tai.service.IabdService
 import uk.gov.hmrc.tai.service.expenses.EmployeeExpensesService
 
 import scala.concurrent.ExecutionContext
@@ -33,6 +34,7 @@ import scala.concurrent.ExecutionContext
 class EmployeeExpensesController @Inject() (
   authentication: AuthJourney,
   employeeExpensesService: EmployeeExpensesService,
+  iabdService: IabdService,
   cc: ControllerComponents
 )(implicit
   ec: ExecutionContext
@@ -66,8 +68,10 @@ class EmployeeExpensesController @Inject() (
 
   def getEmployeeExpensesData(nino: Nino, year: Int, iabd: Int): Action[AnyContent] =
     authentication.authForEmployeeExpenses.async { implicit request =>
-      employeeExpensesService.getEmployeeExpenses(nino, year, iabd).map { iabdData =>
-        Ok(Json.toJson(iabdData)(Writes.list(IabdDetails.publicWrites)))
+      iabdService.retrieveIabdDetails(nino, TaxYear(year), iabd).map { iabdData =>
+        Ok(Json.toJson(iabdData)(Writes.seq(IabdDetails.publicWrites)))
+      } recover { case ex: IllegalArgumentException =>
+        BadRequest(ex.getMessage)
       }
     }
 }

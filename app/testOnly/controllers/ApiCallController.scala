@@ -19,6 +19,7 @@ package testOnly.controllers
 import com.google.inject.Inject
 import play.api.Logging
 import play.api.i18n.I18nSupport
+import play.api.libs.json.Json
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.NotFoundException
@@ -55,8 +56,9 @@ class ApiCallController @Inject() (
     }
   }
   def iabds(nino: Nino, taxYear: Int): Action[AnyContent] = Action.async { implicit request =>
-    defaultIabdConnector.iabds(nino, TaxYear(taxYear)).map { jsValue =>
-      Ok(jsValue)
+    val iabdType = request.queryString.get("iabdType").flatMap(_.headOption).getOrElse("New-Estimated-Pay-(027)")
+    defaultIabdConnector.getIabdsForType(nino, taxYear, iabdType).map { iabdDetails =>
+      Ok(Json.toJson(iabdDetails).toString)
     } recover { case _: NotFoundException =>
       NotFound
     }

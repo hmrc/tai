@@ -46,7 +46,7 @@ class IabdControllerSpec extends BaseSpec {
 
   "getIabds" must {
     "return IABDs for the given NINO" in {
-      when(mockIabdService.retrieveIabdDetails(any(), any())(any())).thenReturn(
+      when(mockIabdService.retrieveIabdDetails(any(), any(), any())(any())).thenReturn(
         Future.successful(
           Seq(
             IabdDetails(

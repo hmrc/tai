@@ -41,7 +41,8 @@ class IabdController @Inject() (
 
   def getIabds(nino: Nino, year: TaxYear): Action[AnyContent] =
     authentication.authWithUserDetails.async { implicit request =>
-      iabdService.retrieveIabdDetails(nino, year).map { iabdDetails =>
+      val iabdType = request.queryString.get("iabdType").flatMap(_.headOption).getOrElse("27").toInt
+      iabdService.retrieveIabdDetails(nino, year, iabdType).map { iabdDetails =>
         Ok(
           Json.toJson(
             ApiResponse[JsObject](
@@ -50,6 +51,8 @@ class IabdController @Inject() (
             )
           )
         )
+      } recover { case ex: IllegalArgumentException =>
+        BadRequest(ex.getMessage)
       }
     }
 }
