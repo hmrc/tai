@@ -79,6 +79,22 @@ class CacheServiceSpec extends BaseSpec {
       }
     }
 
+    "treat cache read failure (ecryption/deserialisation error) as cache miss and re-execute block" in {
+      when(mockTaiSessionCacheRepository.getEitherFromSession(any())(any(), any()))
+        .thenReturn(Future.successful(None))
+      when(mockTaiSessionCacheRepository.putSession(any(), any())(any(), any(), any()))
+        .thenReturn(Future.successful(Tuple2("", "")))
+
+      val block = Future.successful[Either[UpstreamErrorResponse, String]](Right(dummyValue))
+
+      whenReady(sut.cacheEither(key)(block).unsafeToFuture()) { result =>
+        result mustBe Right(dummyValue)
+        verify(mockTaiSessionCacheRepository, times(1)).getEitherFromSession(any())(any(), any())
+        verify(mockTaiSessionCacheRepository, times(1))
+          .putSession(any(), ArgumentMatchers.eq(Right[UpstreamErrorResponse, String](dummyValue)))(any(), any(), any())
+      }
+    }
+
     "return left (error) from block when not in session repository and save to session repository if appConfig.cacheErrorInSecondsTTL > 0" in {
       when(mockTaiSessionCacheRepository.getEitherFromSession(any())(any(), any())).thenReturn(Future.successful(None))
       when(mockTaiSessionCacheRepository.putSession(any(), any())(any(), any(), any()))
