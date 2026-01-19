@@ -66,16 +66,12 @@ class IabdServiceSpec extends BaseSpec {
           )
         )
 
-        val json = Json.parse(s"""
-                                 |{
-                                 |   "iabdDetails": ${Json.stringify(iabdJson)}
-                                 |}
-                                 |""".stripMargin)
+        val json = Json.obj("iabdDetails" -> iabdJson)
 
-        when(mockIabdConnector.iabds(any(), any(), any())(any())).thenReturn(Future.successful(json))
+        when(mockIabdConnector.getIabdsForType(any(), any(), any())(any())).thenReturn(Future.successful(json))
 
         val sut = createSut(mockIabdConnector)
-        val result = sut.retrieveIabdDetails(nino, TaxYear()).futureValue
+        val result = sut.retrieveIabdDetails(nino, TaxYear(), 27).futureValue
 
         result mustBe Seq(
           IabdDetails(
@@ -106,10 +102,10 @@ class IabdServiceSpec extends BaseSpec {
           "correlationId" -> ""
         )
 
-        when(mockIabdConnector.iabds(any(), any(), any())(any())).thenReturn(Future.successful(json))
+        when(mockIabdConnector.getIabdsForType(any(), any(), any())(any())).thenReturn(Future.successful(json))
 
         val sut = createSut(mockIabdConnector)
-        val result = sut.retrieveIabdDetails(nino, TaxYear()).futureValue
+        val result = sut.retrieveIabdDetails(nino, TaxYear(), 27).futureValue
         result mustBe Seq(
         )
       }
@@ -117,10 +113,10 @@ class IabdServiceSpec extends BaseSpec {
 
     "return an empty sequence of IabdDetails" when {
       "provided with next tax year" in {
-        when(mockIabdConnector.iabds(any(), any(), any())(any())).thenReturn(Future.successful(JsArray.empty))
+        when(mockIabdConnector.getIabdsForType(any(), any(), any())(any())).thenReturn(Future.successful(JsArray.empty))
 
         val sut = createSut(mockIabdConnector)
-        val result = sut.retrieveIabdDetails(nino, TaxYear().next).futureValue
+        val result = sut.retrieveIabdDetails(nino, TaxYear().next, 27).futureValue
 
         result mustBe Seq.empty[IabdDetails]
       }

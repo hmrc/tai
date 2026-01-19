@@ -28,23 +28,25 @@ import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.model.{IabdUpdateExpensesRequest, UpdateIabdEmployeeExpense}
 import uk.gov.hmrc.tai.service.expenses.EmployeeExpensesService
 import uk.gov.hmrc.tai.util.BaseSpec
+import uk.gov.hmrc.tai.service.IabdService
 
 import scala.concurrent.Future
 
 class EmployeeExpensesControllerSpec extends BaseSpec {
 
   private val mockEmployeeExpensesService = mock[EmployeeExpensesService]
+  private val mockIabdService = mock[IabdService]
 
   private def controller(authentication: AuthJourney = loggedInAuthenticationAuthJourney) =
-    new EmployeeExpensesController(authentication, mockEmployeeExpensesService, cc)
+    new EmployeeExpensesController(authentication, mockEmployeeExpensesService, mockIabdService, cc)
 
   private val iabd = 56
   val grossAmount = 100
   private val iabdUpdateExpensesRequest = IabdUpdateExpensesRequest(1, grossAmount)
   private val taxYear = 2017
 
-  private val validIabds: List[IabdDetails] = List.empty[IabdDetails]
-  private val validJson = Json.toJson(validIabds)(Writes.list(IabdDetails.hipWrites))
+  private val validIabds: Seq[IabdDetails] = Seq.empty[IabdDetails]
+  private val validJson = Json.toJson(validIabds)(Writes.seq(IabdDetails.hipWrites))
 
   "updateEmployeeExpensesData" must {
 
@@ -233,9 +235,9 @@ class EmployeeExpensesControllerSpec extends BaseSpec {
   "getEmployeeExpensesData" must {
 
     "return OK and valid json" in {
-      val fakeRequest = FakeRequest("GET", "/", FakeHeaders(), any())
+      val fakeRequest = FakeRequest("GET", "/")
 
-      when(mockEmployeeExpensesService.getEmployeeExpenses(any(), any(), any()))
+      when(mockIabdService.retrieveIabdDetails(any(), any(), any())(any()))
         .thenReturn(Future.successful(validIabds))
 
       val result = controller().getEmployeeExpensesData(nino, taxYear, iabd)(fakeRequest)
@@ -245,9 +247,9 @@ class EmployeeExpensesControllerSpec extends BaseSpec {
     }
 
     "return BadRequest when bad request exception thrown" in {
-      val fakeRequest = FakeRequest("GET", "/", FakeHeaders(), any())
+      val fakeRequest = FakeRequest("GET", "/")
 
-      when(mockEmployeeExpensesService.getEmployeeExpenses(any(), any(), any()))
+      when(mockIabdService.retrieveIabdDetails(any(), any(), any())(any()))
         .thenReturn(Future.failed(badRequestException))
 
       checkControllerResponse(
@@ -258,9 +260,9 @@ class EmployeeExpensesControllerSpec extends BaseSpec {
     }
 
     "return NotFound when not found exception thrown" in {
-      val fakeRequest = FakeRequest("GET", "/", FakeHeaders(), any())
+      val fakeRequest = FakeRequest("GET", "/")
 
-      when(mockEmployeeExpensesService.getEmployeeExpenses(any(), any(), any()))
+      when(mockIabdService.retrieveIabdDetails(any(), any(), any())(any()))
         .thenReturn(Future.failed(notFoundException))
 
       checkControllerResponse(
@@ -272,9 +274,9 @@ class EmployeeExpensesControllerSpec extends BaseSpec {
     }
 
     "return an Exception when an exception thrown" in {
-      val fakeRequest = FakeRequest("GET", "/", FakeHeaders(), any())
+      val fakeRequest = FakeRequest("GET", "/")
 
-      when(mockEmployeeExpensesService.getEmployeeExpenses(any(), any(), any()))
+      when(mockIabdService.retrieveIabdDetails(any(), any(), any())(any()))
         .thenReturn(Future.failed(new Exception("")))
 
       val result = controller().getEmployeeExpensesData(nino, taxYear, iabd)(fakeRequest)

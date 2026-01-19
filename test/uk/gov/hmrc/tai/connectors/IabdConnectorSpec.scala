@@ -23,12 +23,11 @@ import play.api.http.Status.*
 import play.api.libs.json.*
 import play.api.mvc.AnyContentAsEmpty
 import play.api.test.FakeRequest
-import uk.gov.hmrc.http.{BadRequestException, HeaderNames, HttpException, InternalServerException, NotFoundException}
+import uk.gov.hmrc.http.{BadRequestException, HeaderNames, HttpException, NotFoundException}
 import uk.gov.hmrc.mongoFeatureToggles.model.{FeatureFlag, FeatureFlagName}
 import uk.gov.hmrc.tai.config.{DesConfig, HipConfig}
 import uk.gov.hmrc.tai.model.admin.HipIabdsUpdateExpensesToggle
 import uk.gov.hmrc.tai.model.domain.IabdDetails
-import uk.gov.hmrc.tai.model.domain.IabdDetails.{readsSingle => IabdDetailsReadsSingle}
 import uk.gov.hmrc.tai.model.domain.response.{HodUpdateFailure, HodUpdateSuccess}
 import uk.gov.hmrc.tai.model.enums.APITypes
 import uk.gov.hmrc.tai.model.nps2.IabdType.{NewEstimatedPay, hipMapping}
@@ -58,13 +57,10 @@ class IabdConnectorSpec extends ConnectorBaseSpec {
   private val iabdTypeArgument: String = hipMapping(iabdType)
   val taxYear: TaxYear = TaxYear()
 
-  val npsUrl: String = s"/nps-hod-service/services/nps/person/${nino.nino}/iabds/${taxYear.year}"
   lazy val hipIabdsUrl: String =
-    s"/v1/api/iabd/taxpayer/$nino/tax-year/${taxYear.year}"
+    s"/v1/api/iabd/taxpayer/$nino/tax-year/${taxYear.year}?type=New-Estimated-Pay-(027)"
 
   val desBaseUrl: String = s"/pay-as-you-earn/individuals/${nino.nino}"
-  val iabdsUrl: String = s"$desBaseUrl/iabds/tax-year/${taxYear.year}"
-  val iabdsForTypeUrl: String = s"$iabdsUrl?type=$iabdType"
   val updateExpensesUrl: String = s"$desBaseUrl/iabds/${taxYear.year}/$iabdType"
   val updateExpenseshipIabdsUrl: String = s"/v1/api/iabd/taxpayer/$nino/tax-year/${taxYear.year}/type/$iabdHipType"
 
@@ -114,7 +110,7 @@ class IabdConnectorSpec extends ConnectorBaseSpec {
           get(urlEqualTo(hipIabdsUrl)).willReturn(aResponse().withStatus(OK).withBody(hipJson.toString()))
         )
 
-        val actualJson = sut().iabds(nino, taxYear).futureValue
+        val actualJson = sut().getIabdsForType(nino, taxYear.year, iabdHipType).futureValue
         actualJson mustBe hipJson
 
         server.verify(
@@ -136,7 +132,7 @@ class IabdConnectorSpec extends ConnectorBaseSpec {
             get(urlEqualTo(hipIabdsUrl)).willReturn(aResponse().withStatus(OK).withBody(json.toString()))
           )
 
-          sut().iabds(nino, taxYear.next).futureValue mustBe JsArray.empty
+          sut().getIabdsForType(nino, taxYear.next.year, iabdHipType).futureValue mustBe JsArray.empty
         }
 
         "looking for cy+2 year" in {
@@ -144,7 +140,7 @@ class IabdConnectorSpec extends ConnectorBaseSpec {
             get(urlEqualTo(hipIabdsUrl)).willReturn(aResponse().withStatus(OK).withBody(json.toString()))
           )
 
-          sut().iabds(nino, taxYear.next.next).futureValue mustBe JsArray.empty
+          sut().getIabdsForType(nino, taxYear.next.next.year, iabdHipType).futureValue mustBe JsArray.empty
         }
       }
 
@@ -153,7 +149,7 @@ class IabdConnectorSpec extends ConnectorBaseSpec {
           server.stubFor(get(urlEqualTo(hipIabdsUrl)).willReturn(aResponse().withStatus(NOT_FOUND)))
 
           assertConnectorException[NotFoundException](
-            sut().iabds(nino, taxYear),
+            sut().getIabdsForType(nino, taxYear.year, iabdHipType),
             NOT_FOUND,
             ""
           )
@@ -164,7 +160,7 @@ class IabdConnectorSpec extends ConnectorBaseSpec {
         "a 400 occurs" in {
           server.stubFor(get(urlEqualTo(hipIabdsUrl)).willReturn(aResponse().withStatus(BAD_REQUEST)))
 
-          sut().iabds(nino, taxYear).failed.futureValue mustBe a[BadRequestException]
+          sut().getIabdsForType(nino, taxYear.year, iabdHipType).failed.futureValue mustBe a[BadRequestException]
         }
 
         List(
@@ -175,7 +171,7 @@ class IabdConnectorSpec extends ConnectorBaseSpec {
           s"a $httpResponse occurs" in {
             server.stubFor(get(urlEqualTo(hipIabdsUrl)).willReturn(aResponse().withStatus(httpResponse)))
 
-            sut().iabds(nino, taxYear).failed.futureValue mustBe a[HttpException]
+            sut().getIabdsForType(nino, taxYear.year, iabdHipType).failed.futureValue mustBe a[HttpException]
           }
         }
       }
@@ -259,113 +255,6 @@ class IabdConnectorSpec extends ConnectorBaseSpec {
               "correlationId",
               matching("[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}")
             )
-        )
-      }
-    }
-  }
-
-  "getIabdsForType" must {
-    "get IABD's from DES api" when {
-      "supplied with a valid nino, year and IABD type" in {
-        val jsonData: String = json.toString()
-
-        server.stubFor(
-          get(urlEqualTo(iabdsForTypeUrl)).willReturn(aResponse().withStatus(OK).withBody(jsonData))
-        )
-
-        implicit val listIabdReads: Reads[List[IabdDetails]] = Reads.list(IabdDetailsReadsSingle)
-        val expected: List[IabdDetails] = Json.parse(jsonData).as[List[IabdDetails]]
-
-        sut().getIabdsForType(nino, taxYear.year, iabdType).futureValue mustBe expected
-
-        server.verify(
-          getRequestedFor(urlEqualTo(iabdsForTypeUrl))
-            .withHeader("Environment", equalTo("local"))
-            .withHeader("Authorization", equalTo("Bearer desAuthorization"))
-            .withHeader("Content-Type", equalTo(TaiConstants.contentType))
-            .withHeader(HeaderNames.xSessionId, equalTo(sessionId))
-            .withHeader(HeaderNames.xRequestId, equalTo(requestId))
-            .withHeader(
-              "CorrelationId",
-              matching("[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}")
-            )
-        )
-      }
-    }
-
-    "throw an exception from DES API" when {
-      "supplied with a valid nino, year and IABD type but an IABD cannot be found" in {
-
-        val exMessage = "Could not find IABD"
-
-        server.stubFor(
-          get(urlEqualTo(iabdsForTypeUrl)).willReturn(aResponse().withStatus(NOT_FOUND).withBody(exMessage))
-        )
-
-        assertConnectorException[NotFoundException](
-          sut().getIabdsForType(nino, taxYear.year, iabdType),
-          NOT_FOUND,
-          exMessage
-        )
-      }
-
-      "DES API returns 400" in {
-
-        val exMessage = "Invalid query"
-
-        server.stubFor(
-          get(urlEqualTo(iabdsForTypeUrl)).willReturn(aResponse().withStatus(BAD_REQUEST).withBody(exMessage))
-        )
-
-        assertConnectorException[BadRequestException](
-          sut().getIabdsForType(nino, taxYear.year, iabdType),
-          BAD_REQUEST,
-          exMessage
-        )
-      }
-
-      "DES API returns 4xx" in {
-
-        val exMessage = "Record locked"
-
-        server.stubFor(
-          get(urlEqualTo(iabdsForTypeUrl)).willReturn(aResponse().withStatus(LOCKED).withBody(exMessage))
-        )
-
-        assertConnectorException[HttpException](
-          sut().getIabdsForType(nino, taxYear.year, iabdType),
-          LOCKED,
-          exMessage
-        )
-      }
-
-      "DES API returns 500" in {
-
-        val exMessage = "An error occurred"
-
-        server.stubFor(
-          get(urlEqualTo(iabdsForTypeUrl)).willReturn(aResponse().withStatus(INTERNAL_SERVER_ERROR).withBody(exMessage))
-        )
-
-        assertConnectorException[InternalServerException](
-          sut().getIabdsForType(nino, taxYear.year, iabdType),
-          INTERNAL_SERVER_ERROR,
-          exMessage
-        )
-      }
-
-      "DES API returns 5xx" in {
-
-        val exMessage = "Service unavailable"
-
-        server.stubFor(
-          get(urlEqualTo(iabdsForTypeUrl)).willReturn(aResponse().withStatus(SERVICE_UNAVAILABLE).withBody(exMessage))
-        )
-
-        assertConnectorException[HttpException](
-          sut().getIabdsForType(nino, taxYear.year, iabdType),
-          SERVICE_UNAVAILABLE,
-          exMessage
         )
       }
     }

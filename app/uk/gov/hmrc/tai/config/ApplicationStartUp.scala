@@ -24,7 +24,6 @@ class ApplicationStartUp {
     List(
       RtiCallToggle,
       HipIabdsUpdateExpensesToggle,
-      HipGetIabdsExpensesToggle,
       HipTaxAccountHistoryToggle,
       UseApacheFopLibrary
     )

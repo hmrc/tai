@@ -26,8 +26,6 @@ import uk.gov.hmrc.mongoFeatureToggles.services.FeatureFlagService
 import uk.gov.hmrc.tai.config.{DesConfig, HipConfig}
 import uk.gov.hmrc.tai.connectors.cache.CachingConnector
 import uk.gov.hmrc.tai.model.admin.HipIabdsUpdateExpensesToggle
-import uk.gov.hmrc.tai.model.domain.IabdDetails
-import uk.gov.hmrc.tai.model.domain.IabdDetails.{publicWrites as IabdDetailsPublicWrites, readsSingle as IabdDetailsReadsSingle}
 import uk.gov.hmrc.tai.model.domain.response.{HodUpdateFailure, HodUpdateResponse, HodUpdateSuccess}
 import uk.gov.hmrc.tai.model.enums.APITypes
 import uk.gov.hmrc.tai.model.enums.APITypes.{APITypes, HipIabdUpdateEmployeeExpensesAPI}
@@ -53,20 +51,6 @@ class CachingIabdConnector @Inject() (
 )(implicit ec: ExecutionContext)
     extends IabdConnector {
 
-  private implicit val listIabdReads: Reads[List[IabdDetails]] = Reads.list(IabdDetailsReadsSingle)
-  private implicit val listIabdWrites: Writes[List[IabdDetails]] = Writes.list(IabdDetailsPublicWrites)
-
-  override def iabds(nino: Nino, taxYear: TaxYear, iabdType: Option[String] = None)(implicit
-    hc: HeaderCarrier
-  ): Future[JsValue] =
-    cachingConnector
-      .cache(s"iabds-$nino-${taxYear.year}") {
-        underlying
-          .iabds(nino: Nino, taxYear: TaxYear, iabdType)
-          .map(SensitiveJsValue.apply)
-      }(sensitiveFormatService.sensitiveFormatJsValue[JsValue], implicitly)
-      .map(_.decryptedValue)
-
   override def updateTaxCodeAmount(
     nino: Nino,
     taxYear: TaxYear,
@@ -79,12 +63,15 @@ class CachingIabdConnector @Inject() (
       underlying.updateTaxCodeAmount(nino, taxYear, employmentId, version, iabdType, amount)
     }
 
-  override def getIabdsForType(nino: Nino, year: Int, iabdType: Int)(implicit
+  override def getIabdsForType(nino: Nino, year: Int, iabdType: String)(implicit
     hc: HeaderCarrier
-  ): Future[List[IabdDetails]] =
-    cachingConnector.cache(s"iabds-$nino-$year-$iabdType") {
-      underlying.getIabdsForType(nino, year, iabdType)
-    }(sensitiveFormatService.sensitiveFormatFromReadsWritesJsArray[List[IabdDetails]], implicitly)
+  ): Future[JsValue] =
+    cachingConnector
+      .cache(s"iabds-$nino-$year-$iabdType") {
+        underlying.getIabdsForType(nino, year, iabdType).map(SensitiveJsValue.apply)
+      }(sensitiveFormatService.sensitiveFormatJsValue[JsValue], implicitly)
+      .map(_.decryptedValue)
+
   override def updateExpensesData(
     nino: Nino,
     year: Int,
@@ -127,32 +114,19 @@ class DefaultIabdConnector @Inject() (
       "CorrelationId"                        -> UUID.randomUUID().toString
     ) ++ hipAuthHeaders(clientIdAndSecret)
 
-  private def headersForGetIabdsForType(implicit hc: HeaderCarrier) =
-    Seq(
-      "Environment"          -> desConfig.environment,
-      "Authorization"        -> desConfig.authorization,
-      "Content-Type"         -> TaiConstants.contentType,
-      HeaderNames.xSessionId -> hc.sessionId.fold("-")(_.value),
-      HeaderNames.xRequestId -> hc.requestId.fold("-")(_.value),
-      "CorrelationId"        -> UUID.randomUUID().toString
-    )
-
-  override def iabds(nino: Nino, taxYear: TaxYear, iabdType: Option[String] = None)(implicit
+  override def getIabdsForType(nino: Nino, taxYear: Int, iabdType: String)(implicit
     hc: HeaderCarrier
-  ): Future[JsValue] = {
-    val queryString = iabdType.fold("")(iabd => s"?type=$iabd")
-
-    if (taxYear > TaxYear()) {
+  ): Future[JsValue] =
+    if (taxYear > TaxYear().year) {
       Future.successful(JsArray(Seq.empty))
     } else {
       val (url, originatorId, extraInfo) = (
-        s"${hipConfig.baseURL}/iabd/taxpayer/$nino/tax-year/${taxYear.year}$queryString",
+        s"${hipConfig.baseURL}/iabd/taxpayer/$nino/tax-year/$taxYear?type=$iabdType",
         hipConfig.originatorId,
         Some(hipConfig.clientId -> hipConfig.clientSecret)
       )
       httpHandler.getFromApi(url, APITypes.NpsIabdAllAPI, headersForIabds(originatorId, hc, extraInfo))
     }
-  }
 
   override def updateTaxCodeAmount(
     nino: Nino,
@@ -185,16 +159,6 @@ class DefaultIabdConnector @Inject() (
       )(implicitly)
       .map(_ => HodUpdateSuccess)
       .recover { case _ => HodUpdateFailure }
-  }
-
-  override def getIabdsForType(nino: Nino, year: Int, iabdType: Int)(implicit
-    hc: HeaderCarrier
-  ): Future[List[IabdDetails]] = {
-    implicit val listIabdReads: Reads[List[IabdDetails]] = Reads.list(IabdDetailsReadsSingle)
-    val urlToRead = s"${desConfig.baseURL}/pay-as-you-earn/individuals/$nino/iabds/tax-year/$year?type=$iabdType"
-    httpHandler
-      .getFromApi(url = urlToRead, api = APITypes.DesIabdSpecificAPI, headers = headersForGetIabdsForType)
-      .map(_.as[List[IabdDetails]])
   }
 
   private def headersForUpdateExpensesData(version: Int, originatorId: String)(implicit
@@ -243,13 +207,11 @@ class DefaultIabdConnector @Inject() (
 
 trait IabdConnector {
 
-  def iabds(nino: Nino, taxYear: TaxYear, iabdType: Option[String] = None)(implicit hc: HeaderCarrier): Future[JsValue]
-
   def updateTaxCodeAmount(nino: Nino, taxYear: TaxYear, employmentId: Int, version: Int, iabdType: Int, amount: Int)(
     implicit hc: HeaderCarrier
   ): Future[HodUpdateResponse]
 
-  def getIabdsForType(nino: Nino, year: Int, iabdType: Int)(implicit hc: HeaderCarrier): Future[List[IabdDetails]]
+  def getIabdsForType(nino: Nino, year: Int, iabdType: String)(implicit hc: HeaderCarrier): Future[JsValue]
 
   def updateExpensesData(
     nino: Nino,
