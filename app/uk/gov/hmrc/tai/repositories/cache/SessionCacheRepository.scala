@@ -17,6 +17,7 @@
 package uk.gov.hmrc.tai.repositories.cache
 
 import org.mongodb.scala.model.IndexModel
+import play.api.Logging
 import play.api.libs.json.{JsPath, JsResultException, Reads, Writes}
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.mongo.cache.{CacheIdType, DataKey, MongoCacheRepository}
@@ -28,6 +29,7 @@ import java.time.Instant
 import javax.inject.Singleton
 import scala.concurrent.duration.Duration
 import scala.concurrent.{ExecutionContext, Future}
+import scala.util.control.NonFatal
 
 case object SessionCacheId extends CacheIdType[HeaderCarrier] {
   override def run: HeaderCarrier => String =
@@ -47,7 +49,7 @@ abstract class SessionCacheRepository(
   timestampSupport: TimestampSupport,
   cacheConfig: CacheConfig
 )(implicit ec: ExecutionContext)
-    extends MongoDatabaseCollection {
+    extends MongoDatabaseCollection with Logging {
   /*
     This class exists in hmrc-mongo library but uses the sessionId from the session in the request
     which does not exist in a backend service.
@@ -103,17 +105,22 @@ abstract class SessionCacheRepository(
     dataKey: DataKey[T]
   )(implicit hc: HeaderCarrier, rds: Reads[T]): Future[Option[T]] =
     Mdc.preservingMdc {
-      getWithDateTime[T](hc)(dataKey).map {
-        case None                          => None
-        case Some(Tuple2(r @ Right(_), _)) => Some(r)
-        case Some(Tuple2(item, instant)) =>
-          val ttl = cacheConfig.cacheErrorInSecondsTTL
-          if (instant.plusSeconds(ttl).isBefore(Instant.now())) {
-            None
-          } else {
-            Some(item)
-          }
-      }
+      getWithDateTime[T](hc)(dataKey)
+        .map {
+          case None                          => None
+          case Some(Tuple2(r @ Right(_), _)) => Some(r)
+          case Some(Tuple2(item, instant)) =>
+            val ttl = cacheConfig.cacheErrorInSecondsTTL
+            if (instant.plusSeconds(ttl).isBefore(Instant.now())) {
+              None
+            } else {
+              Some(item)
+            }
+        }
+        .recoverWith { case NonFatal(error) =>
+          logger.error("Failed to read data from session cache: ", error)
+          Future.successful(None)
+        }
     }
 
   def deleteFromSession[T](dataKey: DataKey[T])(implicit hc: HeaderCarrier): Future[Unit] =
