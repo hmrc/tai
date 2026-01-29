@@ -49,7 +49,7 @@ case class TaxCodeChange(current: Seq[TaxCodeSummary], previous: Seq[TaxCodeSumm
   private def secondaryTaxCode(records: Seq[TaxCodeSummary]) = secondaryRecords(records).map(_.taxCode)
 
   private def primaryRecord(records: Seq[TaxCodeSummary]): Option[TaxCodeSummary] =
-    records.find(_.primary)
+    records.find(_.primary).orElse(records.headOption)
 
   private def secondaryRecords(records: Seq[TaxCodeSummary]) = records.filterNot(_.primary)
 }

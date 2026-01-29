@@ -109,9 +109,9 @@ class TaxCodeChangeSpec extends PlaySpec with TaxCodeHistoryConstants {
       taxCodeChange.primaryCurrentTaxCode mustBe Some(currentTaxCodeChangeRecordPrimary.taxCode)
     }
 
-    "returns None when no primary current tax code is found" in {
+    "returns Secondary Employer when no primary current tax code is found" in {
       val taxCodeChange = createTaxCodeChange(Seq(currentTaxCodeChangeRecordSecondary))
-      taxCodeChange.primaryCurrentTaxCode mustBe None
+      taxCodeChange.primaryCurrentTaxCode mustBe Some(currentTaxCodeChangeRecordSecondary.taxCode)
     }
 
     "return the secondary current tax code" in {
