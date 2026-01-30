@@ -32,13 +32,14 @@ class TaxFreeAmountComparisonServiceSpec extends BaseSpec with TaxCodeHistoryCon
 
   val PRIMARY_PREVIOUS_TAX_CODE_ID = 1
 
+  val currentStartDate = TaxYear().start.plusDays(2)
+  val currentEndDate = TaxYear().end
+  val previousStartDate = TaxYear().start
+  val previousEndDate = currentStartDate.minusDays(1)
+  val payrollNumberPrev = "123"
+  val payrollNumberCurr = "456"
+
   private def stubTaxCodeChange: TaxCodeChange = {
-    val currentStartDate = TaxYear().start.plusDays(2)
-    val currentEndDate = TaxYear().end
-    val previousStartDate = TaxYear().start
-    val previousEndDate = currentStartDate.minusDays(1)
-    val payrollNumberPrev = "123"
-    val payrollNumberCurr = "456"
 
     val previousTaxCodeRecords: Seq[TaxCodeSummary] = Seq(
       TaxCodeSummary(
@@ -201,6 +202,62 @@ class TaxFreeAmountComparisonServiceSpec extends BaseSpec with TaxCodeHistoryCon
         when(
           codingComponentService
             .codingComponentsForTaxCodeId(meq(nino), meq(PRIMARY_PREVIOUS_TAX_CODE_ID))(any())
+        )
+          .thenReturn(Future.successful(previousCodingComponents))
+
+        val expected = TaxFreeAmountComparison(previousCodingComponents, Seq.empty)
+
+        val service = createTestService(taxCodeChangeService, codingComponentService)
+
+        val result: TaxFreeAmountComparison = service.taxFreeAmountComparison(nino).futureValue
+
+        result mustBe expected
+      }
+      "called with a valid nino that only has secondary employments" in {
+        val taxCodeChangeService = mock[TaxCodeChangeServiceImpl]
+        val codingComponentService = mock[CodingComponentService]
+
+        val codingComponent1 = CodingComponent(PersonalAllowancePA, Some(123), 12345, "some description")
+        val codingComponent2 = CodingComponent(CarFuelBenefit, Some(124), 66666, "some other description")
+
+        val previousCodingComponents = Seq[CodingComponent](codingComponent1, codingComponent2)
+
+        val previousTaxCodeRecords: Seq[TaxCodeSummary] = Seq(
+          TaxCodeSummary(
+            PRIMARY_PREVIOUS_TAX_CODE_ID,
+            "1185L",
+            Cumulative,
+            previousStartDate,
+            previousEndDate,
+            "Employer 1",
+            Some(payrollNumberPrev),
+            pensionIndicator = false,
+            primary = false
+          ),
+          TaxCodeSummary(
+            2,
+            "BR",
+            Cumulative,
+            previousStartDate,
+            previousEndDate,
+            "Employer 2",
+            Some(payrollNumberPrev),
+            pensionIndicator = false,
+            primary = false
+          )
+        )
+
+        val taxCodeChange = stubTaxCodeChange.copy(previous = previousTaxCodeRecords)
+
+        when(taxCodeChangeService.taxCodeChange(meq(nino))(any()))
+          .thenReturn(Future.successful(taxCodeChange))
+
+        when(codingComponentService.codingComponents(meq(nino), meq(TaxYear()))(any()))
+          .thenReturn(Future.successful(Seq.empty))
+
+        when(
+          codingComponentService
+            .codingComponentsForTaxCodeId(meq(nino), meq(previousTaxCodeRecords.head.taxCodeId))(any())
         )
           .thenReturn(Future.successful(previousCodingComponents))
 
