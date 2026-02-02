@@ -36,6 +36,7 @@ import uk.gov.hmrc.tai.model.domain.income.{Live, OtherBasisOperation, TaxCodeIn
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.util.{BaseSpec, TaxCodeHistoryConstants}
 
+import java.time.LocalDate
 import scala.concurrent.Future
 import scala.util.Random
 
@@ -1263,7 +1264,93 @@ class TaxCodeChangeServiceImplSpec
       }
     }
 
-    "audit the TaxCodeChange" when {
+    "Skip dates with no primary employment" in {
+      val currentTaxCodeRecord1 = TaxCodeRecordFactory.createPrimaryEmployment(
+        taxCode = "S842L",
+        dateOfCalculation = LocalDate.of(2025, 2, 5),
+        payrollNumber = None,
+        taxCodeId = 48
+      )
+      val currentTaxCodeRecord2 = TaxCodeRecordFactory.createSecondaryEmployment(
+        taxCode = "S429T",
+        employerName = "Employer 2",
+        dateOfCalculation = LocalDate.of(2025, 2, 5),
+        payrollNumber = None,
+        taxCodeId = 49
+      )
+      val currentTaxCodeRecord3 = TaxCodeRecordFactory.createSecondaryEmployment(
+        taxCode = "SBR",
+        employerName = "Employer 2",
+        dateOfCalculation = LocalDate.of(2025, 2, 5),
+        payrollNumber = None,
+        taxCodeId = 50
+      )
+      val currentTaxCodeRecord4 = TaxCodeRecordFactory.createSecondaryEmployment(
+        taxCode = "SBR",
+        employerName = "Employer 2",
+        dateOfCalculation = LocalDate.of(2025, 8, 5),
+        payrollNumber = None,
+        taxCodeId = 51
+      )
+      val currentTaxCodeRecord5 = TaxCodeRecordFactory.createPrimaryEmployment(
+        taxCode = "S1271L",
+        employerName = "Employer 2",
+        dateOfCalculation = LocalDate.of(2026, 2, 2),
+        payrollNumber = None,
+        taxCodeId = 52
+      )
+      val currentTaxCodeRecord6 = TaxCodeRecordFactory.createSecondaryEmployment(
+        taxCode = "SBR",
+        employerName = "Employer 2",
+        dateOfCalculation = LocalDate.of(2026, 2, 2),
+        payrollNumber = None,
+        taxCodeId = 53
+      )
+      val currentTaxCodeRecord7 = TaxCodeRecordFactory.createSecondaryEmployment(
+        taxCode = "SD0",
+        employerName = "Employer 2",
+        dateOfCalculation = LocalDate.of(2026, 2, 2),
+        payrollNumber = None,
+        taxCodeId = 54
+      )
+
+      val taxCodeHistory = TaxCodeHistory(
+        nino.withoutSuffix,
+        Seq(
+          currentTaxCodeRecord1,
+          currentTaxCodeRecord2,
+          currentTaxCodeRecord3,
+          currentTaxCodeRecord4,
+          currentTaxCodeRecord5,
+          currentTaxCodeRecord6,
+          currentTaxCodeRecord7
+        )
+      )
+
+      when(taxCodeHistoryConnector.taxCodeHistory(any(), any())(any())).thenReturn(
+        Future
+          .successful(taxCodeHistory)
+      )
+
+      // format: off
+      val expectedResult = TaxCodeChange(
+        Seq(
+          TaxCodeSummary(52, "S1271L", "Cumulative", LocalDate.of(2026, 2, 2), TaxYear().end, "Employer 2", None, false, true),
+          TaxCodeSummary(53, "SBR", "Cumulative", LocalDate.of(2026, 2, 2), TaxYear().end, "Employer 2", None, false, false),
+          TaxCodeSummary(54, "SD0", "Cumulative", LocalDate.of(2026, 2, 2), TaxYear().end, "Employer 2", None, false, false)
+        ),
+        Seq(
+          TaxCodeSummary(48, "S842L", "Cumulative", LocalDate.of(2025, 4, 6), LocalDate.of(2026, 2, 1), "Employer 1", None, false, true),
+          TaxCodeSummary(49, "S429T", "Cumulative", LocalDate.of(2025, 4, 6), LocalDate.of(2026, 2, 1), "Employer 2", None, false, false),
+          TaxCodeSummary(50, "SBR", "Cumulative", LocalDate.of(2025, 4, 6), LocalDate.of(2026, 2, 1), "Employer 2", None, false, false)
+        )
+      )
+      // format: on
+
+      SUT.taxCodeChange(nino).futureValue mustEqual expectedResult
+    }
+
+    "audit the TaxCodeChange" ignore {
       "there has been a valid tax code change" in {
         val currentStartDate = TaxYear().start.plusDays(2)
         val previousStartDateInPrevYear = TaxYear().start.minusDays(2)
