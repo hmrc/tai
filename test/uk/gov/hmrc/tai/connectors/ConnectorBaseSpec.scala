@@ -34,7 +34,7 @@ import uk.gov.hmrc.domain.{Nino, NinoGenerator}
 import uk.gov.hmrc.http.{HeaderCarrier, HttpException, RequestId, SessionId}
 import uk.gov.hmrc.mongoFeatureToggles.model.{FeatureFlag, FeatureFlagName}
 import uk.gov.hmrc.mongoFeatureToggles.services.FeatureFlagService
-import uk.gov.hmrc.tai.model.admin.{HipIabdsUpdateExpensesToggle, RtiCallToggle}
+import uk.gov.hmrc.tai.model.admin.RtiCallToggle
 import uk.gov.hmrc.tai.util.{FakeAsyncCacheApi, WireMockHelper}
 
 import scala.concurrent.duration.DurationInt
@@ -89,9 +89,6 @@ trait ConnectorBaseSpec
     reset(mockFeatureFlagService)
     when(mockFeatureFlagService.getAsEitherT(eqTo[FeatureFlagName](RtiCallToggle))).thenReturn(
       EitherT.rightT(FeatureFlag(RtiCallToggle, isEnabled = false))
-    )
-    when(mockFeatureFlagService.get(eqTo[FeatureFlagName](HipIabdsUpdateExpensesToggle))).thenReturn(
-      Future.successful(FeatureFlag(HipIabdsUpdateExpensesToggle, isEnabled = false))
     )
     ()
   }
