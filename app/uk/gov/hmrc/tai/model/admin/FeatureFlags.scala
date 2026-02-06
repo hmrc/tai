@@ -26,14 +26,6 @@ case object RtiCallToggle extends FeatureFlagName {
   )
 }
 
-case object HipIabdsUpdateExpensesToggle extends FeatureFlagName {
-  override val name: String = "hip-iabds-update-expenses-toggle"
-  override val description: Option[String] = Some(
-    "Enable/disable routing of PUT calls for IABDS employee expenses to HIP instead of DES."
-  )
-  override val lockedEnvironments: Seq[Environment] = Seq(Local, Staging, Qa, Production)
-}
-
 case object HipTaxAccountHistoryToggle extends FeatureFlagName {
   override val name: String = "hip-tax-account-history-toggle"
   override val description: Option[String] = Some(
