@@ -22,17 +22,15 @@ import play.api.http.MimeTypes
 import play.api.libs.json._
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http._
-import uk.gov.hmrc.mongoFeatureToggles.services.FeatureFlagService
 import uk.gov.hmrc.tai.config.{DesConfig, HipConfig}
 import uk.gov.hmrc.tai.connectors.cache.CachingConnector
-import uk.gov.hmrc.tai.model.admin.HipIabdsUpdateExpensesToggle
 import uk.gov.hmrc.tai.model.domain.response.{HodUpdateFailure, HodUpdateResponse, HodUpdateSuccess}
 import uk.gov.hmrc.tai.model.enums.APITypes
-import uk.gov.hmrc.tai.model.enums.APITypes.{APITypes, HipIabdUpdateEmployeeExpensesAPI}
+import uk.gov.hmrc.tai.model.enums.APITypes.APITypes
 import uk.gov.hmrc.tai.model.nps2.IabdType
 import uk.gov.hmrc.tai.model.nps2.IabdType.hipMapping
 import uk.gov.hmrc.tai.model.tai.TaxYear
-import uk.gov.hmrc.tai.model.{IabdUpdateAmount, UpdateHipIabdEmployeeExpense, UpdateIabdEmployeeExpense}
+import uk.gov.hmrc.tai.model.{IabdUpdateAmount, UpdateIabdEmployeeExpense}
 import uk.gov.hmrc.tai.service.SensitiveFormatService
 import uk.gov.hmrc.tai.service.SensitiveFormatService.SensitiveJsValue
 import uk.gov.hmrc.tai.util.HodsSource.NpsSource
@@ -88,8 +86,7 @@ class CachingIabdConnector @Inject() (
 class DefaultIabdConnector @Inject() (
   httpHandler: HttpHandler,
   desConfig: DesConfig,
-  hipConfig: HipConfig,
-  featureFlagService: FeatureFlagService
+  hipConfig: HipConfig
 )(implicit ec: ExecutionContext)
     extends IabdConnector {
 
@@ -183,26 +180,12 @@ class DefaultIabdConnector @Inject() (
     expensesData: UpdateIabdEmployeeExpense,
     apiType: APITypes
   )(implicit hc: HeaderCarrier): Future[HttpResponse] =
-    featureFlagService.get(HipIabdsUpdateExpensesToggle).flatMap { toggle =>
-      if (toggle.isEnabled) {
-        val (baseUrl, originatorId, extraInfo) =
-          (hipConfig.baseURL, hipConfig.originatorId, Some(hipConfig.clientId -> hipConfig.clientSecret))
-
-        httpHandler.putToApiHttpClientV2[UpdateHipIabdEmployeeExpense](
-          s"$baseUrl/iabd/taxpayer/$nino/tax-year/$year/type/${IabdType.hipMapping(iabdType)}",
-          UpdateHipIabdEmployeeExpense(version, expensesData.grossAmount),
-          HipIabdUpdateEmployeeExpensesAPI,
-          HipHeaders.get(originatorId, hc, extraInfo) ++ Seq("ETag" -> version.toString)
-        )
-      } else {
-        httpHandler.postToApi[List[UpdateIabdEmployeeExpense]](
-          s"${desConfig.baseURL}/pay-as-you-earn/individuals/$nino/iabds/$year/$iabdType",
-          List(expensesData),
-          apiType,
-          headersForUpdateExpensesData(version, desConfig.daPtaOriginatorId)
-        )
-      }
-    }
+    httpHandler.postToApi[List[UpdateIabdEmployeeExpense]](
+      s"${desConfig.baseURL}/pay-as-you-earn/individuals/$nino/iabds/$year/$iabdType",
+      List(expensesData),
+      apiType,
+      headersForUpdateExpensesData(version, desConfig.daPtaOriginatorId)
+    )
 }
 
 trait IabdConnector {
