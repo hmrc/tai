@@ -26,14 +26,6 @@ case object RtiCallToggle extends FeatureFlagName {
   )
 }
 
-case object HipTaxAccountHistoryToggle extends FeatureFlagName {
-  override val name: String = "hip-tax-account-history-toggle"
-  override val description: Option[String] = Some(
-    "Enable/disable the GET call for tax account history via HIP instead of DES."
-  )
-  override val lockedEnvironments: Seq[Environment] = Seq(Local, Staging, Qa, Production)
-}
-
 case object UseApacheFopLibrary extends FeatureFlagName {
   override val name: String = "use-apache-fop-library"
   override val description: Option[String] = Some(
