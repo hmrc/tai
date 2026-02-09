@@ -121,7 +121,8 @@ object CodingComponentHipReads {
       44 -> DividendTax,
       45 -> EstimatedTaxYouOweThisYear,
       50 -> BRDifferenceTaxCharge,
-      51 -> HICBCPaye
+      51 -> HICBCPaye,
+      52 -> WinterPaymentTaxCharge
     )
 
     val nonTaxCodeIncomeMap: Map[Int, NonTaxCodeIncomeComponentType] = Map(

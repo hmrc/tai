@@ -339,7 +339,8 @@ object IabdDetails extends Logging {
     "Personal Savings Allowance (128)",
     "Dividend Tax (129)",
     "Relief At Source (RAS) (130)",
-    "HICBC PAYE (131)"
+    "HICBC PAYE (131)",
+    "Winter Payment Amount (132)"
   )
 
   private lazy val iabdCodeToLabel: Map[Int, String] =
