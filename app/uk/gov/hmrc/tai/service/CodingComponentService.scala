@@ -19,10 +19,8 @@ package uk.gov.hmrc.tai.service
 import com.google.inject.{Inject, Singleton}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.mongoFeatureToggles.services.FeatureFlagService
 import uk.gov.hmrc.tai.connectors.TaxAccountConnector
-import uk.gov.hmrc.tai.model.admin.HipTaxAccountHistoryToggle
-import uk.gov.hmrc.tai.model.domain.calculation.{CodingComponent, CodingComponentSquidReads}
+import uk.gov.hmrc.tai.model.domain.calculation.CodingComponent
 import uk.gov.hmrc.tai.model.hip.reads.CodingComponentHipReads
 import uk.gov.hmrc.tai.model.tai.TaxYear
 
@@ -30,8 +28,7 @@ import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class CodingComponentService @Inject() (
-  taxAccountConnector: TaxAccountConnector,
-  featureFlagService: FeatureFlagService
+  taxAccountConnector: TaxAccountConnector
 )(implicit ec: ExecutionContext) {
 
   def codingComponents(nino: Nino, year: TaxYear)(implicit hc: HeaderCarrier): Future[Seq[CodingComponent]] =
@@ -42,12 +39,8 @@ class CodingComponentService @Inject() (
   def codingComponentsForTaxCodeId(nino: Nino, taxCodeId: Int)(implicit
     hc: HeaderCarrier
   ): Future[Seq[CodingComponent]] =
-    featureFlagService.get(HipTaxAccountHistoryToggle).flatMap { flag =>
-      val reads = if (flag.isEnabled) { CodingComponentHipReads.codingComponentReads }
-      else { CodingComponentSquidReads.codingComponentReads }
-
-      taxAccountConnector
-        .taxAccountHistory(nino = nino, iocdSeqNo = taxCodeId)
-        .map(_.as[Seq[CodingComponent]](reads))
-    }
+    val reads = CodingComponentHipReads.codingComponentReads
+    taxAccountConnector
+      .taxAccountHistory(nino = nino, iocdSeqNo = taxCodeId)
+      .map(_.as[Seq[CodingComponent]](reads))
 }

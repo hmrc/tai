@@ -21,17 +21,13 @@ import com.google.inject.{Inject, Singleton}
 import play.api.libs.json.{JsObject, JsValue}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.*
-import uk.gov.hmrc.mongoFeatureToggles.services.FeatureFlagService
-import uk.gov.hmrc.tai.config.{DesConfig, HipConfig}
+import uk.gov.hmrc.tai.config.HipConfig
 import uk.gov.hmrc.tai.connectors.cache.CachingConnector
-import uk.gov.hmrc.tai.model.admin.HipTaxAccountHistoryToggle
 import uk.gov.hmrc.tai.model.enums.APITypes
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.service.SensitiveFormatService
 import uk.gov.hmrc.tai.service.SensitiveFormatService.SensitiveJsValue
-import uk.gov.hmrc.tai.util.TaiConstants
 
-import java.util.UUID
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
@@ -63,25 +59,9 @@ class CachingTaxAccountConnector @Inject() (
 
 class DefaultTaxAccountConnector @Inject() (
   httpHandler: HttpHandler,
-  desConfig: DesConfig,
-  taxAccountUrls: TaxAccountUrls,
-  hipConfig: HipConfig,
-  featureFlagService: FeatureFlagService
+  hipConfig: HipConfig
 )(implicit ec: ExecutionContext)
     extends TaxAccountConnector {
-
-  private def getUuid: String = UUID.randomUUID().toString
-
-  private def hcWithDesHeaders(implicit hc: HeaderCarrier): Seq[(String, String)] =
-    Seq(
-      "Gov-Uk-Originator-Id" -> desConfig.originatorId,
-      HeaderNames.xSessionId -> hc.sessionId.fold("-")(_.value),
-      HeaderNames.xRequestId -> hc.requestId.fold("-")(_.value),
-      "Environment"          -> desConfig.environment,
-      "Authorization"        -> desConfig.authorization,
-      "Content-Type"         -> TaiConstants.contentType,
-      "CorrelationId"        -> getUuid
-    )
 
   def taxAccount(nino: Nino, taxYear: TaxYear)(implicit hc: HeaderCarrier): Future[JsValue] = {
     val (baseUrl, originatorId, extraInfo) =
@@ -94,23 +74,13 @@ class DefaultTaxAccountConnector @Inject() (
         case response if response == JsObject.empty => throw new NotFoundException(response.toString)
         case response                               => response
       }
-
   }
 
-  def taxAccountHistory(nino: Nino, iocdSeqNo: Int)(implicit hc: HeaderCarrier): Future[JsValue] =
-    featureFlagService.get(HipTaxAccountHistoryToggle).flatMap { toggle =>
-      val (url, headers) =
-        if (toggle.isEnabled) {
-          (
-            s"${hipConfig.baseURL}/person/$nino/tax-account/history/$iocdSeqNo",
-            HipHeaders.get(hipConfig.originatorId, hc, Some(Tuple2(hipConfig.clientId, hipConfig.clientSecret)))
-          )
-        } else {
-          (taxAccountUrls.taxAccountHistoricSnapshotUrl(nino, iocdSeqNo), hcWithDesHeaders)
-        }
-
-      httpHandler.getFromApi(url, APITypes.DesTaxAccountAPI, headers)
-    }
+  def taxAccountHistory(nino: Nino, iocdSeqNo: Int)(implicit hc: HeaderCarrier): Future[JsValue] = {
+    val url = s"${hipConfig.baseURL}/person/$nino/tax-account/history/$iocdSeqNo"
+    val headers = HipHeaders.get(hipConfig.originatorId, hc, Some(Tuple2(hipConfig.clientId, hipConfig.clientSecret)))
+    httpHandler.getFromApi(url, APITypes.DesTaxAccountAPI, headers)
+  }
 }
 
 trait TaxAccountConnector {

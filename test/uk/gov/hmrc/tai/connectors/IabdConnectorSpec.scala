@@ -17,16 +17,12 @@
 package uk.gov.hmrc.tai.connectors
 
 import com.github.tomakehurst.wiremock.client.WireMock.*
-import org.mockito.ArgumentMatchers.eq as eqTo
-import org.mockito.Mockito.when
 import play.api.http.Status.*
 import play.api.libs.json.*
 import play.api.mvc.AnyContentAsEmpty
 import play.api.test.FakeRequest
 import uk.gov.hmrc.http.{BadRequestException, HeaderNames, HttpException, NotFoundException}
-import uk.gov.hmrc.mongoFeatureToggles.model.{FeatureFlag, FeatureFlagName}
 import uk.gov.hmrc.tai.config.{DesConfig, HipConfig}
-import uk.gov.hmrc.tai.model.admin.HipIabdsUpdateExpensesToggle
 import uk.gov.hmrc.tai.model.domain.IabdDetails
 import uk.gov.hmrc.tai.model.domain.response.{HodUpdateFailure, HodUpdateSuccess}
 import uk.gov.hmrc.tai.model.enums.APITypes
@@ -36,8 +32,8 @@ import uk.gov.hmrc.tai.model.{IabdUpdateAmount, UpdateIabdEmployeeExpense}
 import uk.gov.hmrc.tai.util.TaiConstants
 
 import java.time.LocalDate
+import scala.concurrent.Await
 import scala.concurrent.duration.*
-import scala.concurrent.{Await, Future}
 import scala.language.postfixOps
 
 class IabdConnectorSpec extends ConnectorBaseSpec {
@@ -51,8 +47,7 @@ class IabdConnectorSpec extends ConnectorBaseSpec {
   def sut(): IabdConnector = new DefaultIabdConnector(
     inject[HttpHandler],
     inject[DesConfig],
-    hipConfig,
-    mockFeatureFlagService
+    hipConfig
   )
   private val iabdTypeArgument: String = hipMapping(iabdType)
   val taxYear: TaxYear = TaxYear()
@@ -502,290 +497,6 @@ class IabdConnectorSpec extends ConnectorBaseSpec {
               version = 1,
               expensesData = UpdateIabdEmployeeExpense(100, None),
               apiType = APITypes.DesIabdUpdateFlatRateExpensesAPI
-            ),
-            INTERNAL_SERVER_ERROR,
-            exMessage
-          )
-        }
-      }
-    }
-    "using HIP" must {
-      "return a status of 200 OK" when {
-
-        "updating expenses data in HIP using a valid update amount" in {
-          when(mockFeatureFlagService.get(eqTo[FeatureFlagName](HipIabdsUpdateExpensesToggle))).thenReturn(
-            Future.successful(FeatureFlag(HipIabdsUpdateExpensesToggle, isEnabled = true))
-          )
-
-          val json = Json.toJson(updateAmount)
-
-          server.stubFor(
-            put(urlEqualTo(updateExpenseshipIabdsUrl)).willReturn(aResponse().withStatus(OK).withBody(json.toString()))
-          )
-
-          val response =
-            sut()
-              .updateExpensesData(
-                nino = nino,
-                year = taxYear.year,
-                iabdType = iabdType,
-                version = 1,
-                expensesData = UpdateIabdEmployeeExpense(100, None),
-                apiType = APITypes.HipIabdUpdateEmployeeExpensesAPI
-              )
-              .futureValue
-
-          response.status mustBe OK
-          response.json mustBe json
-
-          server.verify(
-            putRequestedFor(urlEqualTo(updateExpenseshipIabdsUrl))
-              .withHeader("Authorization", equalTo("Basic Y2xpZW50SWQ6Y2xpZW50U2VjcmV0"))
-              .withHeader("Content-Type", equalTo(TaiConstants.contentType))
-              .withHeader("Gov-Uk-Originator-Id", equalTo(hipOriginatorId))
-              .withHeader(HeaderNames.xSessionId, equalTo(sessionId))
-              .withHeader(HeaderNames.xRequestId, equalTo(requestId))
-              .withHeader(
-                "CorrelationId",
-                matching("[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}")
-              )
-          )
-        }
-      }
-
-      "return a 2xx status" when {
-
-        "the connector returns NO_CONTENT" in {
-          when(mockFeatureFlagService.get(eqTo[FeatureFlagName](HipIabdsUpdateExpensesToggle))).thenReturn(
-            Future.successful(FeatureFlag(HipIabdsUpdateExpensesToggle, isEnabled = true))
-          )
-
-          server.stubFor(
-            put(urlEqualTo(updateExpenseshipIabdsUrl)).willReturn(aResponse().withStatus(NO_CONTENT))
-          )
-
-          val response =
-            sut()
-              .updateExpensesData(
-                nino = nino,
-                year = taxYear.year,
-                iabdType = iabdType,
-                version = 1,
-                expensesData = UpdateIabdEmployeeExpense(100, None),
-                apiType = APITypes.HipIabdUpdateEmployeeExpensesAPI
-              )
-              .futureValue
-
-          response.status mustBe NO_CONTENT
-        }
-
-        "the connector returns ACCEPTED" in {
-          when(mockFeatureFlagService.get(eqTo[FeatureFlagName](HipIabdsUpdateExpensesToggle))).thenReturn(
-            Future.successful(FeatureFlag(HipIabdsUpdateExpensesToggle, isEnabled = true))
-          )
-
-          server.stubFor(
-            put(urlEqualTo(updateExpenseshipIabdsUrl)).willReturn(aResponse().withStatus(ACCEPTED))
-          )
-
-          val response =
-            sut()
-              .updateExpensesData(
-                nino = nino,
-                year = taxYear.year,
-                iabdType = iabdType,
-                version = 1,
-                expensesData = UpdateIabdEmployeeExpense(100, None),
-                apiType = APITypes.HipIabdUpdateEmployeeExpensesAPI
-              )
-              .futureValue
-
-          response.status mustBe ACCEPTED
-        }
-      }
-
-      "throw a HttpException" when {
-
-        "a 4xx response is returned" in {
-          when(mockFeatureFlagService.get(eqTo[FeatureFlagName](HipIabdsUpdateExpensesToggle))).thenReturn(
-            Future.successful(FeatureFlag(HipIabdsUpdateExpensesToggle, isEnabled = true))
-          )
-
-          val exMessage = "Bad request"
-
-          server.stubFor(
-            put(urlEqualTo(updateExpenseshipIabdsUrl)).willReturn(
-              aResponse().withStatus(BAD_REQUEST).withBody(exMessage)
-            )
-          )
-
-          assertConnectorException[HttpException](
-            sut().updateExpensesData(
-              nino = nino,
-              year = taxYear.year,
-              iabdType = iabdType,
-              version = 1,
-              expensesData = UpdateIabdEmployeeExpense(100, None),
-              apiType = APITypes.HipIabdUpdateEmployeeExpensesAPI
-            ),
-            BAD_REQUEST,
-            exMessage
-          )
-        }
-
-        "a BAD_REQUEST response is returned for BAD_REQUEST response status" in {
-          when(mockFeatureFlagService.get(eqTo[FeatureFlagName](HipIabdsUpdateExpensesToggle))).thenReturn(
-            Future.successful(FeatureFlag(HipIabdsUpdateExpensesToggle, isEnabled = true))
-          )
-
-          val exMessage = "Bad request"
-
-          server.stubFor(
-            put(urlEqualTo(updateExpenseshipIabdsUrl)).willReturn(
-              aResponse().withStatus(BAD_REQUEST).withBody(exMessage)
-            )
-          )
-
-          assertConnectorException[HttpException](
-            sut().updateExpensesData(
-              nino = nino,
-              year = taxYear.year,
-              iabdType = iabdType,
-              version = 1,
-              expensesData = UpdateIabdEmployeeExpense(100, None),
-              apiType = APITypes.HipIabdUpdateEmployeeExpensesAPI
-            ),
-            BAD_REQUEST,
-            exMessage
-          )
-        }
-
-        "a NOT_FOUND response is returned for NOT_FOUND response status" in {
-          when(mockFeatureFlagService.get(eqTo[FeatureFlagName](HipIabdsUpdateExpensesToggle))).thenReturn(
-            Future.successful(FeatureFlag(HipIabdsUpdateExpensesToggle, isEnabled = true))
-          )
-
-          val exMessage = "Not Found"
-
-          server.stubFor(
-            put(urlEqualTo(updateExpenseshipIabdsUrl)).willReturn(
-              aResponse().withStatus(NOT_FOUND).withBody(exMessage)
-            )
-          )
-
-          assertConnectorException[HttpException](
-            sut().updateExpensesData(
-              nino = nino,
-              year = taxYear.year,
-              iabdType = iabdType,
-              version = 1,
-              expensesData = UpdateIabdEmployeeExpense(100, None),
-              apiType = APITypes.HipIabdUpdateEmployeeExpensesAPI
-            ),
-            NOT_FOUND,
-            exMessage
-          )
-        }
-
-        "a 418 response is returned for 418 response status" in {
-          when(mockFeatureFlagService.get(eqTo[FeatureFlagName](HipIabdsUpdateExpensesToggle))).thenReturn(
-            Future.successful(FeatureFlag(HipIabdsUpdateExpensesToggle, isEnabled = true))
-          )
-
-          val exMessage = "An error occurred"
-
-          server.stubFor(
-            put(urlEqualTo(updateExpenseshipIabdsUrl)).willReturn(
-              aResponse().withStatus(IM_A_TEAPOT).withBody(exMessage)
-            )
-          )
-
-          assertConnectorException[HttpException](
-            sut().updateExpensesData(
-              nino = nino,
-              year = taxYear.year,
-              iabdType = iabdType,
-              version = 1,
-              expensesData = UpdateIabdEmployeeExpense(100, None),
-              apiType = APITypes.HipIabdUpdateEmployeeExpensesAPI
-            ),
-            IM_A_TEAPOT,
-            exMessage
-          )
-        }
-
-        "a INTERNAL_SERVER_ERROR response is returned for INTERNAL_SERVER_ERROR response status" in {
-          when(mockFeatureFlagService.get(eqTo[FeatureFlagName](HipIabdsUpdateExpensesToggle))).thenReturn(
-            Future.successful(FeatureFlag(HipIabdsUpdateExpensesToggle, isEnabled = true))
-          )
-
-          val exMessage = "Internal Server Error"
-
-          server.stubFor(
-            put(urlEqualTo(updateExpenseshipIabdsUrl))
-              .willReturn(aResponse().withStatus(INTERNAL_SERVER_ERROR).withBody(exMessage))
-          )
-
-          assertConnectorException[HttpException](
-            sut().updateExpensesData(
-              nino = nino,
-              year = taxYear.year,
-              iabdType = iabdType,
-              version = 1,
-              expensesData = UpdateIabdEmployeeExpense(100, None),
-              apiType = APITypes.HipIabdUpdateEmployeeExpensesAPI
-            ),
-            INTERNAL_SERVER_ERROR,
-            exMessage
-          )
-        }
-
-        "a SERVICE_UNAVAILABLE response is returned for SERVICE_UNAVAILABLE response status" in {
-          when(mockFeatureFlagService.get(eqTo[FeatureFlagName](HipIabdsUpdateExpensesToggle))).thenReturn(
-            Future.successful(FeatureFlag(HipIabdsUpdateExpensesToggle, isEnabled = true))
-          )
-
-          val exMessage = "Service unavailable"
-
-          server.stubFor(
-            put(urlEqualTo(updateExpenseshipIabdsUrl))
-              .willReturn(aResponse().withStatus(SERVICE_UNAVAILABLE).withBody(exMessage))
-          )
-
-          assertConnectorException[HttpException](
-            sut().updateExpensesData(
-              nino = nino,
-              year = taxYear.year,
-              iabdType = iabdType,
-              version = 1,
-              expensesData = UpdateIabdEmployeeExpense(100, None),
-              apiType = APITypes.HipIabdUpdateEmployeeExpensesAPI
-            ),
-            SERVICE_UNAVAILABLE,
-            exMessage
-          )
-        }
-
-        "a 5xx response is returned" in {
-          when(mockFeatureFlagService.get(eqTo[FeatureFlagName](HipIabdsUpdateExpensesToggle))).thenReturn(
-            Future.successful(FeatureFlag(HipIabdsUpdateExpensesToggle, isEnabled = true))
-          )
-
-          val exMessage = "An error occurred"
-
-          server.stubFor(
-            put(urlEqualTo(updateExpenseshipIabdsUrl))
-              .willReturn(aResponse().withStatus(INTERNAL_SERVER_ERROR).withBody(exMessage))
-          )
-
-          assertConnectorException[HttpException](
-            sut().updateExpensesData(
-              nino = nino,
-              year = taxYear.year,
-              iabdType = iabdType,
-              version = 1,
-              expensesData = UpdateIabdEmployeeExpense(100, None),
-              apiType = APITypes.HipIabdUpdateEmployeeExpensesAPI
             ),
             INTERNAL_SERVER_ERROR,
             exMessage

@@ -19,10 +19,8 @@ package uk.gov.hmrc.tai.service
 import org.mockito.ArgumentMatchers.{any, eq as meq}
 import org.mockito.Mockito.{reset, when}
 import play.api.libs.json.*
-import uk.gov.hmrc.mongoFeatureToggles.model.{FeatureFlag, FeatureFlagName}
 import uk.gov.hmrc.mongoFeatureToggles.services.FeatureFlagService
 import uk.gov.hmrc.tai.connectors.TaxAccountConnector
-import uk.gov.hmrc.tai.model.admin.HipTaxAccountHistoryToggle
 import uk.gov.hmrc.tai.model.domain.*
 import uk.gov.hmrc.tai.model.domain.calculation.CodingComponent
 import uk.gov.hmrc.tai.model.tai.TaxYear
@@ -53,8 +51,6 @@ class CodingComponentServiceSpec extends BaseSpec {
     super.beforeEach()
     reset(mockFeatureFlagService)
     reset(mockTaxAccountConnector)
-    when(mockFeatureFlagService.get(meq[FeatureFlagName](HipTaxAccountHistoryToggle)))
-      .thenReturn(Future.successful(FeatureFlag(HipTaxAccountHistoryToggle, isEnabled = true)))
     ()
   }
 
@@ -64,7 +60,7 @@ class CodingComponentServiceSpec extends BaseSpec {
         when(mockTaxAccountConnector.taxAccount(meq(nino), meq(TaxYear()))(any()))
           .thenReturn(Future.successful(emptyJson))
 
-        val sut: CodingComponentService = new CodingComponentService(mockTaxAccountConnector, mockFeatureFlagService)
+        val sut: CodingComponentService = new CodingComponentService(mockTaxAccountConnector)
 
         val result = sut.codingComponents(nino, TaxYear()).futureValue
         result mustBe Nil
@@ -81,7 +77,7 @@ class CodingComponentServiceSpec extends BaseSpec {
           CodingComponent(OutstandingDebt, None, 10, "Educational Services", None)
         )
 
-        val sut: CodingComponentService = new CodingComponentService(mockTaxAccountConnector, mockFeatureFlagService)
+        val sut: CodingComponentService = new CodingComponentService(mockTaxAccountConnector)
 
         val result = sut.codingComponents(nino, TaxYear()).futureValue
         result mustBe codingComponentList
@@ -95,7 +91,7 @@ class CodingComponentServiceSpec extends BaseSpec {
       when(mockTaxAccountConnector.taxAccountHistory(meq(nino), meq(taxCodeId))(any()))
         .thenReturn(Future.successful(emptyJson))
 
-      val sut: CodingComponentService = new CodingComponentService(mockTaxAccountConnector, mockFeatureFlagService)
+      val sut: CodingComponentService = new CodingComponentService(mockTaxAccountConnector)
 
       val result = sut.codingComponentsForTaxCodeId(nino, taxCodeId).futureValue
       result mustBe Nil
@@ -108,7 +104,7 @@ class CodingComponentServiceSpec extends BaseSpec {
       )
       when(mockTaxAccountConnector.taxAccountHistory(meq(nino), meq(taxCodeId))(any()))
         .thenReturn(Future.successful(readFile("TC02.json")))
-      val sut: CodingComponentService = new CodingComponentService(mockTaxAccountConnector, mockFeatureFlagService)
+      val sut: CodingComponentService = new CodingComponentService(mockTaxAccountConnector)
 
       val result = sut.codingComponentsForTaxCodeId(nino, taxCodeId).futureValue
       result mustBe expected
@@ -121,7 +117,7 @@ class CodingComponentServiceSpec extends BaseSpec {
       )
       when(mockTaxAccountConnector.taxAccountHistory(meq(nino), meq(taxCodeId))(any()))
         .thenReturn(Future.successful(readFile("TC03.json")))
-      val sut: CodingComponentService = new CodingComponentService(mockTaxAccountConnector, mockFeatureFlagService)
+      val sut: CodingComponentService = new CodingComponentService(mockTaxAccountConnector)
 
       val result = sut.codingComponentsForTaxCodeId(nino, taxCodeId).futureValue
       result mustBe expected
@@ -136,30 +132,12 @@ class CodingComponentServiceSpec extends BaseSpec {
 
       when(mockTaxAccountConnector.taxAccountHistory(meq(nino), meq(taxCodeId))(any()))
         .thenReturn(Future.successful(readFile("TC04.json")))
-      val sut: CodingComponentService = new CodingComponentService(mockTaxAccountConnector, mockFeatureFlagService)
+      val sut: CodingComponentService = new CodingComponentService(mockTaxAccountConnector)
 
       val result = sut.codingComponentsForTaxCodeId(nino, taxCodeId).futureValue
       result mustBe expected
 
     }
 
-    "returns a Success[Seq[CodingComponent]] for valid json of total liabilities and income sources when hip is disabled" in {
-      val expected = List[CodingComponent](
-        CodingComponent(PersonalAllowancePA, None, 11850, "Personal Allowance", Some(11850)),
-        CodingComponent(BRDifferenceTaxReduction, None, 10000, "BR Difference Tax Reduction", Some(10000)),
-        CodingComponent(CarBenefit, Some(1), 2000, "Car Benefit", None)
-      )
-      reset(mockFeatureFlagService)
-      when(mockFeatureFlagService.get(meq[FeatureFlagName](HipTaxAccountHistoryToggle)))
-        .thenReturn(Future.successful(FeatureFlag(HipTaxAccountHistoryToggle, isEnabled = false)))
-      when(mockTaxAccountConnector.taxAccountHistory(meq(nino), meq(taxCodeId))(any()))
-        .thenReturn(Future.successful(readFile("TC04.json", "squid")))
-
-      val sut: CodingComponentService = new CodingComponentService(mockTaxAccountConnector, mockFeatureFlagService)
-
-      val result = sut.codingComponentsForTaxCodeId(nino, taxCodeId).futureValue
-      result mustBe expected
-
-    }
   }
 }

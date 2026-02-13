@@ -27,7 +27,7 @@ import play.api.test.Helpers.{status as getStatus, *}
 import uk.gov.hmrc.http.{HeaderNames, HttpException}
 import uk.gov.hmrc.mongoFeatureToggles.model.{FeatureFlag, FeatureFlagName}
 import uk.gov.hmrc.tai.integration.utils.{FileHelper, IntegrationSpec}
-import uk.gov.hmrc.tai.model.admin.{HipTaxAccountHistoryToggle, RtiCallToggle}
+import uk.gov.hmrc.tai.model.admin.RtiCallToggle
 import play.api.libs.json.Json
 
 import scala.concurrent.Future
@@ -46,8 +46,6 @@ class TaxFreeAmountComparisonSpec extends IntegrationSpec {
     when(mockFeatureFlagService.getAsEitherT(eqTo[FeatureFlagName](RtiCallToggle))).thenReturn(
       EitherT.rightT(FeatureFlag(RtiCallToggle, isEnabled = false))
     )
-    when(mockFeatureFlagService.get(HipTaxAccountHistoryToggle))
-      .thenReturn(Future.successful(FeatureFlag(HipTaxAccountHistoryToggle, true)))
 
     server.stubFor(get(urlEqualTo(hipTaxAccountUrl)).willReturn(ok(taxAccountHipJson)))
     server.stubFor(get(urlEqualTo(desTaxCodeHistoryUrl)).willReturn(ok(taxCodeHistoryJson)))

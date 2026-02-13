@@ -18,22 +18,18 @@ package uk.gov.hmrc.tai.connectors
 
 import com.github.tomakehurst.wiremock.client.WireMock.*
 import com.github.tomakehurst.wiremock.matching.RequestPatternBuilder
-import org.mockito.Mockito.when
 import play.api.http.Status.*
 import play.api.libs.json.{JsObject, JsValue, Json}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.{BadRequestException, HeaderNames, HttpException, InternalServerException, LockedException, NotFoundException}
-import uk.gov.hmrc.mongoFeatureToggles.model.FeatureFlag
 import uk.gov.hmrc.mongoFeatureToggles.services.FeatureFlagService
 import uk.gov.hmrc.tai.config.{DesConfig, HipConfig, NpsConfig}
 import uk.gov.hmrc.tai.factory.TaxAccountHistoryFactory
-import uk.gov.hmrc.tai.model.admin.HipTaxAccountHistoryToggle
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.util.WireMockHelper
 
-import java.net.URL
 import scala.concurrent.duration.*
-import scala.concurrent.{Await, Future}
+import scala.concurrent.Await
 import scala.language.postfixOps
 
 // scalastyle:off number.of.methods
@@ -52,10 +48,7 @@ class TaxAccountConnectorSpec extends ConnectorBaseSpec with WireMockHelper {
 
     def sut: TaxAccountConnector = new DefaultTaxAccountConnector(
       inject[HttpHandler],
-      desConfig,
-      taxAccountUrls,
-      hipConfig,
-      mockFeatureFlagService
+      hipConfig
     )
 
     val taxYear: TaxYear = TaxYear()
@@ -69,18 +62,6 @@ class TaxAccountConnectorSpec extends ConnectorBaseSpec with WireMockHelper {
       )
     )
   }
-
-  private def verifyOutgoingDesUpdateHeaders(requestPattern: RequestPatternBuilder): Unit =
-    server.verify(
-      requestPattern
-        .withHeader("Gov-Uk-Originator-Id", equalTo(desOriginatorId))
-        .withHeader(HeaderNames.xSessionId, equalTo(sessionId))
-        .withHeader(HeaderNames.xRequestId, equalTo(requestId))
-        .withHeader(
-          "CorrelationId",
-          matching("[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}")
-        )
-    )
 
   private def verifyOutgoingUpdateHeaders(requestPattern: RequestPatternBuilder): Unit =
     server.verify(
@@ -355,136 +336,8 @@ class TaxAccountConnectorSpec extends ConnectorBaseSpec with WireMockHelper {
         }
       }
       "Tax Account History" when {
-        "toggled to use DES " must {
+        "using HIP " must {
           "return a Success[JsValue] for valid json" in new ConnectorSetup {
-            when(mockFeatureFlagService.get(HipTaxAccountHistoryToggle))
-              .thenReturn(Future.successful(FeatureFlag(HipTaxAccountHistoryToggle, false)))
-
-            val taxCodeId = 1
-
-            val json: JsObject = TaxAccountHistoryFactory.combinedIncomeSourcesTotalLiabilityJson(nino)
-
-            val url: String = new URL(taxAccountUrls.taxAccountHistoricSnapshotUrl(nino, taxCodeId)).getPath
-
-            server.stubFor(
-              get(urlEqualTo(url)).willReturn(ok(json.toString))
-            )
-
-            val result: JsValue = Await.result(sut.taxAccountHistory(nino, taxCodeId), 5.seconds)
-
-            result mustEqual json
-
-            verifyOutgoingDesUpdateHeaders(getRequestedFor(urlEqualTo(url)))
-          }
-
-          "return a HttpException" when {
-
-            "connector receives BAD_REQUEST" in new ConnectorSetup {
-              when(mockFeatureFlagService.get(HipTaxAccountHistoryToggle))
-                .thenReturn(Future.successful(FeatureFlag(HipTaxAccountHistoryToggle, false)))
-
-              val taxCodeId = 1
-
-              val url: String = new URL(taxAccountUrls.taxAccountHistoricSnapshotUrl(nino, taxCodeId)).getPath
-
-              server.stubFor(
-                get(urlEqualTo(url)).willReturn(
-                  badRequest()
-                )
-              )
-
-              assertConnectorException[BadRequestException](
-                sut.taxAccountHistory(nino, taxCodeId),
-                BAD_REQUEST,
-                ""
-              )
-            }
-
-            "connector receives NOT_FOUND" in new ConnectorSetup {
-              when(mockFeatureFlagService.get(HipTaxAccountHistoryToggle))
-                .thenReturn(Future.successful(FeatureFlag(HipTaxAccountHistoryToggle, false)))
-              val taxCodeId = 1
-
-              val url: String = new URL(taxAccountUrls.taxAccountHistoricSnapshotUrl(nino, taxCodeId)).getPath
-
-              server.stubFor(
-                get(urlEqualTo(url)).willReturn(
-                  aResponse().withStatus(NOT_FOUND)
-                )
-              )
-
-              assertConnectorException[NotFoundException](
-                sut.taxAccountHistory(nino, taxCodeId),
-                NOT_FOUND,
-                ""
-              )
-            }
-
-            "connector receives IM_A_TEAPOT" in new ConnectorSetup {
-              when(mockFeatureFlagService.get(HipTaxAccountHistoryToggle))
-                .thenReturn(Future.successful(FeatureFlag(HipTaxAccountHistoryToggle, false)))
-              val taxCodeId = 1
-
-              val url: String = new URL(taxAccountUrls.taxAccountHistoricSnapshotUrl(nino, taxCodeId)).getPath
-
-              server.stubFor(
-                get(urlEqualTo(url)).willReturn(
-                  aResponse().withStatus(IM_A_TEAPOT)
-                )
-              )
-
-              assertConnectorException[HttpException](
-                sut.taxAccountHistory(nino, taxCodeId),
-                IM_A_TEAPOT,
-                ""
-              )
-            }
-
-            "connector receives INTERNAL_SERVER_ERROR" in new ConnectorSetup {
-              when(mockFeatureFlagService.get(HipTaxAccountHistoryToggle))
-                .thenReturn(Future.successful(FeatureFlag(HipTaxAccountHistoryToggle, false)))
-              val taxCodeId = 1
-
-              val url: String = new URL(taxAccountUrls.taxAccountHistoricSnapshotUrl(nino, taxCodeId)).getPath
-
-              server.stubFor(
-                get(urlEqualTo(url)).willReturn(
-                  aResponse().withStatus(INTERNAL_SERVER_ERROR)
-                )
-              )
-
-              assertConnectorException[InternalServerException](
-                sut.taxAccountHistory(nino, taxCodeId),
-                INTERNAL_SERVER_ERROR,
-                ""
-              )
-            }
-
-            "connector receives SERVICE_UNAVAILABLE" in new ConnectorSetup {
-              when(mockFeatureFlagService.get(HipTaxAccountHistoryToggle))
-                .thenReturn(Future.successful(FeatureFlag(HipTaxAccountHistoryToggle, false)))
-              val taxCodeId = 1
-
-              val url: String = new URL(taxAccountUrls.taxAccountHistoricSnapshotUrl(nino, taxCodeId)).getPath
-
-              server.stubFor(
-                get(urlEqualTo(url)).willReturn(
-                  aResponse().withStatus(SERVICE_UNAVAILABLE)
-                )
-              )
-
-              assertConnectorException[HttpException](
-                sut.taxAccountHistory(nino, taxCodeId),
-                SERVICE_UNAVAILABLE,
-                ""
-              )
-            }
-          }
-        }
-        "toggled to use HIP " must {
-          "return a Success[JsValue] for valid json" in new ConnectorSetup {
-            when(mockFeatureFlagService.get(HipTaxAccountHistoryToggle))
-              .thenReturn(Future.successful(FeatureFlag(HipTaxAccountHistoryToggle, true)))
 
             val taxCodeId = 1
 
@@ -506,8 +359,6 @@ class TaxAccountConnectorSpec extends ConnectorBaseSpec with WireMockHelper {
           "return a HttpException" when {
 
             "connector receives BAD_REQUEST" in new ConnectorSetup {
-              when(mockFeatureFlagService.get(HipTaxAccountHistoryToggle))
-                .thenReturn(Future.successful(FeatureFlag(HipTaxAccountHistoryToggle, true)))
 
               val taxCodeId = 1
 
@@ -527,8 +378,7 @@ class TaxAccountConnectorSpec extends ConnectorBaseSpec with WireMockHelper {
             }
 
             "connector receives NOT_FOUND" in new ConnectorSetup {
-              when(mockFeatureFlagService.get(HipTaxAccountHistoryToggle))
-                .thenReturn(Future.successful(FeatureFlag(HipTaxAccountHistoryToggle, true)))
+
               val taxCodeId = 1
 
               val url: String = taxAccountHistoryUrl(nino, taxCodeId)
@@ -547,8 +397,7 @@ class TaxAccountConnectorSpec extends ConnectorBaseSpec with WireMockHelper {
             }
 
             "connector receives IM_A_TEAPOT" in new ConnectorSetup {
-              when(mockFeatureFlagService.get(HipTaxAccountHistoryToggle))
-                .thenReturn(Future.successful(FeatureFlag(HipTaxAccountHistoryToggle, true)))
+
               val taxCodeId = 1
 
               val url: String = taxAccountHistoryUrl(nino, taxCodeId)
@@ -567,8 +416,7 @@ class TaxAccountConnectorSpec extends ConnectorBaseSpec with WireMockHelper {
             }
 
             "connector receives INTERNAL_SERVER_ERROR" in new ConnectorSetup {
-              when(mockFeatureFlagService.get(HipTaxAccountHistoryToggle))
-                .thenReturn(Future.successful(FeatureFlag(HipTaxAccountHistoryToggle, true)))
+
               val taxCodeId = 1
 
               val url: String = taxAccountHistoryUrl(nino, taxCodeId)
@@ -587,8 +435,7 @@ class TaxAccountConnectorSpec extends ConnectorBaseSpec with WireMockHelper {
             }
 
             "connector receives SERVICE_UNAVAILABLE" in new ConnectorSetup {
-              when(mockFeatureFlagService.get(HipTaxAccountHistoryToggle))
-                .thenReturn(Future.successful(FeatureFlag(HipTaxAccountHistoryToggle, true)))
+
               val taxCodeId = 1
 
               val url: String = taxAccountHistoryUrl(nino, taxCodeId)
