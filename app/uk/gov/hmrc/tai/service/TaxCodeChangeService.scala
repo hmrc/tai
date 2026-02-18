@@ -199,7 +199,7 @@ class TaxCodeChangeServiceImpl @Inject() (
     lazy val latestDate = calculationDates.min
     val isValidDates = calculationDates.length >= 2 && TaxYear().withinTaxYear(latestDate)
 
-    val isLatestChangeWithPrimaries = taxCodeRecords.groupBy(_.dateOfCalculation).toSeq.sortBy(_._1).reverse match {
+    val isLatestChangeWithPrimaries = taxCodeRecords.groupBy(_.dateOfCalculation).toSeq.sortBy(_._1) match {
       case latest :: before :: _ =>
         if (latest._2.exists(_.isPrimary) && before._2.exists(_.isPrimary)) {
           true

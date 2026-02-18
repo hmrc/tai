@@ -1336,6 +1336,62 @@ class TaxCodeChangeServiceImplSpec
         SUT.taxCodeChange(nino).futureValue mustEqual expectedResult
       }
 
+      "there is no primary in latest 2 records" in {
+        val currentStartDate = TaxYear().start.plusMonths(2)
+        val payrollNumberCurr1 = randomInt().toString
+        val payrollNumberCurr2 = randomInt().toString
+
+        val currentTaxCodeRecord1 = TaxCodeRecordFactory.createPrimaryEmployment(
+          taxCode = "1000L",
+          dateOfCalculation = currentStartDate,
+          payrollNumber = Some(payrollNumberCurr1)
+        )
+        val currentTaxCodeRecord2 = TaxCodeRecordFactory.createSecondaryEmployment(
+          taxCode = "185L",
+          employerName = "Employer 2",
+          dateOfCalculation = currentStartDate,
+          payrollNumber = Some(payrollNumberCurr2)
+        )
+        val previousTaxCodeRecord1 = TaxCodeRecordFactory.createSecondaryEmployment(
+          taxCode = "200L",
+          employerName = "Employer 3",
+          dateOfCalculation = currentStartDate.minusDays(5),
+          payrollNumber = Some(payrollNumberCurr2)
+        )
+        val previousTaxCodeRecord2 = TaxCodeRecordFactory.createPrimaryEmployment(
+          taxCode = "250L",
+          employerName = "Employer 4",
+          dateOfCalculation = currentStartDate.minusDays(10),
+          payrollNumber = Some(payrollNumberCurr2)
+        )
+        val previousTaxCodeRecord3 = TaxCodeRecordFactory.createPrimaryEmployment(
+          taxCode = "280L",
+          employerName = "Employer 5",
+          dateOfCalculation = currentStartDate.minusDays(15),
+          payrollNumber = Some(payrollNumberCurr2)
+        )
+
+        val taxCodeHistory = TaxCodeHistory(
+          nino.withoutSuffix,
+          Seq(
+            currentTaxCodeRecord1,
+            currentTaxCodeRecord2,
+            previousTaxCodeRecord1,
+            previousTaxCodeRecord2,
+            previousTaxCodeRecord3
+          )
+        )
+
+        when(taxCodeHistoryConnector.taxCodeHistory(any(), any())(any())).thenReturn(
+          Future
+            .successful(taxCodeHistory)
+        )
+
+        val expectedResult = TaxCodeChange(Seq.empty[TaxCodeSummary], Seq.empty[TaxCodeSummary])
+
+        SUT.taxCodeChange(nino).futureValue mustEqual expectedResult
+      }
+
       "ignore change when there is no primary employment" in {
         val currentTaxCodeRecord1 = TaxCodeRecordFactory.createPrimaryEmployment(
           taxCode = "S842L",
