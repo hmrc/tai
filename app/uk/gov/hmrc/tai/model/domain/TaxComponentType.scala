@@ -92,6 +92,7 @@ case object HigherPersonalAllowanceRestriction extends DeductionComponentType
 case object AdjustmentToRateBand extends DeductionComponentType
 case object BRDifferenceTaxCharge extends DeductionComponentType
 case object HICBCPaye extends DeductionComponentType
+case object WinterPaymentTaxCharge extends DeductionComponentType
 
 case object BenefitInKind extends BenefitComponentType
 case object CarFuelBenefit extends BenefitComponentType
