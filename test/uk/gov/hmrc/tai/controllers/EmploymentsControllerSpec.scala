@@ -42,7 +42,7 @@ class EmploymentsControllerSpec extends BaseSpec {
       "company name",
       Live,
       Some("888"),
-      LocalDate.of(2017, 5, 26),
+      Some(LocalDate.of(2017, 5, 26)),
       None,
       Nil,
       "",

@@ -34,7 +34,7 @@ class EmploymentSpec extends PlaySpec {
       "XXX PPPP",
       Live,
       Some("64765"),
-      LocalDate.of(2016, 4, 6),
+      Some(LocalDate.of(2016, 4, 6)),
       None,
       Nil,
       "754",
@@ -55,7 +55,7 @@ class EmploymentSpec extends PlaySpec {
             "TEST",
             Live,
             Some("12345"),
-            LocalDate.parse("2017-05-26"),
+            Some(LocalDate.parse("2017-05-26")),
             None,
             List(
               AnnualAccount(

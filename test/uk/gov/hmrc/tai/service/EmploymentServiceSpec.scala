@@ -90,7 +90,7 @@ class EmploymentServiceSpec extends BaseSpec {
     "Employer name",
     Live,
     Some("EMP/EMP0000001"),
-    LocalDate.parse("2013-03-18"),
+    Some(LocalDate.parse("2013-03-18")),
     None,
     List(AnnualAccount(0, TaxYear(), Available, Nil, Nil)),
     "120",

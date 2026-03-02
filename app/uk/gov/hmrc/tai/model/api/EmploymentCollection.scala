@@ -51,7 +51,7 @@ object EmploymentCollection {
     override def reads(json: JsValue): JsResult[Employment] = {
       val name = (json \ "employerName").as[String]
       val payrollNumber = (json \ "worksNumber").asOpt[String]
-      val startDate = (json \ "startDate").as[LocalDate](dateReadsFromHod)
+      val startDate = (json \ "startDate").asOpt[LocalDate](dateReadsFromHod)
       val endDate = (json \ "endDate").asOpt[LocalDate](dateReadsFromHod)
       val taxDistrictNumber = numberChecked((json \ "taxDistrictNumber").as[String])
       val payeNumber = (json \ "payeNumber").as[String]
@@ -99,7 +99,7 @@ object EmploymentCollection {
       val employerReference = numberChecked((json \ "employerReference").as[String])
       val name = (json \ "payeSchemeOperatorName").as[String]
       val payrollNumber = (json \ "worksNumber").asOpt[String]
-      val startDate = (json \ "startDate").as[LocalDate](dateReadsFromHod)
+      val startDate = (json \ "startDate").asOpt[LocalDate](dateReadsFromHod)
       val endDate = (json \ "endDate").asOpt[LocalDate](dateReadsFromHod)
       splitEmpRef(employerReference) match {
         case JsSuccess(Tuple2(taxDistrictNumber, payeNumber), _) =>

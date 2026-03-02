@@ -85,7 +85,7 @@ class EmploymentPensionViewModelSpec extends PlaySpec {
     "fake employer",
     Live,
     Some("12345"),
-    LocalDate.parse("2017-04-04"),
+    Some(LocalDate.parse("2017-04-04")),
     None,
     Seq.empty[AnnualAccount],
     "33",

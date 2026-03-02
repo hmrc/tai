@@ -241,7 +241,7 @@ class IncomeControllerSpec extends BaseSpec {
       "company name",
       Live,
       Some("888"),
-      LocalDate.of(TaxYear().next.year, 5, 26),
+      Some(LocalDate.of(TaxYear().next.year, 5, 26)),
       None,
       Nil,
       "",
