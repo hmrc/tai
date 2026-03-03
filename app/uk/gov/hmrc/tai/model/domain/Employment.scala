@@ -27,7 +27,7 @@ case class Employment(
   name: String,
   employmentStatus: TaxCodeIncomeStatus,
   payrollNumber: Option[String],
-  startDate: LocalDate,
+  startDate: Option[LocalDate],
   endDate: Option[LocalDate],
   annualAccounts: Seq[AnnualAccount],
   taxDistrictNumber: String,
