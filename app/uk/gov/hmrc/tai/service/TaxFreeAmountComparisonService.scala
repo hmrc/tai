@@ -40,8 +40,8 @@ class TaxFreeAmountComparisonService @Inject() (
     lazy val previousComponents: Future[Seq[CodingComponent]] = getPreviousComponents(nino)
 
     for {
-      current  <- currentComponents
-      previous <- previousComponents
+      current: Seq[CodingComponent]  <- currentComponents
+      previous: Seq[CodingComponent] <- previousComponents
     } yield TaxFreeAmountComparison(previous, current)
   }
 

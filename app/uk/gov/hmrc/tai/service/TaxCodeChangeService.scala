@@ -73,7 +73,9 @@ class TaxCodeChangeServiceImpl @Inject() (
       if (validForService(taxCodeHistory.applicableTaxCodeRecords)) {
 
         val recordsGroupedByDate: Map[LocalDate, Seq[TaxCodeRecord]] =
-          taxCodeHistory.applicableTaxCodeRecords.groupBy(_.dateOfCalculation)
+          taxCodeHistory.applicableTaxCodeRecords
+            .groupBy(_.dateOfCalculation)
+            .filterNot(_._2.forall(taxCodeRecord => !taxCodeRecord.isPrimary))
         val sortedDates = recordsGroupedByDate.keys.toList.sorted
         val currentDate = sortedDates.headOption.get
         val previousDate = sortedDates.drop(1).headOption.get
