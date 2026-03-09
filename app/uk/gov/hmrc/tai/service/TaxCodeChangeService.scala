@@ -27,7 +27,7 @@ import uk.gov.hmrc.tai.model.api.{TaxCodeChange, TaxCodeSummary}
 import uk.gov.hmrc.tai.model.domain.income.{BasisOperation, TaxCodeIncome, Week1Month1BasisOperation}
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.model.{TaxCodeHistory, TaxCodeMismatch, TaxCodeRecord}
-import uk.gov.hmrc.tai.util.DateTimeHelper.dateTimeOrdering
+import uk.gov.hmrc.tai.util.DateTimeHelper.reverseChronologicalDateOrdering
 import uk.gov.hmrc.tai.util.{TaiConstants, TaxCodeHistoryConstants}
 
 import java.time.LocalDate
@@ -74,7 +74,7 @@ class TaxCodeChangeServiceImpl @Inject() (
 
         val recordsGroupedByDate: Map[LocalDate, Seq[TaxCodeRecord]] =
           taxCodeHistory.applicableTaxCodeRecords.groupBy(_.dateOfCalculation)
-        val sortedDates = recordsGroupedByDate.keys.toList.sorted
+        val sortedDates = recordsGroupedByDate.keys.toList.sorted(reverseChronologicalDateOrdering)
         val currentDate = sortedDates.headOption.get
         val previousDate = sortedDates.drop(1).headOption.get
         val currentRecords: Seq[TaxCodeRecord] = recordsGroupedByDate(currentDate)
@@ -153,7 +153,7 @@ class TaxCodeChangeServiceImpl @Inject() (
       val groupedTaxCodeRecords: Map[String, Seq[TaxCodeRecord]] = taxCodeHistory.taxCodeRecord.groupBy(_.employerName)
 
       groupedTaxCodeRecords.values.flatMap { taxCodeRecords =>
-        val sortedTaxCodeRecords = taxCodeRecords.sortBy(_.dateOfCalculation)
+        val sortedTaxCodeRecords = taxCodeRecords.sortBy(_.dateOfCalculation)(reverseChronologicalDateOrdering)
         val latestTaxCodeRecords =
           sortedTaxCodeRecords.filter(_.dateOfCalculation.isEqual(sortedTaxCodeRecords.head.dateOfCalculation))
         latestTaxCodeRecords.map(TaxCodeSummary(_, taxYear.end))
@@ -196,18 +196,19 @@ class TaxCodeChangeServiceImpl @Inject() (
   private def validForService(taxCodeRecords: Seq[TaxCodeRecord]): Boolean = {
     val calculationDates = taxCodeRecords.map(_.dateOfCalculation).distinct
     logger.debug(s"calculation dates $calculationDates")
-    lazy val latestDate = calculationDates.min
+    lazy val latestDate = calculationDates.min(reverseChronologicalDateOrdering)
     val isValidDates = calculationDates.length >= 2 && TaxYear().withinTaxYear(latestDate)
 
-    val isLatestChangeWithPrimaries = taxCodeRecords.groupBy(_.dateOfCalculation).toSeq.sortBy(_._1) match {
-      case latest :: before :: _ =>
-        if (latest._2.exists(_.isPrimary) && before._2.exists(_.isPrimary)) {
-          true
-        } else {
-          false
-        }
-      case _ => false
-    }
+    val isLatestChangeWithPrimaries =
+      taxCodeRecords.groupBy(_.dateOfCalculation).toSeq.sortBy(_._1)(reverseChronologicalDateOrdering) match {
+        case latest :: before :: _ =>
+          if (latest._2.exists(_.isPrimary) && before._2.exists(_.isPrimary)) {
+            true
+          } else {
+            false
+          }
+        case _ => false
+      }
 
     isValidDates && isLatestChangeWithPrimaries
   }

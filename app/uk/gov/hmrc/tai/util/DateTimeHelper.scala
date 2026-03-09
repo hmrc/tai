@@ -30,7 +30,8 @@ object DateTimeHelper {
     LocalDate.parse(date, dateTimeFormatter)
   }
 
-  implicit val dateTimeOrdering: Ordering[LocalDate] = Ordering.fromLessThan(_ isAfter _)
+  val reverseChronologicalDateOrdering: Ordering[LocalDate] =
+    Ordering.fromLessThan((left, right) => left.isAfter(right))
 
   val formatLocalDateDDMMYYYY: Format[LocalDate] = Format(
     localDateReads("dd/MM/yyyy"),
