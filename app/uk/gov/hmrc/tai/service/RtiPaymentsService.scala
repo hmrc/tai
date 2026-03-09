@@ -18,6 +18,7 @@ package uk.gov.hmrc.tai.service
 
 import cats.data.EitherT
 import com.google.inject.{Inject, Singleton}
+import play.api.http.Status.SERVICE_UNAVAILABLE
 import play.api.mvc.Request
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.{HeaderCarrier, UpstreamErrorResponse}
@@ -36,17 +37,24 @@ class RtiPaymentsService @Inject() (
     hc: HeaderCarrier,
     request: Request[_]
   ): EitherT[Future, UpstreamErrorResponse, Seq[AnnualAccount]] =
-    rtiConnector.getPaymentsForYear(nino, taxYear).transform {
-      case Right(accounts: Seq[AnnualAccount]) => Right(accounts)
-      case Left(_) =>
-        Right(
-          Seq(
-            AnnualAccount(
-              sequenceNumber = 0,
-              taxYear = taxYear,
-              rtiStatus = TemporarilyUnavailable
+    rtiConnector
+      .getPaymentsForYear(nino, taxYear)
+      .leftMap {
+        case e if e.statusCode == 444 => e.copy(statusCode = SERVICE_UNAVAILABLE, reportAs = SERVICE_UNAVAILABLE)
+        case e                        => e
+      }
+      .transform {
+        case Right(accounts) => Right(accounts)
+        case Left(e) if e.statusCode == SERVICE_UNAVAILABLE =>
+          Right(
+            Seq(
+              AnnualAccount(
+                sequenceNumber = 0,
+                taxYear = taxYear,
+                rtiStatus = TemporarilyUnavailable
+              )
             )
           )
-        )
-    }
+        case Left(e) => Left(e)
+      }
 }

@@ -41,12 +41,10 @@ class TaxCodeChangeIabdComparisonController @Inject() (
     implicit request =>
       taxFreeAmountComparisonService.taxFreeAmountComparison(nino).map { (comparison: TaxFreeAmountComparison) =>
         if (comparison.previous.isEmpty || comparison.next.isEmpty) {
-          val ex = new RuntimeException("No tax code change data found")
-          logger.error(ex.getMessage, ex)
-          InternalServerError(Json.toJson(ApiResponse[String]("NO_TAX_CODE_CHANGE_DATA", Seq.empty)))
-        } else {
-          Ok(Json.toJson(ApiResponse(Json.toJson(comparison), Seq.empty)))
+          val redacted = s"${nino.value.take(2)}****${nino.value.takeRight(2)}"
+          logger.warn(s"No tax code change data found for nino=$redacted")
         }
+        Ok(Json.toJson(ApiResponse(Json.toJson(comparison), Seq.empty)))
       }
   }
 
