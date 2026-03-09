@@ -81,6 +81,15 @@ class IncomeController @Inject() (
       }
   }
 
+  def hasPayeData(nino: Nino): Action[AnyContent] = authentication.authWithUserDetails.async { implicit request =>
+    incomeService.payeDataPresent(nino).value.map {
+      _.fold(
+        err => customErrorHandler.handleControllerErrorStatuses(err),
+        present => if (present) NoContent else NotFound
+      )
+    }
+  }
+
   def updateTaxCodeIncome(nino: Nino, snapshotId: TaxYear, employmentId: Int): Action[JsValue] =
     authentication.authWithUserDetails.async(parse.json) { implicit request =>
       withJsonBody[UpdateTaxCodeIncomeRequest] { updateTaxCodeIncomeRequest =>

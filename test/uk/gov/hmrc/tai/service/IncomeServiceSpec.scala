@@ -19,7 +19,7 @@ package uk.gov.hmrc.tai.service
 import cats.data.EitherT
 import cats.instances.future.*
 import org.mockito.ArgumentMatchers.{any, eq as meq}
-import org.mockito.Mockito.{doNothing, verify, when}
+import org.mockito.Mockito.{doNothing, verify, verifyNoMoreInteractions, when}
 import play.api.http.Status.NOT_FOUND
 import play.api.libs.json.{JsValue, Json}
 import play.api.mvc.AnyContentAsEmpty
@@ -29,6 +29,7 @@ import uk.gov.hmrc.http.{HeaderCarrier, UpstreamErrorResponse}
 import uk.gov.hmrc.tai.audit.Auditor
 import uk.gov.hmrc.tai.connectors.{CitizenDetailsConnector, TaxAccountConnector}
 import uk.gov.hmrc.tai.model.ETag
+import uk.gov.hmrc.tai.model.api.EmploymentCollection
 import uk.gov.hmrc.tai.model.domain.{PensionIncome, *}
 import uk.gov.hmrc.tai.model.domain.income.*
 import uk.gov.hmrc.tai.model.domain.response.*
@@ -1268,6 +1269,163 @@ class IncomeServiceSpec extends BaseSpec {
 
       val result = SUT.updateTaxCodeIncome(nino, taxYear, 1, 1234)(HeaderCarrier())
       result.futureValue mustBe IncomeUpdateFailed("Failed to update income")
+    }
+  }
+
+  "payeDataPresent" must {
+
+    "return true when PAYE data is found for the current tax year" in {
+      val mockEmploymentService = mock[EmploymentService]
+      val currentTaxYear = TaxYear()
+
+      val employment = Employment(
+        name = "company name",
+        employmentStatus = Live,
+        payrollNumber = Some("123"),
+        startDate = Some(LocalDate.of(currentTaxYear.year, 6, 1)),
+        endDate = None,
+        annualAccounts = Nil,
+        taxDistrictNumber = "",
+        payeNumber = "",
+        sequenceNumber = 1,
+        cessationPay = Some(100),
+        hasPayrolledBenefit = false,
+        receivingOccupationalPension = false,
+        employmentType = EmploymentIncome
+      )
+
+      when(mockEmploymentService.employmentsWithoutRtiAsEitherT(meq(nino), meq(currentTaxYear))(any[HeaderCarrier]))
+        .thenReturn(EitherT.rightT(EmploymentCollection(Seq(employment), None)))
+
+      val sut = createSUT(employmentService = mockEmploymentService)
+
+      val result = sut.payeDataPresent(nino)(HeaderCarrier()).value.futureValue
+
+      result mustBe Right(true)
+    }
+
+    "return true when PAYE data is found in an earlier tax year after current year is not found" in {
+      val mockEmploymentService = mock[EmploymentService]
+      val currentTaxYear = TaxYear()
+      val previousTaxYear = TaxYear(currentTaxYear.year - 1)
+
+      val employment = Employment(
+        name = "company name",
+        employmentStatus = Live,
+        payrollNumber = Some("123"),
+        startDate = Some(LocalDate.of(previousTaxYear.year, 6, 1)),
+        endDate = None,
+        annualAccounts = Nil,
+        taxDistrictNumber = "",
+        payeNumber = "",
+        sequenceNumber = 1,
+        cessationPay = Some(100),
+        hasPayrolledBenefit = false,
+        receivingOccupationalPension = false,
+        employmentType = EmploymentIncome
+      )
+
+      when(mockEmploymentService.employmentsWithoutRtiAsEitherT(meq(nino), meq(currentTaxYear))(any[HeaderCarrier]))
+        .thenReturn(EitherT.leftT(UpstreamErrorResponse("not found", NOT_FOUND)))
+
+      when(mockEmploymentService.employmentsWithoutRtiAsEitherT(meq(nino), meq(previousTaxYear))(any[HeaderCarrier]))
+        .thenReturn(EitherT.rightT(EmploymentCollection(Seq(employment), None)))
+
+      val sut = createSUT(employmentService = mockEmploymentService)
+
+      val result = sut.payeDataPresent(nino)(HeaderCarrier()).value.futureValue
+
+      result mustBe Right(true)
+    }
+
+    "return false when no PAYE data is found for any checked tax year" in {
+      val mockEmploymentService = mock[EmploymentService]
+
+      when(mockEmploymentService.employmentsWithoutRtiAsEitherT(meq(nino), any)(any[HeaderCarrier]))
+        .thenReturn(EitherT.leftT(UpstreamErrorResponse("not found", NOT_FOUND)))
+
+      val sut = createSUT(employmentService = mockEmploymentService)
+
+      val result = sut.payeDataPresent(nino)(HeaderCarrier()).value.futureValue
+
+      result mustBe Right(false)
+    }
+
+    "return false when employments found are only JobSeekerAllowanceIncome" in {
+      val mockEmploymentService = mock[EmploymentService]
+      val currentTaxYear = TaxYear()
+
+      val jsaEmployment = Employment(
+        name = "JSA",
+        employmentStatus = Live,
+        payrollNumber = Some("123"),
+        startDate = Some(LocalDate.of(currentTaxYear.year, 6, 1)),
+        endDate = None,
+        annualAccounts = Nil,
+        taxDistrictNumber = "",
+        payeNumber = "",
+        sequenceNumber = 1,
+        cessationPay = Some(100),
+        hasPayrolledBenefit = false,
+        receivingOccupationalPension = false,
+        employmentType = JobSeekerAllowanceIncome
+      )
+
+      when(mockEmploymentService.employmentsWithoutRtiAsEitherT(meq(nino), any)(any[HeaderCarrier]))
+        .thenReturn(EitherT.rightT(EmploymentCollection(Seq(jsaEmployment), None)))
+
+      val sut = createSUT(employmentService = mockEmploymentService)
+
+      val result = sut.payeDataPresent(nino)(HeaderCarrier()).value.futureValue
+
+      result mustBe Right(false)
+    }
+
+    "return an upstream error when a non-404 error is returned" in {
+      val mockEmploymentService = mock[EmploymentService]
+      val upstreamError = UpstreamErrorResponse("internal server error", 500)
+
+      when(mockEmploymentService.employmentsWithoutRtiAsEitherT(meq(nino), any)(any[HeaderCarrier]))
+        .thenReturn(EitherT.leftT(upstreamError))
+
+      val sut = createSUT(employmentService = mockEmploymentService)
+
+      val result = sut.payeDataPresent(nino)(HeaderCarrier()).value.futureValue
+
+      result mustBe Left(upstreamError)
+    }
+
+    "short-circuit and stop checking earlier years once PAYE data is found" in {
+      val mockEmploymentService = mock[EmploymentService]
+      val currentTaxYear = TaxYear()
+
+      val employment = Employment(
+        name = "company name",
+        employmentStatus = Live,
+        payrollNumber = Some("123"),
+        startDate = Some(LocalDate.of(currentTaxYear.year, 6, 1)),
+        endDate = None,
+        annualAccounts = Nil,
+        taxDistrictNumber = "",
+        payeNumber = "",
+        sequenceNumber = 1,
+        cessationPay = Some(100),
+        hasPayrolledBenefit = false,
+        receivingOccupationalPension = false,
+        employmentType = EmploymentIncome
+      )
+
+      when(mockEmploymentService.employmentsWithoutRtiAsEitherT(meq(nino), meq(currentTaxYear))(any[HeaderCarrier]))
+        .thenReturn(EitherT.rightT(EmploymentCollection(Seq(employment), None)))
+
+      val sut = createSUT(employmentService = mockEmploymentService)
+
+      val result = sut.payeDataPresent(nino)(HeaderCarrier()).value.futureValue
+
+      result mustBe Right(true)
+
+      verify(mockEmploymentService).employmentsWithoutRtiAsEitherT(meq(nino), meq(currentTaxYear))(any[HeaderCarrier])
+      verifyNoMoreInteractions(mockEmploymentService)
     }
   }
 }
