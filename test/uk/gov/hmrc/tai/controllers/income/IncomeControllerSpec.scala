@@ -398,6 +398,53 @@ class IncomeControllerSpec extends BaseSpec {
     }
   }
 
+  "hasPayeData" must {
+
+    "return NoContent when PAYE data is present" in {
+      when(mockIncomeService.payeDataPresent(any())(any()))
+        .thenReturn(EitherT.rightT(true))
+
+      val sut = createSUT(mockIncomeService)
+      val result = sut.hasPayeData(nino)(FakeRequest())
+
+      status(result) mustBe NO_CONTENT
+    }
+
+    "return NotFound when PAYE data is not present" in {
+      when(mockIncomeService.payeDataPresent(any())(any()))
+        .thenReturn(EitherT.rightT(false))
+
+      val sut = createSUT(mockIncomeService)
+      val result = sut.hasPayeData(nino)(FakeRequest())
+
+      status(result) mustBe NOT_FOUND
+    }
+
+    "return BadRequest when a Bad Request UpstreamErrorResponse occurs" in {
+      when(mockIncomeService.payeDataPresent(any())(any()))
+        .thenReturn(EitherT.leftT(UpstreamErrorResponse("bad request", BAD_REQUEST)))
+
+      val sut = createSUT(mockIncomeService)
+      val result = sut.hasPayeData(nino)(FakeRequest())
+
+      status(result) mustBe BAD_REQUEST
+    }
+
+    "return InternalServerError when an exception is thrown" in {
+      val runtimeException = new RuntimeException("exception")
+
+      when(mockIncomeService.payeDataPresent(any())(any()))
+        .thenReturn(EitherT[Future, UpstreamErrorResponse, Boolean](Future.failed(runtimeException)))
+      val sut = createSUT(mockIncomeService)
+
+      checkControllerResponse(
+        runtimeException,
+        sut.hasPayeData(nino)(FakeRequest()),
+        INTERNAL_SERVER_ERROR
+      )
+    }
+  }
+
   private def createSUT(
     incomeService: IncomeService = mock[IncomeService],
     authentication: AuthJourney = loggedInAuthenticationAuthJourney

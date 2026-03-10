@@ -20,9 +20,11 @@ import cats.data.EitherT
 import com.google.inject.{Inject, Singleton}
 import play.api.Logging
 import play.api.mvc.Request
+import play.api.http.Status.NOT_FOUND
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.{HeaderCarrier, UpstreamErrorResponse}
 import uk.gov.hmrc.tai.audit.Auditor
+import uk.gov.hmrc.tai.config.IncomeDetailsConfig
 import uk.gov.hmrc.tai.connectors.{CitizenDetailsConnector, TaxAccountConnector}
 import uk.gov.hmrc.tai.model.domain.*
 import uk.gov.hmrc.tai.model.domain.income.*
@@ -41,7 +43,8 @@ class IncomeService @Inject() (
   taxAccountConnector: TaxAccountConnector,
   iabdService: IabdService,
   taxCodeIncomeHelper: TaxCodeIncomeHelper,
-  auditor: Auditor
+  auditor: Auditor,
+  config: IncomeDetailsConfig
 )(implicit ec: ExecutionContext)
     extends Logging {
 
@@ -112,6 +115,33 @@ class IncomeService @Inject() (
 
         taxCode.copy(status = employmentStatus.getOrElse(taxCode.status))
       }
+    }
+  }
+
+  def payeDataPresent(nino: Nino)(implicit hc: HeaderCarrier): EitherT[Future, UpstreamErrorResponse, Boolean] = {
+    val taxYears =
+      // start from the current year which is the most probable year to be present
+      (TaxYear().year to (TaxYear().year - config.numberOfPreviousYearsToShowIncomeTaxHistory) by -1)
+        .map(TaxYear(_))
+        .toList
+
+    taxYears.foldLeft(EitherT.rightT[Future, UpstreamErrorResponse](false)) { (acc, year) =>
+      EitherT(acc.value.flatMap {
+        case Right(true) =>
+          // Short-circuit if we've already found an employment
+          Future.successful(Right[UpstreamErrorResponse, Boolean](true))
+        case _ =>
+          employmentService
+            .employmentsWithoutRtiAsEitherT(nino, year)
+            .transform {
+              case Right(employments) if employments.employments.forall(_.employmentType == JobSeekerAllowanceIncome) =>
+                Right(false)
+              case Right(_)                                     => Right(true)
+              case Left(error) if error.statusCode == NOT_FOUND => Right(false)
+              case Left(error)                                  => Left(error)
+            }
+            .value
+      })
     }
   }
 
