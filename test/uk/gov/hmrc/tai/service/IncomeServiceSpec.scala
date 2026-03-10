@@ -27,6 +27,7 @@ import play.api.test.FakeRequest
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.{HeaderCarrier, UpstreamErrorResponse}
 import uk.gov.hmrc.tai.audit.Auditor
+import uk.gov.hmrc.tai.config.IncomeDetailsConfig
 import uk.gov.hmrc.tai.connectors.{CitizenDetailsConnector, TaxAccountConnector}
 import uk.gov.hmrc.tai.model.ETag
 import uk.gov.hmrc.tai.model.api.EmploymentCollection
@@ -38,11 +39,12 @@ import uk.gov.hmrc.tai.service.helper.TaxCodeIncomeHelper
 import uk.gov.hmrc.tai.util.BaseSpec
 
 import java.time.LocalDate
+import javax.inject.Inject
 import scala.concurrent.duration.*
 import scala.concurrent.{Await, Future}
 import scala.io.Source
 
-class IncomeServiceSpec extends BaseSpec {
+class IncomeServiceSpec @Inject (config: IncomeDetailsConfig) extends BaseSpec {
   private val basePath = "test/resources/data/TaxAccount/IncomeService/hip/"
 
   private def readFile(fileName: String): JsValue = {
@@ -71,7 +73,8 @@ class IncomeServiceSpec extends BaseSpec {
       taxAccountConnector,
       iabdService,
       taxCodeIncomeHelper,
-      auditor
+      auditor,
+      config
     )
 
   "untaxedInterest" must {

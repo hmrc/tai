@@ -107,10 +107,16 @@ class MongoConfig @Inject() (val runModeConfiguration: Configuration) extends Ba
 }
 
 @Singleton
-class RtiConfig @Inject() extends BaseConfig {
+class RtiConfig extends BaseConfig {
   val hodRetryDelayInMillis: Int = 200
   val hodRetryMaximum: Int = 20
 }
+
+@Singleton
+class IncomeDetailsConfig extends BaseConfig {
+  val numberOfPreviousYearsToShowIncomeTaxHistory: Int = 5
+}
+
 @Singleton
 class CacheConfig @Inject() (val runModeConfiguration: Configuration) extends BaseConfig {
   lazy val cacheErrorInSecondsTTL: Long =

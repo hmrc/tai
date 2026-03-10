@@ -24,6 +24,7 @@ import play.api.http.Status.NOT_FOUND
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.{HeaderCarrier, UpstreamErrorResponse}
 import uk.gov.hmrc.tai.audit.Auditor
+import uk.gov.hmrc.tai.config.IncomeDetailsConfig
 import uk.gov.hmrc.tai.connectors.{CitizenDetailsConnector, TaxAccountConnector}
 import uk.gov.hmrc.tai.model.domain.*
 import uk.gov.hmrc.tai.model.domain.income.*
@@ -42,11 +43,10 @@ class IncomeService @Inject() (
   taxAccountConnector: TaxAccountConnector,
   iabdService: IabdService,
   taxCodeIncomeHelper: TaxCodeIncomeHelper,
-  auditor: Auditor
+  auditor: Auditor,
+  config: IncomeDetailsConfig
 )(implicit ec: ExecutionContext)
     extends Logging {
-
-  private lazy val numberOfPreviousYearsToShowIncomeTaxHistory: Int = 5
 
   def matchedTaxCodeIncomesForYear(
     nino: Nino,
@@ -121,7 +121,7 @@ class IncomeService @Inject() (
   def payeDataPresent(nino: Nino)(implicit hc: HeaderCarrier): EitherT[Future, UpstreamErrorResponse, Boolean] = {
     val taxYears =
       // start from the current year which is the most probable year to be present
-      (TaxYear().year to (TaxYear().year - numberOfPreviousYearsToShowIncomeTaxHistory) by -1)
+      (TaxYear().year to (TaxYear().year - config.numberOfPreviousYearsToShowIncomeTaxHistory) by -1)
         .map(TaxYear(_))
         .toList
 
