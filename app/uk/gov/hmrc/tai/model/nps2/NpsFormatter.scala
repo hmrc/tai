@@ -21,7 +21,7 @@ import play.api.libs.functional.syntax.{unlift, *}
 import play.api.libs.json.*
 import uk.gov.hmrc.tai.model.enums.BasisOperation.BasisOperation
 import uk.gov.hmrc.tai.model.nps2.Income.IncomeType
-import uk.gov.hmrc.tai.model.tai.{AnnualAccount, JsonExtra}
+import uk.gov.hmrc.tai.model.tai.AnnualAccount
 import uk.gov.hmrc.tai.model.{TaxSummaryDetails, nps2}
 
 import java.time.LocalDate
@@ -54,9 +54,6 @@ trait NpsFormatter {
         ) and
       (__ \ "employmentSequenceNumber").formatNullable[Int]
   )(Iabd.apply, unlift(Iabd.unapply))
-
-  implicit val formatIabdList: Format[List[Iabd]] =
-    JsonExtra.bodgeList[Iabd]
 
   implicit val formatComponent: Format[Component] = (
     (__ \ "amount").format[BigDecimal] and
