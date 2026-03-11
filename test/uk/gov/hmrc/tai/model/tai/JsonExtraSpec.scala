@@ -20,10 +20,7 @@ import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
 import org.slf4j.{Logger, LoggerFactory}
 import play.api.libs.json.*
-import uk.gov.hmrc.tai.model.rti.{RtiEyu, formatRtiEyu}
 import uk.gov.hmrc.tai.model.tai.TaxYear.formatTaxYear
-
-import java.time.LocalDate
 
 class JsonExtraSpec extends PlaySpec with MockitoSugar {
 
@@ -73,30 +70,6 @@ class JsonExtraSpec extends PlaySpec with MockitoSugar {
         val inputValue = testEnum.BAR
         val result = JsonExtra.enumerationFormat(testEnum).writes(inputValue)
         result must be(JsString("""BAR"""))
-      }
-    }
-
-    "Use bodge list to" when {
-      "write to Json" in {
-        implicit val formatRtiEyuList: Format[List[RtiEyu]] = JsonExtra.bodgeList[RtiEyu]
-        val json = Json.toJson(List(RtiEyu(None, None, None, LocalDate.of(2016, 6, 9))))
-        json.toString() must be(
-          """[{"optionalAdjustmentAmount":[],"niLettersAndValues":[{"niFigure":[]}],"rcvdDate":"2016-06-09"}]"""
-        )
-      }
-
-      "read Json and return list" in {
-        val json: JsValue = Json.parse(
-          """[{"optionalAdjustmentAmount":[],"niLettersAndValues":[{"niFigure":[]}],"rcvdDate":"2016-06-09"}]"""
-        )
-        val result = JsonExtra.bodgeList[RtiEyu].reads(json)
-        result.asOpt must be(Some(List(RtiEyu(None, None, None, LocalDate.of(2016, 6, 9)))))
-      }
-
-      "read empty Json and return error" in {
-        val json: JsValue = Json.parse("""[{"optionalAdjustmentAmount":[],"niLettersAndValues":[{"niFigure":[]}]}]""")
-        val ex = JsonExtra.bodgeList[RtiEyu].reads(json)
-        ex.asOpt must be(Some(List()))
       }
     }
   }

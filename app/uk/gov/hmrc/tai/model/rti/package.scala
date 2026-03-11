@@ -193,12 +193,6 @@ package object rti {
     }
   )
 
-  implicit val formatRtiPaymentList: Format[List[RtiPayment]] =
-    JsonExtra.bodgeList[RtiPayment]
-
-  implicit val formatRtiEyuList: Format[List[RtiEyu]] =
-    JsonExtra.bodgeList[RtiEyu]
-
   implicit val formatRtiEmployment: Format[RtiEmployment] = (
     (__ \ "empRefs" \ "officeNo").format[String] and
       (__ \ "empRefs" \ "payeRef").format[String] and
