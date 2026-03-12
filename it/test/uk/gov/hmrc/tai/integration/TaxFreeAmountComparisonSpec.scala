@@ -21,6 +21,7 @@ import cats.instances.future.*
 import com.github.tomakehurst.wiremock.client.WireMock.{get, ok, urlEqualTo}
 import org.mockito.ArgumentMatchers.eq as eqTo
 import org.mockito.Mockito.{reset, when}
+import play.api.libs.json.{JsArray, Json}
 import play.api.mvc.AnyContentAsEmpty
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{status as getStatus, *}
@@ -28,16 +29,15 @@ import uk.gov.hmrc.http.{HeaderNames, HttpException}
 import uk.gov.hmrc.mongoFeatureToggles.model.{FeatureFlag, FeatureFlagName}
 import uk.gov.hmrc.tai.integration.utils.{FileHelper, IntegrationSpec}
 import uk.gov.hmrc.tai.model.admin.RtiCallToggle
-import play.api.libs.json.Json
-
-import scala.concurrent.Future
 
 class TaxFreeAmountComparisonSpec extends IntegrationSpec {
 
   val apiUrl = s"/tai/$nino/tax-account/tax-free-amount-comparison"
-  def request: FakeRequest[AnyContentAsEmpty.type] = FakeRequest(GET, apiUrl)
-    .withHeaders(HeaderNames.xSessionId -> generateSessionId)
-    .withHeaders(HeaderNames.authorisation -> bearerToken)
+
+  def request: FakeRequest[AnyContentAsEmpty.type] =
+    FakeRequest(GET, apiUrl)
+      .withHeaders(HeaderNames.xSessionId -> generateSessionId)
+      .withHeaders(HeaderNames.authorisation -> bearerToken)
 
   override def beforeEach(): Unit = {
     super.beforeEach()
@@ -60,25 +60,43 @@ class TaxFreeAmountComparisonSpec extends IntegrationSpec {
       server.stubFor(get(urlEqualTo(desTaxCodeHistoryUrl)).willReturn(ok(taxCodeHistoryJson)))
       server.stubFor(get(urlEqualTo(hipTaxAccountUrl)).willReturn(ok(taxAccountHipJson)))
       server.stubFor(get(urlEqualTo(hipTaxAccountHistoryUrl(2))).willReturn(ok(taxAccountHistoryHipJson)))
+
       val result = route(fakeApplication(), request)
+
       result.map(getStatus) mustBe Some(OK)
       result.map(contentAsJson) mustBe Some(Json.parse(expected))
     }
 
-    "return an INTERNAL_SERVER_ERROR response when previous coding component is empty" in {
+    "return an OK response when previous coding component is empty" in {
       server.stubFor(get(urlEqualTo(desTaxCodeHistoryUrl)).willReturn(ok(taxCodeHistoryJson)))
       server.stubFor(get(urlEqualTo(hipTaxAccountUrl)).willReturn(ok(taxAccountHipJson)))
       server.stubFor(get(urlEqualTo(hipTaxAccountHistoryUrl(2))).willReturn(ok(taxAccountHistoryEmptyHipJson)))
+
       val result = route(fakeApplication(), request)
-      result.map(getStatus) mustBe Some(INTERNAL_SERVER_ERROR)
+
+      result.map(getStatus) mustBe Some(OK)
+
+      val json = result.map(contentAsJson).get
+
+      (json \ "data" \ "previous").as[JsArray].value mustBe empty
+      (json \ "data" \ "current").as[JsArray].value must not be empty
+      (json \ "links").as[JsArray].value mustBe empty
     }
 
-    "return an INTERNAL_SERVER_ERROR response when current coding component is empty" in {
+    "return an OK response when current coding component is empty" in {
       server.stubFor(get(urlEqualTo(desTaxCodeHistoryUrl)).willReturn(ok(taxCodeHistoryJson)))
       server.stubFor(get(urlEqualTo(hipTaxAccountUrl)).willReturn(ok(taxAccountEmptyHipJson)))
       server.stubFor(get(urlEqualTo(hipTaxAccountHistoryUrl(2))).willReturn(ok(taxAccountHistoryHipJson)))
+
       val result = route(fakeApplication(), request)
-      result.map(getStatus) mustBe Some(INTERNAL_SERVER_ERROR)
+
+      result.map(getStatus) mustBe Some(OK)
+
+      val json = result.map(contentAsJson).get
+
+      (json \ "data" \ "previous").as[JsArray].value must not be empty
+      (json \ "data" \ "current").as[JsArray].value mustBe empty
+      (json \ "links").as[JsArray].value mustBe empty
     }
 
     "for tax-code-history failures" must {

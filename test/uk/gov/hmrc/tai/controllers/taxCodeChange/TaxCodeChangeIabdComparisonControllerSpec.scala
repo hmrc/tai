@@ -21,7 +21,7 @@ import org.mockito.Mockito.when
 import play.api.libs.json.Json
 import play.api.mvc.Result
 import play.api.test.FakeRequest
-import play.api.test.Helpers.{status, *}
+import play.api.test.Helpers.{contentAsJson, status, *}
 import uk.gov.hmrc.domain.NinoGenerator
 import uk.gov.hmrc.tai.factory.TaxFreeAmountComparisonFactory
 import uk.gov.hmrc.tai.model.TaxFreeAmountComparison
@@ -54,22 +54,21 @@ class TaxCodeChangeIabdComparisonControllerSpec extends BaseSpec {
 
         status(result) mustEqual OK
         contentAsJson(result) mustEqual expectedJson
-
       }
-    }
 
-    "respond with INTERNAL SERVER ERROR" when {
       "when given empty coding components" in {
         val nino = ninoGenerator
 
         val model = TaxFreeAmountComparison(Seq.empty, Seq.empty)
+        val expectedJson = Json.obj("data" -> Json.toJson(model), "links" -> Json.arr())
 
         when(taxFreeAmountComparisonService.taxFreeAmountComparison(meq(nino))(any()))
           .thenReturn(Future.successful(model))
 
         val result: Future[Result] = testController.taxCodeChangeIabdComparison(nino)(FakeRequest())
 
-        status(result) mustEqual INTERNAL_SERVER_ERROR
+        status(result) mustEqual OK
+        contentAsJson(result) mustEqual expectedJson
       }
     }
 

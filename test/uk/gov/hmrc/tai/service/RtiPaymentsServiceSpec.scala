@@ -30,8 +30,6 @@ import uk.gov.hmrc.tai.model.domain.{AnnualAccount, Available, TemporarilyUnavai
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.util.BaseSpec
 
-import scala.concurrent.Future
-
 class RtiPaymentsServiceSpec extends BaseSpec {
 
   private val mockRtiConnector = mock[RtiConnector]
@@ -59,9 +57,9 @@ class RtiPaymentsServiceSpec extends BaseSpec {
       verify(mockRtiConnector, times(1)).getPaymentsForYear(any(), any())(any(), any())
     }
 
-    "return stub account with service unavailable when the connector call fails" in {
+    "return stub account with service unavailable when RTI responds with 444" in {
       when(mockRtiConnector.getPaymentsForYear(any(), any())(any(), any()))
-        .thenReturn(EitherT.leftT(UpstreamErrorResponse("RTI unavailable", INTERNAL_SERVER_ERROR)))
+        .thenReturn(EitherT.leftT(UpstreamErrorResponse("RTI unavailable", 444)))
 
       val result = sut.getRtiPayments(Nino(nino.nino), TaxYear("2023")).value.futureValue
 
@@ -76,9 +74,9 @@ class RtiPaymentsServiceSpec extends BaseSpec {
       )
     }
 
-    "return stub account with service unavailable when RTI responds with BAD_REQUEST" in {
+    "return stub account with service unavailable when RTI responds with SERVICE_UNAVAILABLE" in {
       when(mockRtiConnector.getPaymentsForYear(any(), any())(any(), any()))
-        .thenReturn(EitherT.leftT(UpstreamErrorResponse("Bad request", BAD_REQUEST)))
+        .thenReturn(EitherT.leftT(UpstreamErrorResponse("RTI unavailable", SERVICE_UNAVAILABLE)))
 
       val result = sut.getRtiPayments(Nino(nino.nino), TaxYear("2023")).value.futureValue
 
@@ -91,24 +89,28 @@ class RtiPaymentsServiceSpec extends BaseSpec {
           )
         )
       )
-
     }
 
-    "return stub account with service unavailable when RTI responds with an unexpected error" in {
+    "return the error when RTI responds with BAD_REQUEST" in {
+      val error = UpstreamErrorResponse("Bad request", BAD_REQUEST)
+
       when(mockRtiConnector.getPaymentsForYear(any(), any())(any(), any()))
-        .thenReturn(EitherT.leftT(UpstreamErrorResponse("Unexpected error", INTERNAL_SERVER_ERROR)))
+        .thenReturn(EitherT.leftT(error))
 
       val result = sut.getRtiPayments(Nino(nino.nino), TaxYear("2023")).value.futureValue
 
-      result mustBe Right(
-        Seq(
-          AnnualAccount(
-            sequenceNumber = 0,
-            taxYear = TaxYear("2023"),
-            rtiStatus = TemporarilyUnavailable
-          )
-        )
-      )
+      result mustBe Left(error)
+    }
+
+    "return the error when RTI responds with an unexpected error" in {
+      val error = UpstreamErrorResponse("Unexpected error", INTERNAL_SERVER_ERROR)
+
+      when(mockRtiConnector.getPaymentsForYear(any(), any())(any(), any()))
+        .thenReturn(EitherT.leftT(error))
+
+      val result = sut.getRtiPayments(Nino(nino.nino), TaxYear("2023")).value.futureValue
+
+      result mustBe Left(error)
     }
   }
 }
