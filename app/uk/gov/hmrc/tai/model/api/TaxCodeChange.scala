@@ -18,10 +18,10 @@ package uk.gov.hmrc.tai.model.api
 
 import java.time.LocalDate
 import play.api.libs.json.{Json, OFormat}
-import uk.gov.hmrc.tai.util.DateTimeHelper.dateTimeOrdering
+import uk.gov.hmrc.tai.util.DateTimeHelper.reverseChronologicalDateOrdering
 
 case class TaxCodeChange(current: Seq[TaxCodeSummary], previous: Seq[TaxCodeSummary]) {
-  def latestTaxCodeChangeDate: LocalDate = current.map(_.startDate).min
+  def latestTaxCodeChangeDate: LocalDate = current.map(_.startDate).min(reverseChronologicalDateOrdering)
 
   def primaryCurrentTaxCode: Option[String] = primaryTaxCode(current)
   def secondaryCurrentTaxCodes: Seq[String] = secondaryTaxCode(current)
