@@ -33,28 +33,28 @@ class RtiPaymentsService @Inject() (
   rtiConnector: RtiConnector
 )(implicit ec: ExecutionContext) {
 
+  private val SkipRtiCallStatus = 444
+
   def getRtiPayments(nino: Nino, taxYear: TaxYear)(implicit
     hc: HeaderCarrier,
     request: Request[_]
   ): EitherT[Future, UpstreamErrorResponse, Seq[AnnualAccount]] =
-    rtiConnector
-      .getPaymentsForYear(nino, taxYear)
-      .leftMap {
-        case e if e.statusCode == 444 => e.copy(statusCode = SERVICE_UNAVAILABLE, reportAs = SERVICE_UNAVAILABLE)
-        case e                        => e
-      }
-      .transform {
-        case Right(accounts) => Right(accounts)
-        case Left(e) if e.statusCode == SERVICE_UNAVAILABLE =>
-          Right(
-            Seq(
-              AnnualAccount(
-                sequenceNumber = 0,
-                taxYear = taxYear,
-                rtiStatus = TemporarilyUnavailable
-              )
+    rtiConnector.getPaymentsForYear(nino, taxYear).transform {
+      case Right(accounts) =>
+        Right(accounts)
+
+      case Left(e) if e.statusCode == SkipRtiCallStatus || e.statusCode == SERVICE_UNAVAILABLE =>
+        Right(
+          Seq(
+            AnnualAccount(
+              sequenceNumber = 0,
+              taxYear = taxYear,
+              rtiStatus = TemporarilyUnavailable
             )
           )
-        case Left(e) => Left(e)
-      }
+        )
+
+      case Left(e) =>
+        Left(e)
+    }
 }
