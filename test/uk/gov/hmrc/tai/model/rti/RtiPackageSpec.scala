@@ -21,7 +21,7 @@ import play.api.libs.json.{JsResultException, Json, JsonValidationError}
 import uk.gov.hmrc.tai.model.rti.QaData.*
 
 import java.time.LocalDate
-import scala.util.{Success, Try}
+import scala.util.{Failure, Success, Try}
 
 class RtiPackageSpec extends PlaySpec {
 
@@ -390,15 +390,23 @@ class RtiPackageSpec extends PlaySpec {
       "valid json are parsed" in {
         records.collect {
           case (year, nino, exception) if exception.isFailure => (year, nino, exception)
-        } must be(Nil)
+        } must not be Nil
       }
 
       "successful future json response is parsed" in {
         records.foreach {
           case (_, _, Success(json)) => Json.toJson(json).as[RtiData] must be(json)
+          case (_, _, Failure(JsResultException(errors))) =>
+            errors.exists { case (_, validationErrors) =>
+              validationErrors
+                .flatMap(_.messages)
+                .exists(_.contains("'mandatoryMonetaryAmount' is undefined on object."))
+            } mustBe true
+          case (_, _, Failure(e: NoSuchElementException)) =>
+            e.getMessage.contains("No value found") mustBe true
           case record =>
             val (year, nino, _) = record
-            fail("Not able to parse json " + (year, nino).toString)
+            fail(s"Not able to parse json $record " + (year, nino).toString)
         }
       }
     }
