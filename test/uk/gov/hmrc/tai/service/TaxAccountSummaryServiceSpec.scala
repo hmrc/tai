@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 HM Revenue & Customs
+ * Copyright 2026 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -327,13 +327,13 @@ class TaxAccountSummaryServiceSpec extends BaseSpec {
         val result = createSUT().taxAccountSummary(nino, TaxYear())(implicitly, FakeRequest()).futureValue
 
         result mustBe TaxAccountSummary(
-          BigDecimal(1111),
-          BigDecimal(-620),
+          Some(BigDecimal(1111)),
+          Some(BigDecimal(-620)),
           BigDecimal(67.46),
           BigDecimal(0),
           BigDecimal(0),
-          BigDecimal(0),
-          BigDecimal(10000),
+          Some(BigDecimal(0)),
+          Some(BigDecimal(10000)),
           Some(LocalDate.of(2026, 1, 1))
         )
       }
@@ -395,8 +395,8 @@ class TaxAccountSummaryServiceSpec extends BaseSpec {
 
         val result = createSUT().taxAccountSummary(nino, TaxYear())(implicitly, FakeRequest()).futureValue
 
-        result.totalEstimatedIncome mustBe 22000
-        result.taxFreeAllowance mustBe 1000
+        result.totalEstimatedIncome.value mustBe 22000
+        result.taxFreeAllowance.value mustBe 1000
       }
 
       "tax free allowance is zero" in {
@@ -423,8 +423,8 @@ class TaxAccountSummaryServiceSpec extends BaseSpec {
 
         val result = createSUT().taxAccountSummary(nino, TaxYear())(implicitly, FakeRequest()).futureValue
 
-        result.totalEstimatedIncome mustBe BigDecimal(1000)
-        result.taxFreeAllowance mustBe BigDecimal(0)
+        result.totalEstimatedIncome.value mustBe BigDecimal(1000)
+        result.taxFreeAllowance.value mustBe BigDecimal(0)
       }
     }
     "return TaxAccount summary with total estimated income and total estimated tax" when {
@@ -450,8 +450,8 @@ class TaxAccountSummaryServiceSpec extends BaseSpec {
 
         val result = createSUT().taxAccountSummary(nino, TaxYear())(implicitly, FakeRequest()).futureValue
 
-        result.totalEstimatedIncome mustBe BigDecimal(8000)
-        result.taxFreeAllowance mustBe BigDecimal(11500)
+        result.totalEstimatedIncome.value mustBe BigDecimal(8000)
+        result.taxFreeAllowance.value mustBe BigDecimal(11500)
       }
     }
   }
