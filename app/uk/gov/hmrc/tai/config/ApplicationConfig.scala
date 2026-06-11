@@ -35,6 +35,11 @@ class PdfConfig @Inject() (servicesConfig: ServicesConfig) extends BaseConfig {
 }
 
 @Singleton
+class FandFConfig @Inject() (servicesConfig: ServicesConfig) extends BaseConfig {
+  lazy val baseURL: String = servicesConfig.baseUrl("fandf")
+}
+
+@Singleton
 class PayeConfig @Inject() (servicesConfig: ServicesConfig) extends BaseConfig {
   lazy val baseURL: String = servicesConfig.baseUrl("paye")
 }
