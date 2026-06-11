@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2026 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,14 +36,14 @@ class CompanyCarBenefitController @Inject() (
   ec: ExecutionContext
 ) extends BackendController(cc) {
 
-  def companyCarBenefits(nino: Nino): Action[AnyContent] = authentication.authWithUserDetails.async {
-    implicit request =>
+  def companyCarBenefits(nino: Nino): Action[AnyContent] =
+    authentication.authWithUserDetails(nino).async { implicit request =>
       companyCarBenefitService.companyCarBenefits(nino).map {
         case Nil => NotFound
         case c =>
           implicit val apiResponseWrites: Writes[ApiResponse[JsValue]] = ApiResponse.apiFormat[JsValue]
           Ok(Json.toJson(ApiResponse(Json.obj("companyCarBenefits" -> c.map(Json.toJson(_))), Nil)))
       }
-  }
+    }
 
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2026 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,26 +36,29 @@ class TaxCodeChangeController @Inject() (
   ec: ExecutionContext
 ) extends BackendController(cc) {
 
-  def hasTaxCodeChanged(nino: Nino): Action[AnyContent] = authentication.authWithUserDetails.async { implicit request =>
-    taxCodeChangeService.hasTaxCodeChanged(nino).map { taxCodeChanged =>
-      Ok(Json.toJson(taxCodeChanged))
+  def hasTaxCodeChanged(nino: Nino): Action[AnyContent] =
+    authentication.authWithUserDetails(nino).async { implicit request =>
+      taxCodeChangeService.hasTaxCodeChanged(nino).map { taxCodeChanged =>
+        Ok(Json.toJson(taxCodeChanged))
+      }
     }
-  }
 
-  def taxCodeChange(nino: Nino): Action[AnyContent] = authentication.authWithUserDetails.async { implicit request =>
-    taxCodeChangeService.taxCodeChange(nino) map { taxCodeChange =>
-      Ok(Json.toJson(ApiResponse(taxCodeChange, Seq.empty)))
+  def taxCodeChange(nino: Nino): Action[AnyContent] =
+    authentication.authWithUserDetails(nino).async { implicit request =>
+      taxCodeChangeService.taxCodeChange(nino) map { taxCodeChange =>
+        Ok(Json.toJson(ApiResponse(taxCodeChange, Seq.empty)))
+      }
     }
-  }
 
-  def taxCodeMismatch(nino: Nino): Action[AnyContent] = authentication.authWithUserDetails.async { implicit request =>
-    taxCodeChangeService.taxCodeMismatch(nino).map { taxCodeMismatch =>
-      Ok(Json.toJson(ApiResponse(taxCodeMismatch, Seq.empty)))
+  def taxCodeMismatch(nino: Nino): Action[AnyContent] =
+    authentication.authWithUserDetails(nino).async { implicit request =>
+      taxCodeChangeService.taxCodeMismatch(nino).map { taxCodeMismatch =>
+        Ok(Json.toJson(ApiResponse(taxCodeMismatch, Seq.empty)))
+      }
     }
-  }
 
   def mostRecentTaxCodeRecords(nino: Nino, year: TaxYear): Action[AnyContent] =
-    authentication.authWithUserDetails.async { implicit request =>
+    authentication.authWithUserDetails(nino).async { implicit request =>
       val latestTaxCodeRecords = taxCodeChangeService.latestTaxCodes(nino, year)
 
       latestTaxCodeRecords.map { records =>
