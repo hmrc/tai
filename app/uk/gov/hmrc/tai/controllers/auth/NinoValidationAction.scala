@@ -54,7 +54,7 @@ class NinoValidationAction @Inject() (
                   None
                 } else {
                   logger.error(
-                    s"[NinoValidationAction.validateNino] NINO validation failed. URL NINO does not match authenticated user."
+                    s"[NinoValidationAction.validateNino] NINO validation failed. Request NINO did not match authenticated or delegated NINO"
                   )
                   Some(InternalServerError("NINO validation failed"))
                 }
@@ -62,7 +62,7 @@ class NinoValidationAction @Inject() (
 
           case None =>
             logger.error(
-              s"[NinoValidationAction.validateNino] Unable to retrieve authenticated NINO for request NINO"
+              s"[NinoValidationAction.validateNino] Unable to retrieve authenticated NINO."
             )
             Future.successful(Some(InternalServerError("NINO validation failed")))
         }
