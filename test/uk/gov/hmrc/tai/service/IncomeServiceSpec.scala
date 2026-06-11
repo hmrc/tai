@@ -31,9 +31,9 @@ import uk.gov.hmrc.tai.config.IncomeDetailsConfig
 import uk.gov.hmrc.tai.connectors.{CitizenDetailsConnector, TaxAccountConnector}
 import uk.gov.hmrc.tai.model.ETag
 import uk.gov.hmrc.tai.model.api.EmploymentCollection
-import uk.gov.hmrc.tai.model.domain.{PensionIncome, *}
 import uk.gov.hmrc.tai.model.domain.income.*
 import uk.gov.hmrc.tai.model.domain.response.*
+import uk.gov.hmrc.tai.model.domain.*
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.service.helper.TaxCodeIncomeHelper
 import uk.gov.hmrc.tai.util.BaseSpec
@@ -1430,5 +1430,37 @@ class IncomeServiceSpec @Inject (config: IncomeDetailsConfig) extends BaseSpec {
       verify(mockEmploymentService).employmentsWithoutRtiAsEitherT(meq(nino), meq(currentTaxYear))(any[HeaderCarrier])
       verifyNoMoreInteractions(mockEmploymentService)
     }
+  }
+
+  "not log a warning when a PensionIncome has no matching employment" in {
+    val taxCodeIncomes = Seq(
+      TaxCodeIncome(
+        PensionIncome,
+        Some(99),
+        BigDecimal(0),
+        "PensionIncome",
+        "1150L",
+        "Pension Provider",
+        OtherBasisOperation,
+        Live,
+        BigDecimal(0),
+        BigDecimal(0),
+        BigDecimal(0)
+      )
+    )
+
+    val mockEmploymentService = mock[EmploymentService]
+    val mockTaxCodeIncomeHelper = mock[TaxCodeIncomeHelper]
+
+    when(mockTaxCodeIncomeHelper.fetchTaxCodeIncomes(any(), any())(any()))
+      .thenReturn(Future.successful(taxCodeIncomes))
+
+    when(mockEmploymentService.employmentsAsEitherT(any[Nino], any[TaxYear])(any[HeaderCarrier], any()))
+      .thenReturn(EitherT.rightT(Employments(Seq.empty, None)))
+
+    val sut = createSUT(employmentService = mockEmploymentService, taxCodeIncomeHelper = mockTaxCodeIncomeHelper)
+    val result = sut.taxCodeIncomes(nino, TaxYear())(HeaderCarrier(), FakeRequest()).futureValue
+
+    result mustBe taxCodeIncomes
   }
 }

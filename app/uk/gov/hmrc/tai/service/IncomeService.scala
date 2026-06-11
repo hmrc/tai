@@ -19,8 +19,8 @@ package uk.gov.hmrc.tai.service
 import cats.data.EitherT
 import com.google.inject.{Inject, Singleton}
 import play.api.Logging
-import play.api.mvc.Request
 import play.api.http.Status.NOT_FOUND
+import play.api.mvc.Request
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.{HeaderCarrier, UpstreamErrorResponse}
 import uk.gov.hmrc.tai.audit.Auditor
@@ -88,17 +88,19 @@ class IncomeService @Inject() (
     request: Request[_]
   ): Future[Seq[TaxCodeIncome]] = {
     lazy val eventualIncomes = taxCodeIncomeHelper.fetchTaxCodeIncomes(nino, year)
-    lazy val eventualEmployments = employmentService
+    lazy val eventualEmployments: Future[(Employments, Boolean)] = employmentService
       .employmentsAsEitherT(nino, year)
-      .leftMap { error =>
-        logger.warn(s"EmploymentService.employments - failed to retrieve employments: ${error.getMessage}")
-        Employments(Seq.empty[Employment], None)
-      }
-      .merge
+      .fold(
+        { error =>
+          logger.warn(s"EmploymentService.employments - failed to retrieve employments: ${error.getMessage}")
+          (Employments(Seq.empty[Employment], None), true)
+        },
+        employments => (employments, false)
+      )
 
     for {
-      employments <- eventualEmployments
-      taxCodes    <- eventualIncomes
+      (employments, hadUpstreamFailure) <- eventualEmployments
+      taxCodes                          <- eventualIncomes
     } yield {
       val map = employments.employments.groupBy(_.sequenceNumber)
       taxCodes.map { taxCode =>
@@ -107,10 +109,19 @@ class IncomeService @Inject() (
           employment <- map.get(id).flatMap(_.headOption)
         } yield employment.employmentStatus
 
-        if (employmentStatus.isEmpty) {
-          logger.error(
-            s"No employment found with id `${taxCode.employmentId} in employment details API for nino `${nino.nino}` and tax year `${year.year}`. See DDCNL-9780"
-          )
+        if (employmentStatus.isEmpty && !hadUpstreamFailure) {
+          taxCode.componentType match {
+            case PensionIncome =>
+              logger.debug(
+                s"No employment found for PensionIncome with id `${taxCode.employmentId
+                    .getOrElse("None")}` for nino `${nino.nino}` and tax year `${year.year}`"
+              )
+            case _ =>
+              logger.warn(
+                s"No employment found with id `${taxCode.employmentId
+                    .getOrElse("None")}` in employment details API for nino `${nino.nino}` and tax year `${year.year}`"
+              )
+          }
         }
 
         taxCode.copy(status = employmentStatus.getOrElse(taxCode.status))
