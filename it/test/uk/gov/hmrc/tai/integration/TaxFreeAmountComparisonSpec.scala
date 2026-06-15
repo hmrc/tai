@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2026 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,7 @@ package uk.gov.hmrc.tai.integration
 
 import cats.data.EitherT
 import cats.instances.future.*
-import com.github.tomakehurst.wiremock.client.WireMock.{get, ok, urlEqualTo}
+import com.github.tomakehurst.wiremock.client.WireMock.{get, ok, post, urlEqualTo}
 import org.mockito.ArgumentMatchers.eq as eqTo
 import org.mockito.Mockito.{reset, when}
 import play.api.mvc.AnyContentAsEmpty
@@ -79,6 +79,47 @@ class TaxFreeAmountComparisonSpec extends IntegrationSpec {
       server.stubFor(get(urlEqualTo(hipTaxAccountHistoryUrl(2))).willReturn(ok(taxAccountHistoryHipJson)))
       val result = route(fakeApplication(), request)
       result.map(getStatus) mustBe Some(INTERNAL_SERVER_ERROR)
+    }
+
+    "return an INTERNAL_SERVER_ERROR response when the NINO in the URL does not match the authenticated NINO" in {
+      val otherNino = "BB123456B"
+      val mismatchedNinoAuthResponse =
+        s"""
+           |{
+           |    "confidenceLevel": 200,
+           |    "nino": "$otherNino",
+           |    "name": {"name": "John", "lastName": "Smith"},
+           |    "loginTimes": { "currentLogin": "2021-06-07T10:52:02.594Z", "previousLogin": null},
+           |    "optionalCredentials": {"providerId": "4911434741952698", "providerType": "GovernmentGateway"},
+           |    "authProviderId": {"ggCredId": "xyz"},
+           |    "externalId": "testExternalId"
+           |}
+           |""".stripMargin
+
+      server.stubFor(post(urlEqualTo(authUrl)).willReturn(ok(mismatchedNinoAuthResponse)))
+      server.stubFor(get(urlEqualTo(desTaxCodeHistoryUrl)).willReturn(ok(taxCodeHistoryJson)))
+      server.stubFor(get(urlEqualTo(hipTaxAccountUrl)).willReturn(ok(taxAccountHipJson)))
+
+      val result = route(fakeApplication(), request).get
+
+      getStatus(result) mustBe INTERNAL_SERVER_ERROR
+      contentAsString(result) mustBe "NINO validation failed"
+    }
+
+    "return an INTERNAL_SERVER_ERROR response when authenticated NINO matches but delegated helpee NINO does not" in {
+      val trustedHelperResponse = """
+                                    |{
+                                    |  "principalName":"John",
+                                    |  "attorneyName":"attorney",
+                                    |  "returnLinkUrl":"returnUrl",
+                                    |  "principalNino":"BB123456B"
+                                    |}""".stripMargin
+      server.stubFor(get(urlEqualTo("/delegation/get")).willReturn(ok(trustedHelperResponse)))
+
+      val result = route(fakeApplication(), request).get
+
+      getStatus(result) mustBe INTERNAL_SERVER_ERROR
+      contentAsString(result) mustBe "NINO validation failed"
     }
 
     "for tax-code-history failures" must {
