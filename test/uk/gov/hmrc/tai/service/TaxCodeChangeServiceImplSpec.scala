@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2026 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -2256,6 +2256,20 @@ class TaxCodeChangeServiceImplSpec
 
         latestTaxCodes.sortBy(_.employerName) mustEqual expectedResult.sortBy(_.employerName)
       }
+    }
+  }
+
+  "getTaxCodeHistory" should {
+    "return tax code history from connector" in {
+      val taxYear = TaxYear()
+      val taxCodeHistory = TaxCodeHistory(
+        nino = nino.withoutSuffix,
+        taxCodeRecord = Seq(TaxCodeRecordFactory.createPrimaryEmployment())
+      )
+      when(taxCodeHistoryConnector.taxCodeHistory(nino, taxYear)(hc))
+        .thenReturn(Future.successful(taxCodeHistory))
+
+      SUT.getTaxCodeHistory(nino, taxYear).futureValue mustBe taxCodeHistory
     }
   }
 
