@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2026 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -47,7 +47,7 @@ class EmployeeExpensesController @Inject() (
     callUpdateEmployeeExpensesData(nino, year, iabd, EmployeeExpensesController.internet)
 
   private def callUpdateEmployeeExpensesData(nino: Nino, year: TaxYear, iabd: Int, source: Int): Action[JsValue] =
-    authentication.authForEmployeeExpenses.async(parse.json) { implicit request =>
+    authentication.authForEmployeeExpenses(nino).async(parse.json) { implicit request =>
       withJsonBody[IabdUpdateExpensesRequest] { iabdUpdateExpensesRequest =>
         employeeExpensesService
           .updateEmployeeExpensesData(
@@ -67,7 +67,7 @@ class EmployeeExpensesController @Inject() (
     }
 
   def getEmployeeExpensesData(nino: Nino, year: Int, iabd: Int): Action[AnyContent] =
-    authentication.authForEmployeeExpenses.async { implicit request =>
+    authentication.authForEmployeeExpenses(nino).async { implicit request =>
       iabdService.retrieveIabdDetails(nino, TaxYear(year), iabd).map { iabdData =>
         Ok(Json.toJson(iabdData)(Writes.seq(IabdDetails.publicWrites)))
       } recover { case ex: IllegalArgumentException =>

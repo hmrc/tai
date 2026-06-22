@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2026 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,8 +37,8 @@ class TaxCodeChangeIabdComparisonController @Inject() (
   ec: ExecutionContext
 ) extends BackendController(cc) with Logging {
 
-  def taxCodeChangeIabdComparison(nino: Nino): Action[AnyContent] = authentication.authWithUserDetails.async {
-    implicit request =>
+  def taxCodeChangeIabdComparison(nino: Nino): Action[AnyContent] =
+    authentication.authWithUserDetails(nino).async { implicit request =>
       taxFreeAmountComparisonService.taxFreeAmountComparison(nino).map { (comparison: TaxFreeAmountComparison) =>
         if (comparison.previous.isEmpty || comparison.next.isEmpty) {
           val ex = new RuntimeException("No tax code change data found")
@@ -48,6 +48,6 @@ class TaxCodeChangeIabdComparisonController @Inject() (
           Ok(Json.toJson(ApiResponse(Json.toJson(comparison), Seq.empty)))
         }
       }
-  }
+    }
 
 }

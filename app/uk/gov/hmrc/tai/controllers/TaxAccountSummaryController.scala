@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2026 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,7 +39,7 @@ class TaxAccountSummaryController @Inject() (
 ) extends BackendController(cc) with NpsExceptions {
 
   def taxAccountSummaryForYear(nino: Nino, year: TaxYear): Action[AnyContent] =
-    authentication.authWithUserDetails.async { implicit request =>
+    authentication.authWithUserDetails(nino).async { implicit request =>
       taxAccountSummaryService.taxAccountSummary(nino, year) map { taxAccountSummary =>
         Ok(Json.toJson(ApiResponse(taxAccountSummary, Nil)))
       }

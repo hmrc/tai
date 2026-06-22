@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 HM Revenue & Customs
+ * Copyright 2026 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,7 +39,7 @@ class RtiPaymentsController @Inject() (
     extends BackendController(cc) {
 
   def rtiPayments(nino: Nino, taxYear: TaxYear): Action[AnyContent] =
-    authentication.authWithUserDetails.async { implicit request =>
+    authentication.authWithUserDetails(nino).async { implicit request =>
       rtiPaymentsService
         .getRtiPayments(nino, taxYear)
         .bimap(

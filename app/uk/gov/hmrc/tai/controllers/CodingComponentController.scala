@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2026 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,7 +39,7 @@ class CodingComponentController @Inject() (
 ) extends BackendController(cc) {
 
   def codingComponentsForYear(nino: Nino, year: TaxYear): Action[AnyContent] =
-    authentication.authWithUserDetails.async { implicit request =>
+    authentication.authWithUserDetails(nino).async { implicit request =>
       codingComponentService.codingComponents(nino, year) map { codingComponentList =>
         Ok(Json.toJson(ApiResponse(Json.toJson(codingComponentList)(Writes.seq(codingComponentWrites)), Nil)))
       }
