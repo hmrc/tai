@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2026 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,21 +43,22 @@ class IncomeController @Inject() (
   ec: ExecutionContext
 ) extends BackendController(cc) {
 
-  def untaxedInterest(nino: Nino): Action[AnyContent] = authentication.authWithUserDetails.async { implicit request =>
-    incomeService.untaxedInterest(nino).map {
-      case Some(untaxedInterest) => Ok(Json.toJson(ApiResponse(untaxedInterest, Nil)))
-      case None                  => NotFound
+  def untaxedInterest(nino: Nino): Action[AnyContent] =
+    authentication.authWithUserDetails(nino).async { implicit request =>
+      incomeService.untaxedInterest(nino).map {
+        case Some(untaxedInterest) => Ok(Json.toJson(ApiResponse(untaxedInterest, Nil)))
+        case None                  => NotFound
+      }
     }
-  }
 
-  def taxCodeIncomesForYear(nino: Nino, year: TaxYear): Action[AnyContent] = authentication.authWithUserDetails.async {
-    implicit request =>
+  def taxCodeIncomesForYear(nino: Nino, year: TaxYear): Action[AnyContent] =
+    authentication.authWithUserDetails(nino).async { implicit request =>
       incomeService.taxCodeIncomes(nino, year).map {
         case Seq() => NotFound
         case taxCodeIncomes =>
           Ok(Json.toJson(ApiResponse(Json.toJson(taxCodeIncomes), Nil)))
       }
-  }
+    }
 
   def matchedTaxCodeIncomesForYear(
     nino: Nino,

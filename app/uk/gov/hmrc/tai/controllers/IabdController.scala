@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2026 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,7 +40,7 @@ class IabdController @Inject() (
 ) extends BackendController(cc) {
 
   def getIabds(nino: Nino, year: TaxYear): Action[AnyContent] =
-    authentication.authWithUserDetails.async { implicit request =>
+    authentication.authWithUserDetails(nino).async { implicit request =>
       val iabdType = request.queryString.get("iabdType").flatMap(_.headOption).getOrElse("27").toInt
       iabdService.retrieveIabdDetails(nino, year, iabdType).map { iabdDetails =>
         Ok(

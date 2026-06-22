@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2026 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,8 +42,8 @@ class EmploymentsController @Inject() (
 )(implicit ec: ExecutionContext)
     extends BackendController(cc) with Logging {
 
-  def employments(nino: Nino, year: TaxYear): Action[AnyContent] = authentication.authForEmployeeExpenses.async {
-    implicit request =>
+  def employments(nino: Nino, year: TaxYear): Action[AnyContent] =
+    authentication.authForEmployeeExpenses(nino).async { implicit request =>
       employmentService
         .employmentsAsEitherT(nino, year)
         .bimap(
@@ -51,10 +51,10 @@ class EmploymentsController @Inject() (
           employments => Ok(Json.toJson(ApiResponse(EmploymentCollection(employments.employments, None), Nil)))
         )
         .merge
-  }
+    }
 
   def employmentOnly(nino: Nino, id: Int, year: TaxYear): Action[AnyContent] =
-    authentication.authWithUserDetails.async { implicit request =>
+    authentication.authWithUserDetails(nino).async { implicit request =>
       employmentService
         .employmentWithoutRTIAsEitherT(nino, id, year)
         .bimap(
@@ -70,8 +70,8 @@ class EmploymentsController @Inject() (
         .merge
     }
 
-  def employmentsOnly(nino: Nino, year: TaxYear): Action[AnyContent] = authentication.authWithUserDetails.async {
-    implicit request =>
+  def employmentsOnly(nino: Nino, year: TaxYear): Action[AnyContent] =
+    authentication.authWithUserDetails(nino).async { implicit request =>
       employmentService
         .employmentsWithoutRtiAsEitherT(nino, year)
         .bimap(
@@ -79,22 +79,21 @@ class EmploymentsController @Inject() (
           employments => Ok(Json.toJson(ApiResponse(employments, Nil)))
         )
         .merge
-  }
+    }
 
   def getEmploymentsByStatusAndType(
     nino: Nino,
     year: TaxYear,
     incomeType: TaxCodeIncomeComponentType,
     status: TaxCodeIncomeStatus
-  ): Action[AnyContent] = authentication.authWithUserDetails.async { implicit request =>
+  ): Action[AnyContent] = authentication.authWithUserDetails(nino).async { implicit request =>
     employmentService
       .employmentsWithoutRtiAsEitherT(nino, year)
       .bimap(
         error => customErrorHandler.handleControllerErrorStatuses(error),
         employmentsCollection => {
-          val filteredEmployments = employmentsCollection.employments.filter(employment =>
-            employment.employmentType == incomeType && employment.employmentStatus == status
-          )
+          val filteredEmployments = employmentsCollection.employments
+            .filter(employment => employment.employmentType == incomeType && employment.employmentStatus == status)
           if (filteredEmployments.isEmpty) {
             NotFound(s"No Employment with income type `$incomeType` and status `$status` found")
           } else {
@@ -107,8 +106,8 @@ class EmploymentsController @Inject() (
       .merge
   }
 
-  def endEmployment(nino: Nino, id: Int): Action[JsValue] = authentication.authWithUserDetails.async(parse.json) {
-    implicit request =>
+  def endEmployment(nino: Nino, id: Int): Action[JsValue] =
+    authentication.authWithUserDetails(nino).async(parse.json) { implicit request =>
       withJsonBody[EndEmployment] { endEmployment =>
         employmentService
           .endEmployment(nino, id, endEmployment)
@@ -117,28 +116,28 @@ class EmploymentsController @Inject() (
             envelopeId => Ok(Json.toJson(ApiResponse(envelopeId, Nil)))
           )
       }
-  }
+    }
 
-  def addEmployment(nino: Nino): Action[JsValue] = authentication.authWithUserDetails.async(parse.json) {
-    implicit request =>
+  def addEmployment(nino: Nino): Action[JsValue] =
+    authentication.authWithUserDetails(nino).async(parse.json) { implicit request =>
       withJsonBody[AddEmployment] { employment =>
         employmentService.addEmployment(nino, employment) map (envelopeId =>
           Ok(Json.toJson(ApiResponse(envelopeId, Nil)))
         )
       }
-  }
+    }
 
-  def incorrectEmployment(nino: Nino, id: Int): Action[JsValue] = authentication.authWithUserDetails.async(parse.json) {
-    implicit request =>
+  def incorrectEmployment(nino: Nino, id: Int): Action[JsValue] =
+    authentication.authWithUserDetails(nino).async(parse.json) { implicit request =>
       withJsonBody[IncorrectEmployment] { employment =>
         employmentService.incorrectEmployment(nino, id, employment) map (envelopeId =>
           Ok(Json.toJson(ApiResponse(envelopeId, Nil)))
         )
       }
-  }
+    }
 
   def updatePreviousYearIncome(nino: Nino, taxYear: TaxYear): Action[JsValue] =
-    authentication.authWithUserDetails.async(parse.json) { implicit request =>
+    authentication.authWithUserDetails(nino).async(parse.json) { implicit request =>
       withJsonBody[IncorrectEmployment] { employment =>
         employmentService.updatePreviousYearIncome(nino, taxYear, employment) map (envelopeId =>
           Ok(Json.toJson(ApiResponse(envelopeId, Nil)))

@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2026 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,15 +38,15 @@ class BenefitsController @Inject() (
   ec: ExecutionContext
 ) extends BackendController(cc) {
 
-  def benefits(nino: Nino, taxYear: TaxYear): Action[AnyContent] = authentication.authWithUserDetails.async {
-    implicit request =>
+  def benefits(nino: Nino, taxYear: TaxYear): Action[AnyContent] =
+    authentication.authWithUserDetails(nino).async { implicit request =>
       benefitService.benefits(nino, taxYear).map { (benefitsFromService: Benefits) =>
         Ok(Json.toJson(ApiResponse(benefitsFromService, Nil)))
       }
-  }
+    }
 
   def removeCompanyBenefits(nino: Nino, empId: Int): Action[JsValue] =
-    authentication.authWithUserDetails.async(parse.json) { implicit request =>
+    authentication.authWithUserDetails(nino).async(parse.json) { implicit request =>
       withJsonBody[RemoveCompanyBenefit] { removeCompanyBenefit =>
         benefitService.removeCompanyBenefits(nino, removeCompanyBenefit) map (envelopeId =>
           Ok(Json.toJson(ApiResponse(envelopeId, Nil)))

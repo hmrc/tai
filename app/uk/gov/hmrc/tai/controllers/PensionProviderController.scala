@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2026 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,17 +38,17 @@ class PensionProviderController @Inject() (
   ec: ExecutionContext
 ) extends BackendController(cc) {
 
-  def addPensionProvider(nino: Nino): Action[JsValue] = authentication.authWithUserDetails.async(parse.json) {
-    implicit request =>
+  def addPensionProvider(nino: Nino): Action[JsValue] =
+    authentication.authWithUserDetails(nino).async(parse.json) { implicit request =>
       withJsonBody[AddPensionProvider] { pensionProvider =>
         pensionProviderService.addPensionProvider(nino, pensionProvider) map (envelopeId =>
           Ok(Json.toJson(ApiResponse(envelopeId, Nil)))
         )
       }
-  }
+    }
 
   def incorrectPensionProvider(nino: Nino, id: Int): Action[JsValue] =
-    authentication.authWithUserDetails.async(parse.json) { implicit request =>
+    authentication.authWithUserDetails(nino).async(parse.json) { implicit request =>
       withJsonBody[IncorrectPensionProvider] { incorrectPension =>
         pensionProviderService.incorrectPensionProvider(nino, id, incorrectPension) map (envelopeId =>
           Ok(Json.toJson(ApiResponse(envelopeId, Nil)))

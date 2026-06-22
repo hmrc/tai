@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 HM Revenue & Customs
+ * Copyright 2026 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ package uk.gov.hmrc.tai.util
 
 import play.api.mvc.*
 import play.api.test.Helpers
+import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.tai.controllers.auth.AuthJourney
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -30,7 +31,11 @@ object FakeAuthJourney extends AuthJourney {
 
   override val authWithUserDetails: ActionBuilderFixture = actionBuilderFixture
 
+  override def authWithUserDetails(nino: Nino): ActionBuilderFixture = actionBuilderFixture
+
   override val authForEmployeeExpenses: ActionBuilderFixture = actionBuilderFixture
+
+  override def authForEmployeeExpenses(nino: Nino): ActionBuilderFixture = actionBuilderFixture
 }
 
 trait ActionBuilderFixture extends ActionBuilder[Request, AnyContent] {

@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2026 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -89,10 +89,7 @@ trait IntegrationSpec
          |}
          |""".stripMargin
 
-    server.stubFor(
-      post(urlEqualTo("/auth/authorise"))
-        .willReturn(ok(authResponse))
-    )
+    server.stubFor(post(urlEqualTo(authUrl)).willReturn(ok(authResponse)))
 
     server.stubFor(
       post(urlEqualTo("/pertax/authorise"))
@@ -121,6 +118,8 @@ trait IntegrationSpec
       "microservice.services.hip-hod.host"         -> "127.0.0.1",
       "microservice.services.pertax.host"          -> "127.0.0.1",
       "microservice.services.pertax.port"          -> server.port(),
+      "microservice.services.fandf.host"           -> "127.0.0.1",
+      "microservice.services.fandf.port"           -> server.port(),
       "auditing.enabled"                           -> false,
       "cache.isEnabled"                            -> false
     )
@@ -146,6 +145,7 @@ trait IntegrationSpec
   val npsEmploymentUrl = s"/nps-hod-service/services/nps/person/$nino/employment/$year"
   val hipEmploymentUrl = s"/v1/api/employment/employee/$nino/tax-year/$year/employment-details"
   val rtiUrl = s"/rti/individual/payments/nino/${nino.withoutSuffix}/tax-year/${TaxYear().twoDigitRange}"
+  val authUrl = "/auth/authorise"
 
   val taxAccountJson: String = FileHelper.loadFile("taxAccount.json")
   val taxAccountHipJson: String = FileHelper.loadFile("taxAccountHip.json")
