@@ -34,11 +34,10 @@ class TaxCodeHistoryController @Inject() (
   cc: ControllerComponents
 )(implicit ec: ExecutionContext)
     extends BackendController(cc) {
-  // TODO: pass nino to authWithUserDetails once DDCNL-12026 is merged
-  def taxCodeHistory(nino: Nino, year: TaxYear): Action[AnyContent] = authentication.authWithUserDetails.async {
-    implicit request =>
+  def taxCodeHistory(nino: Nino, year: TaxYear): Action[AnyContent] =
+    authentication.authWithUserDetails(nino).async { implicit request =>
       taxCodeChangeService.getTaxCodeHistory(nino, year) map { taxCodeHistory =>
         Ok(Json.toJson(ApiResponse(taxCodeHistory, Seq.empty)))
       }
-  }
+    }
 }
