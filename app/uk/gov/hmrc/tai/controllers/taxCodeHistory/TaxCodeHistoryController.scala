@@ -36,7 +36,7 @@ class TaxCodeHistoryController @Inject() (
     extends BackendController(cc) {
   def taxCodeHistory(nino: Nino, year: TaxYear): Action[AnyContent] =
     authentication.authWithUserDetails(nino).async { implicit request =>
-      taxCodeChangeService.getTaxCodeHistory(nino, year) map { taxCodeHistory =>
+      taxCodeChangeService.taxCodeHistory(nino, year) map { taxCodeHistory =>
         Ok(Json.toJson(ApiResponse(taxCodeHistory, Seq.empty)))
       }
     }

@@ -46,7 +46,7 @@ class TaxCodeHistoryControllerSpec extends BaseSpec {
 
       val expectedResponse = Json.toJson(ApiResponse(taxCodeHistory, Seq.empty))
 
-      when(taxCodeService.getTaxCodeHistory(any(), any())(any()))
+      when(taxCodeService.taxCodeHistory(any(), any())(any()))
         .thenReturn(Future.successful(taxCodeHistory))
 
       val result = controller.taxCodeHistory(testNino, TaxYear())(FakeRequest())
@@ -57,7 +57,7 @@ class TaxCodeHistoryControllerSpec extends BaseSpec {
 
     "respond with BAD_GATEWAY when a bad gateway exception occurs" in {
 
-      when(taxCodeService.getTaxCodeHistory(any(), any())(any()))
+      when(taxCodeService.taxCodeHistory(any(), any())(any()))
         .thenReturn(Future.failed(badGatewayException))
 
       checkControllerResponse(
@@ -69,7 +69,7 @@ class TaxCodeHistoryControllerSpec extends BaseSpec {
 
     "respond with NOT_FOUND when a NotFoundException occurs" in {
 
-      when(taxCodeService.getTaxCodeHistory(any(), any())(any()))
+      when(taxCodeService.taxCodeHistory(any(), any())(any()))
         .thenReturn(Future.failed(notFoundException))
 
       checkControllerResponse(
@@ -81,7 +81,7 @@ class TaxCodeHistoryControllerSpec extends BaseSpec {
 
     "respond with BAD_GATEWAY when an InternalServerException occurs" in {
 
-      when(taxCodeService.getTaxCodeHistory(any(), any())(any()))
+      when(taxCodeService.taxCodeHistory(any(), any())(any()))
         .thenReturn(Future.failed(internalServerException))
 
       checkControllerResponse(

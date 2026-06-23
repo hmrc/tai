@@ -2259,7 +2259,7 @@ class TaxCodeChangeServiceImplSpec
     }
   }
 
-  "getTaxCodeHistory" should {
+  "taxCodeHistory" should {
     "return tax code history from connector" in {
       val taxYear = TaxYear()
       val taxCodeHistory = TaxCodeHistory(
@@ -2269,7 +2269,7 @@ class TaxCodeChangeServiceImplSpec
       when(taxCodeHistoryConnector.taxCodeHistory(nino, taxYear)(hc))
         .thenReturn(Future.successful(taxCodeHistory))
 
-      SUT.getTaxCodeHistory(nino, taxYear).futureValue mustBe taxCodeHistory
+      SUT.taxCodeHistory(nino, taxYear).futureValue mustBe taxCodeHistory
     }
   }
 

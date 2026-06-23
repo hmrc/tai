@@ -161,10 +161,7 @@ class TaxCodeChangeServiceImpl @Inject() (
 
     }
 
-  def getTaxCodeHistory(nino: Nino, taxYear: TaxYear)(implicit hc: HeaderCarrier): Future[TaxCodeHistory] =
-    taxCodeHistory(nino, taxYear)
-
-  private def taxCodeHistory(nino: Nino, taxYear: TaxYear)(implicit hc: HeaderCarrier): Future[TaxCodeHistory] =
+  def taxCodeHistory(nino: Nino, taxYear: TaxYear)(implicit hc: HeaderCarrier): Future[TaxCodeHistory] =
     taxCodeHistoryConnector.taxCodeHistory(nino, taxYear)
 
   private def previousStartDate(date: LocalDate): LocalDate = {
@@ -229,6 +226,6 @@ trait TaxCodeChangeService {
 
   def latestTaxCodes(nino: Nino, taxYear: TaxYear)(implicit hc: HeaderCarrier): Future[Seq[TaxCodeSummary]]
 
-  def getTaxCodeHistory(nino: Nino, taxYear: TaxYear)(implicit hc: HeaderCarrier): Future[TaxCodeHistory]
+  def taxCodeHistory(nino: Nino, taxYear: TaxYear)(implicit hc: HeaderCarrier): Future[TaxCodeHistory]
 
 }
