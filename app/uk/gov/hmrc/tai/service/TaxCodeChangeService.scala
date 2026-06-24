@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2026 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -161,7 +161,7 @@ class TaxCodeChangeServiceImpl @Inject() (
 
     }
 
-  private def taxCodeHistory(nino: Nino, taxYear: TaxYear)(implicit hc: HeaderCarrier): Future[TaxCodeHistory] =
+  def taxCodeHistory(nino: Nino, taxYear: TaxYear)(implicit hc: HeaderCarrier): Future[TaxCodeHistory] =
     taxCodeHistoryConnector.taxCodeHistory(nino, taxYear)
 
   private def previousStartDate(date: LocalDate): LocalDate = {
@@ -225,5 +225,7 @@ trait TaxCodeChangeService {
   def taxCodeMismatch(nino: Nino)(implicit hc: HeaderCarrier, request: Request[_]): Future[TaxCodeMismatch]
 
   def latestTaxCodes(nino: Nino, taxYear: TaxYear)(implicit hc: HeaderCarrier): Future[Seq[TaxCodeSummary]]
+
+  def taxCodeHistory(nino: Nino, taxYear: TaxYear)(implicit hc: HeaderCarrier): Future[TaxCodeHistory]
 
 }
