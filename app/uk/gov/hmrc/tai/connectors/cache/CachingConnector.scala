@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 HM Revenue & Customs
+ * Copyright 2026 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,7 @@ package uk.gov.hmrc.tai.connectors.cache
 import cats.data.EitherT
 import com.google.inject.Inject
 import play.api.libs.json.Format
-import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.mongo.cache.DataKey
 import uk.gov.hmrc.tai.repositories.cache.TaiSessionCacheRepository
 
@@ -27,23 +27,22 @@ import scala.concurrent.{ExecutionContext, Future}
 
 class CachingConnector @Inject() (sessionCacheRepository: TaiSessionCacheRepository)(implicit ec: ExecutionContext) {
 
-  def invalidateAll[A](f: => Future[A])(implicit hc: HeaderCarrier): Future[A] =
-    sessionCacheRepository.deleteAllFromSession.flatMap { _ =>
+  def invalidateAll[A](nino: Nino)(f: => Future[A]): Future[A] =
+    sessionCacheRepository.deleteAllFromSession(nino).flatMap { _ =>
       f
     }
 
-  def cache[A: Format](key: String)(f: => Future[A])(implicit hc: HeaderCarrier): Future[A] = {
+  def cache[A: Format](key: String, nino: Nino)(f: => Future[A]): Future[A] = {
 
     def fetchAndCache: Future[A] =
       for {
         result <- f
-        _ <- sessionCacheRepository
-               .putSession[A](DataKey[A](key), result)
+        _      <- sessionCacheRepository.putSession[A](DataKey[A](key), result, nino)
       } yield result
 
     def readAndUpdate: Future[A] =
       sessionCacheRepository
-        .getFromSession[A](DataKey[A](key))
+        .getFromSession[A](DataKey[A](key), nino)
         .flatMap {
           case None        => fetchAndCache
           case Some(value) => Future.successful(value)
@@ -52,16 +51,14 @@ class CachingConnector @Inject() (sessionCacheRepository: TaiSessionCacheReposit
     readAndUpdate
   }
 
-  def cacheEitherT[L, A: Format](
-    key: String
-  )(f: => EitherT[Future, L, A])(implicit hc: HeaderCarrier): EitherT[Future, L, A] = {
+  def cacheEitherT[L, A: Format](key: String, nino: Nino)(f: => EitherT[Future, L, A]): EitherT[Future, L, A] = {
 
     def fetchAndCache: EitherT[Future, L, A] =
       for {
         result <- f
         _ <- EitherT[Future, L, (String, String)](
                sessionCacheRepository
-                 .putSession[A](DataKey[A](key), result)
+                 .putSession[A](DataKey[A](key), result, nino)
                  .map(Right(_))
              )
       } yield result
@@ -69,7 +66,7 @@ class CachingConnector @Inject() (sessionCacheRepository: TaiSessionCacheReposit
     def readAndUpdate: EitherT[Future, L, A] =
       EitherT(
         sessionCacheRepository
-          .getFromSession[A](DataKey[A](key))
+          .getFromSession[A](DataKey[A](key), nino)
           .flatMap {
             case None =>
               fetchAndCache.value

@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 HM Revenue & Customs
+ * Copyright 2026 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -57,7 +57,7 @@ class CachingIabdConnector @Inject() (
     iabdType: Int,
     amount: Int
   )(implicit hc: HeaderCarrier): Future[HodUpdateResponse] =
-    cachingConnector.invalidateAll {
+    cachingConnector.invalidateAll(nino) {
       underlying.updateTaxCodeAmount(nino, taxYear, employmentId, version, iabdType, amount)
     }
 
@@ -65,9 +65,9 @@ class CachingIabdConnector @Inject() (
     hc: HeaderCarrier
   ): Future[JsValue] =
     cachingConnector
-      .cache(s"iabds-$nino-$year-$iabdType") {
+      .cache(s"iabds-$nino-$year-$iabdType", nino) {
         underlying.getIabdsForType(nino, year, iabdType).map(SensitiveJsValue.apply)
-      }(sensitiveFormatService.sensitiveFormatJsValue[JsValue], implicitly)
+      }(sensitiveFormatService.sensitiveFormatJsValue[JsValue])
       .map(_.decryptedValue)
 
   override def updateExpensesData(
@@ -78,7 +78,7 @@ class CachingIabdConnector @Inject() (
     expensesData: UpdateIabdEmployeeExpense,
     apiType: APITypes
   )(implicit hc: HeaderCarrier): Future[HttpResponse] =
-    cachingConnector.invalidateAll {
+    cachingConnector.invalidateAll(nino) {
       underlying.updateExpensesData(nino, year, iabdType, version, expensesData, apiType)
     }
 }
