@@ -17,5 +17,6 @@
 package uk.gov.hmrc.tai.model
 
 import play.api.mvc.{Request, WrappedRequest}
+import uk.gov.hmrc.domain.Nino
 
-case class AuthenticatedRequest[A](request: Request[A], nino: String) extends WrappedRequest[A](request)
+case class AuthenticatedRequest[A](request: Request[A], nino: Nino) extends WrappedRequest[A](request)

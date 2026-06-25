@@ -22,6 +22,7 @@ import play.api.mvc.*
 import play.api.mvc.Results.*
 import uk.gov.hmrc.auth.core.*
 import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals
+import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.http.HeaderCarrierConverter
 import uk.gov.hmrc.tai.model.AuthenticatedRequest
@@ -36,7 +37,7 @@ class AuthActionImpl @Inject() (override val authConnector: AuthConnector, cc: C
     implicit val hc: HeaderCarrier = HeaderCarrierConverter.fromRequest(request)
 
     authorised(ConfidenceLevel.L200).retrieve(Retrievals.nino) {
-      case Some(nino) => Future.successful(Right(AuthenticatedRequest(request, nino)))
+      case Some(nino) => Future.successful(Right(AuthenticatedRequest(request, Nino(nino))))
       case None       => Future.successful(Left(Status(UNAUTHORIZED)))
     } recover {
       case _: NoActiveSession             => Left(Status(UNAUTHORIZED))

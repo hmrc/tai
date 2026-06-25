@@ -33,19 +33,19 @@ class NinoValidationAction @Inject() (
   cc: ControllerComponents
 ) extends Results with Logging {
 
-  def validateNino(requestNino: Nino): ActionFilter[AuthenticatedRequest] = new ActionFilter[AuthenticatedRequest] {
+  def validateNino(urlNino: Nino): ActionFilter[AuthenticatedRequest] = new ActionFilter[AuthenticatedRequest] {
 
     override protected implicit def executionContext: ExecutionContext = cc.executionContext
 
     override def filter[A](request: AuthenticatedRequest[A]): Future[Option[Result]] = {
       implicit val hc: HeaderCarrier = HeaderCarrierConverter.fromRequest(request)
-      val authNino = request.nino
+      val authNino = request.nino.nino
 
       fandFConnector
         .getTrustedHelper()
         .map { maybeTrustedHelper =>
           val trustedHelperNino = maybeTrustedHelper.flatMap(_.principalNino)
-          if (ninoMatches(requestNino.nino, authNino, trustedHelperNino)) {
+          if (ninoMatches(urlNino.nino, authNino, trustedHelperNino)) {
             None
           } else {
             logger.error(
