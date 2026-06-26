@@ -29,7 +29,7 @@ import uk.gov.hmrc.auth.core.retrieve.Retrieval
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.tai.connectors.FandFConnector
-import uk.gov.hmrc.tai.model.TrustedHelper
+import uk.gov.hmrc.tai.model.{AuthenticatedRequest, TrustedHelper}
 import uk.gov.hmrc.tai.util.BaseSpec
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -38,49 +38,33 @@ class NinoValidationActionSpec extends BaseSpec with Results {
 
   override implicit lazy val app: Application = GuiceApplicationBuilder().build()
 
-  private val mockAuthConnector = mock[AuthConnector]
   private val mockFandFConnector = mock[FandFConnector]
-  private val sut = new NinoValidationAction(mockAuthConnector, mockFandFConnector, cc)
-  private val fakeRequest = FakeRequest()
-
-  type AuthRetrieval = Option[String]
+  private val sut = new NinoValidationAction(mockFandFConnector, cc)
+  private def authenticatedRequest(nino: String) = AuthenticatedRequest(FakeRequest(), Nino(nino))
 
   "NinoValidationAction" must {
     "allow the request" when {
       "authenticated nino matches request nino" in {
-        val authResult: AuthRetrieval = Some("AA000000A")
-
-        when(
-          mockAuthConnector
-            .authorise(any[Predicate], any[Retrieval[AuthRetrieval]])(any[HeaderCarrier], any[ExecutionContext])
-        ).thenReturn(Future.successful(authResult))
-
         when(mockFandFConnector.getTrustedHelper()(any[HeaderCarrier])).thenReturn(Future.successful(None))
 
         val result = sut
           .validateNino(Nino("AA000000A"))
-          .invokeBlock(fakeRequest, (_: Request[AnyContent]) => Future.successful(Ok))
+          .invokeBlock(authenticatedRequest("AA000000A"), (_: Request[AnyContent]) => Future.successful(Ok))
           .futureValue
 
         result.header.status mustBe OK
       }
 
       "trusted helper principal nino matches request nino" in {
-        val authResult: AuthRetrieval = Some("AA000000A")
-
-        when(
-          mockAuthConnector
-            .authorise(any[Predicate], any[Retrieval[AuthRetrieval]])(any[HeaderCarrier], any[ExecutionContext])
-        ).thenReturn(Future.successful(authResult))
-
         val trustedHelper = TrustedHelper("principal", "attorney", "returnUrl", principalNino = Some("AB123456A"))
+
         when(mockFandFConnector.getTrustedHelper()(any[HeaderCarrier])).thenReturn(
           Future.successful(Some(trustedHelper))
         )
 
         val result = sut
           .validateNino(Nino("AB123456A"))
-          .invokeBlock(fakeRequest, (_: Request[AnyContent]) => Future.successful(Ok))
+          .invokeBlock(authenticatedRequest("AA000000A"), (_: Request[AnyContent]) => Future.successful(Ok))
           .futureValue
         result.header.status mustBe OK
       }
@@ -88,31 +72,17 @@ class NinoValidationActionSpec extends BaseSpec with Results {
 
     "reject the request" when {
       "authenticated nino does NOT match request nino" in {
-        val authResult: AuthRetrieval = Some("BB123456B")
-
-        when(
-          mockAuthConnector
-            .authorise(any[Predicate], any[Retrieval[AuthRetrieval]])(any[HeaderCarrier], any[ExecutionContext])
-        ).thenReturn(Future.successful(authResult))
-
         when(mockFandFConnector.getTrustedHelper()(any[HeaderCarrier])).thenReturn(Future.successful(None))
 
         val result = sut
           .validateNino(Nino("AA000000A"))
-          .invokeBlock(fakeRequest, (_: Request[AnyContent]) => Future.successful(Ok))
+          .invokeBlock(authenticatedRequest("BB123456B"), (_: Request[AnyContent]) => Future.successful(Ok))
           .futureValue
 
         result.header.status mustBe INTERNAL_SERVER_ERROR
       }
 
       "trusted helper principal nino does not match request nino" in {
-        val authResult: AuthRetrieval = Some("AB123456A")
-
-        when(
-          mockAuthConnector
-            .authorise(any[Predicate], any[Retrieval[AuthRetrieval]])(any[HeaderCarrier], any[ExecutionContext])
-        ).thenReturn(Future.successful(authResult))
-
         val trustedHelper = TrustedHelper("principal", "attorney", "returnUrl", principalNino = Some("AB123456A"))
 
         when(mockFandFConnector.getTrustedHelper()(any[HeaderCarrier])).thenReturn(
@@ -121,35 +91,7 @@ class NinoValidationActionSpec extends BaseSpec with Results {
 
         val result = sut
           .validateNino(Nino("AA000000A"))
-          .invokeBlock(fakeRequest, (_: Request[AnyContent]) => Future.successful(Ok))
-          .futureValue
-
-        result.header.status mustBe INTERNAL_SERVER_ERROR
-      }
-
-      "auth retrieval returns no nino" in {
-        when(
-          mockAuthConnector
-            .authorise(any[Predicate], any[Retrieval[AuthRetrieval]])(any[HeaderCarrier], any[ExecutionContext])
-        ).thenReturn(Future.successful(None))
-
-        val result = sut
-          .validateNino(Nino("AA000000A"))
-          .invokeBlock(fakeRequest, (_: Request[AnyContent]) => Future.successful(Ok))
-          .futureValue
-
-        result.header.status mustBe INTERNAL_SERVER_ERROR
-      }
-
-      "auth retrieval throws an exception" in {
-        when(
-          mockAuthConnector
-            .authorise(any[Predicate], any[Retrieval[AuthRetrieval]])(any[HeaderCarrier], any[ExecutionContext])
-        ).thenReturn(Future.failed(new RuntimeException("Something went wrong")))
-
-        val result = sut
-          .validateNino(Nino("AA000000A"))
-          .invokeBlock(fakeRequest, (_: Request[AnyContent]) => Future.successful(Ok))
+          .invokeBlock(authenticatedRequest("ZZ123456A"), (_: Request[AnyContent]) => Future.successful(Ok))
           .futureValue
 
         result.header.status mustBe INTERNAL_SERVER_ERROR
