@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 HM Revenue & Customs
+ * Copyright 2026 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -97,13 +97,13 @@ class CachingRtiConnectorSpec extends ConnectorBaseSpec {
           mockSessionCacheRepository
             .getEitherFromSession[UpstreamErrorResponse, Seq[AnnualAccount], Either[UpstreamErrorResponse, Seq[
               AnnualAccount
-            ]]](any())(any(), any())
+            ]]](any(), any())(any())
         )
           .thenReturn(Future.successful(None))
 
         when(
           mockSessionCacheRepository
-            .putSession[Either[UpstreamErrorResponse, Seq[AnnualAccount]]](any(), any())(any(), any(), any())
+            .putSession[Either[UpstreamErrorResponse, Seq[AnnualAccount]]](any(), any(), any())(any(), any())
         )
           .thenReturn(Future.successful(("", "")))
 
@@ -116,9 +116,9 @@ class CachingRtiConnectorSpec extends ConnectorBaseSpec {
 
         verify(mockSessionCacheRepository, times(1)).getEitherFromSession[UpstreamErrorResponse, Seq[
           AnnualAccount
-        ], Either[UpstreamErrorResponse, Seq[AnnualAccount]]](any())(any(), any())
+        ], Either[UpstreamErrorResponse, Seq[AnnualAccount]]](any(), any())(any())
         verify(mockSessionCacheRepository, times(1))
-          .putSession[Either[UpstreamErrorResponse, Seq[AnnualAccount]]](any(), any())(any(), any(), any())
+          .putSession[Either[UpstreamErrorResponse, Seq[AnnualAccount]]](any(), any(), any())(any(), any())
         verify(mockRtiConnector, times(1)).getPaymentsForYear(any(), any())(any(), any())
         verify(mockMongoLockRepository, times(1)).takeLock(any(), any(), any())
         verify(mockMongoLockRepository, times(1)).releaseLock(any(), any())
@@ -135,13 +135,13 @@ class CachingRtiConnectorSpec extends ConnectorBaseSpec {
           mockSessionCacheRepository
             .getEitherFromSession[UpstreamErrorResponse, Seq[AnnualAccount], Either[UpstreamErrorResponse, Seq[
               AnnualAccount
-            ]]](any())(any(), any())
+            ]]](any(), any())(any())
         )
           .thenReturn(Future.successful(None))
 
         when(
           mockSessionCacheRepository
-            .putSession[Either[UpstreamErrorResponse, Seq[AnnualAccount]]](any(), any())(any(), any(), any())
+            .putSession[Either[UpstreamErrorResponse, Seq[AnnualAccount]]](any(), any(), any())(any(), any())
         )
           .thenReturn(Future.successful(("", "")))
 
@@ -154,9 +154,9 @@ class CachingRtiConnectorSpec extends ConnectorBaseSpec {
 
         verify(mockSessionCacheRepository, times(1)).getEitherFromSession[UpstreamErrorResponse, Seq[
           AnnualAccount
-        ], Either[UpstreamErrorResponse, Seq[AnnualAccount]]](any())(any(), any())
+        ], Either[UpstreamErrorResponse, Seq[AnnualAccount]]](any(), any())(any())
         verify(mockSessionCacheRepository, times(1))
-          .putSession[Either[UpstreamErrorResponse, Seq[AnnualAccount]]](any(), any())(any(), any(), any())
+          .putSession[Either[UpstreamErrorResponse, Seq[AnnualAccount]]](any(), any(), any())(any(), any())
         verify(mockRtiConnector, times(1)).getPaymentsForYear(any(), any())(any(), any())
         verify(mockMongoLockRepository, times(2)).takeLock(any(), any(), any())
         verify(mockMongoLockRepository, times(2)).releaseLock(any(), any())
@@ -172,13 +172,13 @@ class CachingRtiConnectorSpec extends ConnectorBaseSpec {
           mockSessionCacheRepository
             .getEitherFromSession[UpstreamErrorResponse, Seq[AnnualAccount], Either[UpstreamErrorResponse, Seq[
               AnnualAccount
-            ]]](any())(any(), any())
+            ]]](any(), any())(any())
         )
           .thenReturn(Future.successful(None))
 
         when(
           mockSessionCacheRepository
-            .putSession[Either[UpstreamErrorResponse, Seq[AnnualAccount]]](any(), any())(any(), any(), any())
+            .putSession[Either[UpstreamErrorResponse, Seq[AnnualAccount]]](any(), any(), any())(any(), any())
         )
           .thenReturn(Future.successful(("", "")))
 
@@ -191,9 +191,9 @@ class CachingRtiConnectorSpec extends ConnectorBaseSpec {
 
         verify(mockSessionCacheRepository, times(1)).getEitherFromSession[UpstreamErrorResponse, Seq[
           AnnualAccount
-        ], Either[UpstreamErrorResponse, Seq[AnnualAccount]]](any())(any(), any())
+        ], Either[UpstreamErrorResponse, Seq[AnnualAccount]]](any(), any())(any())
         verify(mockSessionCacheRepository, times(1))
-          .putSession[Either[UpstreamErrorResponse, Seq[AnnualAccount]]](any(), any())(any(), any(), any())
+          .putSession[Either[UpstreamErrorResponse, Seq[AnnualAccount]]](any(), any(), any())(any(), any())
         verify(mockRtiConnector, times(1)).getPaymentsForYear(any(), any())(any(), any())
         verify(mockMongoLockRepository, times(1)).takeLock(any(), any(), any())
         verify(mockMongoLockRepository, times(1)).releaseLock(any(), any())
@@ -206,7 +206,7 @@ class CachingRtiConnectorSpec extends ConnectorBaseSpec {
           mockSessionCacheRepository
             .getEitherFromSession[UpstreamErrorResponse, Seq[AnnualAccount], Either[UpstreamErrorResponse, Seq[
               AnnualAccount
-            ]]](any())(any(), any())
+            ]]](any(), any())(any())
         )
           .thenReturn(Future.successful(Some(Right(expected))))
         val result = connector.getPaymentsForYear(nino, TaxYear()).value.futureValue
@@ -215,9 +215,9 @@ class CachingRtiConnectorSpec extends ConnectorBaseSpec {
 
         verify(mockSessionCacheRepository, times(1)).getEitherFromSession[UpstreamErrorResponse, Seq[
           AnnualAccount
-        ], Either[UpstreamErrorResponse, Seq[AnnualAccount]]](any())(any(), any())
+        ], Either[UpstreamErrorResponse, Seq[AnnualAccount]]](any(), any())(any())
         verify(mockSessionCacheRepository, times(0))
-          .putSession[Either[UpstreamErrorResponse, Seq[AnnualAccount]]](any(), any())(any(), any(), any())
+          .putSession[Either[UpstreamErrorResponse, Seq[AnnualAccount]]](any(), any(), any())(any(), any())
 
         verify(mockRtiConnector, times(0)).getPaymentsForYear(any(), any())(any(), any())
         verify(mockEncryptionService, times(1)).sensitiveFormatFromReadsWritesJsArray[Seq[AnnualAccount]](any(), any())
@@ -235,20 +235,20 @@ class CachingRtiConnectorSpec extends ConnectorBaseSpec {
           mockSessionCacheRepository
             .getEitherFromSession[UpstreamErrorResponse, Seq[AnnualAccount], Either[UpstreamErrorResponse, Seq[
               AnnualAccount
-            ]]](any())(any(), any())
+            ]]](any(), any())(any())
         )
           .thenReturn(Future.successful(None))
 
         when(
           mockSessionCacheRepository
-            .putSession[Either[UpstreamErrorResponse, Seq[AnnualAccount]]](any(), any())(any(), any(), any())
+            .putSession[Either[UpstreamErrorResponse, Seq[AnnualAccount]]](any(), any(), any())(any(), any())
         )
           .thenReturn(Future.successful(("", "")))
 
         val result = connector.getPaymentsForYear(nino, TaxYear()).value.futureValue
         result mustBe a[Left[_, _]]
         verify(mockSessionCacheRepository, times(1))
-          .putSession[Either[UpstreamErrorResponse, Seq[AnnualAccount]]](any(), any())(any(), any(), any())
+          .putSession[Either[UpstreamErrorResponse, Seq[AnnualAccount]]](any(), any(), any())(any(), any())
         verify(mockRtiConnector, times(1)).getPaymentsForYear(any(), any())(any(), any())
         verify(mockMongoLockRepository, times(1)).takeLock(any(), any(), any())
         verify(mockMongoLockRepository, times(1)).releaseLock(any(), any())
@@ -260,14 +260,14 @@ class CachingRtiConnectorSpec extends ConnectorBaseSpec {
           mockSessionCacheRepository
             .getEitherFromSession[UpstreamErrorResponse, Seq[AnnualAccount], Either[UpstreamErrorResponse, Seq[
               AnnualAccount
-            ]]](any())(any(), any())
+            ]]](any(), any())(any())
         )
           .thenReturn(Future.successful(Some(cachedUpstreamErrorResponse)))
 
         val result = connector.getPaymentsForYear(nino, TaxYear()).value.futureValue
         result mustBe a[Left[_, _]]
         verify(mockSessionCacheRepository, times(0))
-          .putSession[Either[UpstreamErrorResponse, Seq[AnnualAccount]]](any(), any())(any(), any(), any())
+          .putSession[Either[UpstreamErrorResponse, Seq[AnnualAccount]]](any(), any(), any())(any(), any())
         verify(mockRtiConnector, times(0)).getPaymentsForYear(any(), any())(any(), any())
         verify(mockMongoLockRepository, times(1)).takeLock(any(), any(), any())
         verify(mockMongoLockRepository, times(1)).releaseLock(any(), any())
@@ -285,13 +285,13 @@ class CachingRtiConnectorSpec extends ConnectorBaseSpec {
         mockSessionCacheRepository
           .getEitherFromSession[UpstreamErrorResponse, Seq[AnnualAccount], Either[UpstreamErrorResponse, Seq[
             AnnualAccount
-          ]]](any())(any(), any())
+          ]]](any(), any())(any())
       )
         .thenReturn(Future.successful(None))
 
       when(
         mockSessionCacheRepository
-          .putSession[Either[UpstreamErrorResponse, Seq[AnnualAccount]]](any(), any())(any(), any(), any())
+          .putSession[Either[UpstreamErrorResponse, Seq[AnnualAccount]]](any(), any(), any())(any(), any())
       )
         .thenReturn(Future.successful(("", "")))
 
@@ -300,7 +300,7 @@ class CachingRtiConnectorSpec extends ConnectorBaseSpec {
         ex.getMessage mustBe errorMessage
       }
       verify(mockSessionCacheRepository, times(0))
-        .putSession[Either[UpstreamErrorResponse, Seq[AnnualAccount]]](any(), any())(any(), any(), any())
+        .putSession[Either[UpstreamErrorResponse, Seq[AnnualAccount]]](any(), any(), any())(any(), any())
       verify(mockRtiConnector, times(1)).getPaymentsForYear(any(), any())(any(), any())
       verify(mockMongoLockRepository, times(1)).takeLock(any(), any(), any())
       verify(mockMongoLockRepository, times(1)).releaseLock(any(), any())

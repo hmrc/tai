@@ -23,16 +23,13 @@ import play.api.http.Status.{INTERNAL_SERVER_ERROR, OK}
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.mvc.{AnyContent, Request, Results}
 import play.api.test.FakeRequest
-import uk.gov.hmrc.auth.core.AuthConnector
-import uk.gov.hmrc.auth.core.authorise.Predicate
-import uk.gov.hmrc.auth.core.retrieve.Retrieval
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.tai.connectors.FandFConnector
 import uk.gov.hmrc.tai.model.{AuthenticatedRequest, TrustedHelper}
 import uk.gov.hmrc.tai.util.BaseSpec
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.Future
 
 class NinoValidationActionSpec extends BaseSpec with Results {
 
@@ -91,7 +88,7 @@ class NinoValidationActionSpec extends BaseSpec with Results {
 
         val result = sut
           .validateNino(Nino("AA000000A"))
-          .invokeBlock(authenticatedRequest("ZZ123456A"), (_: Request[AnyContent]) => Future.successful(Ok))
+          .invokeBlock(authenticatedRequest("AB123456A"), (_: Request[AnyContent]) => Future.successful(Ok))
           .futureValue
 
         result.header.status mustBe INTERNAL_SERVER_ERROR
