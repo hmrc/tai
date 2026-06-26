@@ -48,7 +48,7 @@ abstract class SessionCacheRepository(
 
   /*
    * This class exists in hmrc-mongo library as a generic MongoCacheRepository.This implementation uses the
-   *  authenticated NINO as the cache identifier.
+   * NINO as the cache identifier.
    */
 
   private[cache] val cacheRepo: MongoCacheRepository[Nino] = new MongoCacheRepository[Nino](
