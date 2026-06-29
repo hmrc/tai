@@ -99,6 +99,8 @@ trait IntegrationSpec
     when(mockFeatureFlagService.getAsEitherT(eqTo[FeatureFlagName](RtiCallToggle))).thenReturn(
       EitherT.rightT(FeatureFlag(RtiCallToggle, isEnabled = false))
     )
+
+    server.stubFor(get(urlEqualTo("/delegation/get")).willReturn(notFound()))
     ()
   }
 
