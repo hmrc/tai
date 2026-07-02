@@ -82,7 +82,7 @@ class CachingRtiConnector @Inject() (
     val key = s"getPaymentsForYear-$nino-${taxYear.year}"
     EitherT(
       withRetry(exceptionsToRetry = lockedException) {
-        withLock(key) {
+        withLock(key, nino) {
           cacheEither(key, nino)(
             underlying.getPaymentsForYear(nino: Nino, taxYear: TaxYear).value
           )(sensitiveFormatService.sensitiveFormatFromReadsWritesJsArray[Seq[AnnualAccount]])
