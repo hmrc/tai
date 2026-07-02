@@ -75,7 +75,7 @@ class CachingRtiConnectorSpec extends ConnectorBaseSpec {
     when(mockEncryptionService.sensitiveFormatFromReadsWritesJsArray[Seq[AnnualAccount]])
       .thenReturn(Format(implicitly[Reads[Seq[AnnualAccount]]], implicitly[Writes[Seq[AnnualAccount]]]))
     when(mockMongoLockRepository.takeLock(any(), any(), any()))
-      .thenReturn(Future.successful(Some(Lock("some session id", "lockId", timestamp, timestamp.plusSeconds(2)))))
+      .thenReturn(Future.successful(Some(Lock(nino.nino, "lockId", timestamp, timestamp.plusSeconds(2)))))
     when(mockMongoLockRepository.releaseLock(any(), any())).thenReturn(Future.successful((): Unit))
 
     ()
@@ -129,7 +129,7 @@ class CachingRtiConnectorSpec extends ConnectorBaseSpec {
 
         when(mockMongoLockRepository.takeLock(any(), any(), any()))
           .thenReturn(Future.successful(None))
-          .thenReturn(Future.successful(Some(Lock("some session id", "lockId", timestamp, timestamp.plusSeconds(2)))))
+          .thenReturn(Future.successful(Some(Lock(nino.nino, "lockId", timestamp, timestamp.plusSeconds(2)))))
 
         when(
           mockSessionCacheRepository
