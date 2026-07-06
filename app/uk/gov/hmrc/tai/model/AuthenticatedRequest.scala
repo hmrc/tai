@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2026 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,21 +14,9 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.tai.connectors.cache
+package uk.gov.hmrc.tai.model
 
+import play.api.mvc.{Request, WrappedRequest}
 import uk.gov.hmrc.domain.Nino
-import uk.gov.hmrc.http.HeaderCarrier
 
-sealed abstract case class CacheId(value: String)
-
-object CacheId {
-  def apply(nino: Nino)(implicit hc: HeaderCarrier): CacheId =
-    new CacheId(
-      hc.sessionId
-        .map(s => s"${s.value} - $nino")
-        .getOrElse(throw new RuntimeException("Error while fetching session id"))
-    ) {}
-
-  def noSession(nino: Nino): CacheId =
-    new CacheId(nino.toString()) {}
-}
+case class AuthenticatedRequest[A](request: Request[A], nino: Nino) extends WrappedRequest[A](request)

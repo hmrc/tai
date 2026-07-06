@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 HM Revenue & Customs
+ * Copyright 2026 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -74,10 +74,10 @@ class CachingTaxCodeHistoryConnectorSpec extends ConnectorBaseSpec {
   "taxCodeHistory" when {
     "no value is present in the cache" must {
       "call the underlying connector and cache the result" in {
-        when(mockSessionCacheRepository.getFromSession[TaxCodeHistory](DataKey(any()))(any(), any()))
+        when(mockSessionCacheRepository.getFromSession[TaxCodeHistory](DataKey(any()), any())(any()))
           .thenReturn(Future.successful(None))
 
-        when(mockSessionCacheRepository.putSession[TaxCodeHistory](DataKey(any()), any())(any(), any(), any()))
+        when(mockSessionCacheRepository.putSession[TaxCodeHistory](DataKey(any()), any(), any())(any(), any()))
           .thenReturn(Future.successful(("", "")))
 
         when(mockDefaultTaxCodeHistoryConnector.taxCodeHistory(any(), any())(any()))
@@ -87,15 +87,15 @@ class CachingTaxCodeHistoryConnectorSpec extends ConnectorBaseSpec {
 
         result mustBe TaxCodeHistoryFactory.createTaxCodeHistory(nino)
         verify(mockDefaultTaxCodeHistoryConnector, times(1)).taxCodeHistory(any(), any())(any())
-        verify(mockSessionCacheRepository, times(1)).getFromSession[TaxCodeHistory](DataKey(any()))(any(), any())
+        verify(mockSessionCacheRepository, times(1)).getFromSession[TaxCodeHistory](DataKey(any()), any())(any())
         verify(mockSessionCacheRepository, times(1))
-          .putSession[TaxCodeHistory](DataKey(any()), any())(any(), any(), any())
+          .putSession[TaxCodeHistory](DataKey(any()), any(), any())(any(), any())
         verify(mockEncryptionService, times(1)).sensitiveFormatFromReadsWrites(any(), any())
       }
     }
     "there is a value present in the cache" must {
       "return the cached value and make no calls through the default connector" in {
-        when(mockSessionCacheRepository.getFromSession[TaxCodeHistory](DataKey(any[String]()))(any(), any()))
+        when(mockSessionCacheRepository.getFromSession[TaxCodeHistory](DataKey(any[String]()), any())(any()))
           .thenReturn(Future.successful(Some(TaxCodeHistoryFactory.createTaxCodeHistory(nino))))
 
         when(mockDefaultTaxCodeHistoryConnector.taxCodeHistory(any(), any())(any()))
@@ -104,10 +104,10 @@ class CachingTaxCodeHistoryConnectorSpec extends ConnectorBaseSpec {
         val result = cachingTaxCodeHistoryConnector.taxCodeHistory(nino, taxYear).futureValue
 
         result mustBe TaxCodeHistoryFactory.createTaxCodeHistory(nino)
-        verify(mockSessionCacheRepository, times(1)).getFromSession[TaxCodeHistory](DataKey(any()))(any(), any())
+        verify(mockSessionCacheRepository, times(1)).getFromSession[TaxCodeHistory](DataKey(any()), any())(any())
         verify(mockDefaultTaxCodeHistoryConnector, times(0)).taxCodeHistory(any(), any())(any())
         verify(mockSessionCacheRepository, times(0))
-          .putSession[TaxCodeHistory](DataKey(any()), any())(any(), any(), any())
+          .putSession[TaxCodeHistory](DataKey(any()), any(), any())(any(), any())
       }
     }
   }

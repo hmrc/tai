@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2026 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,9 +41,9 @@ class CachingEmploymentDetailsConnector @Inject() (
   override def getEmploymentDetailsAsEitherT(nino: Nino, year: Int)(implicit
     hc: HeaderCarrier
   ): EitherT[Future, UpstreamErrorResponse, HodResponse] =
-    cachingConnector.cacheEitherT(s"employment-details-$nino-$year") {
+    cachingConnector.cacheEitherT(s"employment-details-$nino-$year", nino) {
       underlying.getEmploymentDetailsAsEitherT(nino, year)
-    }(sensitiveFormatService.sensitiveFormatFromReadsWrites[HodResponse], implicitly)
+    }(sensitiveFormatService.sensitiveFormatFromReadsWrites[HodResponse])
 }
 
 class DefaultEmploymentDetailsConnector @Inject() (
