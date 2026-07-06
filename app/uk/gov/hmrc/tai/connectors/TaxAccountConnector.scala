@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2026 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,20 +40,20 @@ class CachingTaxAccountConnector @Inject() (
 
   def taxAccount(nino: Nino, taxYear: TaxYear)(implicit hc: HeaderCarrier): Future[JsValue] =
     cachingConnector
-      .cache(s"tax-account-$nino-${taxYear.year}") {
+      .cache(s"tax-account-$nino-${taxYear.year}", nino) {
         underlying
           .taxAccount(nino: Nino, taxYear: TaxYear)
           .map(SensitiveJsValue.apply)
-      }(sensitiveFormatService.sensitiveFormatJsValue[JsValue], implicitly)
+      }(sensitiveFormatService.sensitiveFormatJsValue[JsValue])
       .map(_.decryptedValue)
 
   def taxAccountHistory(nino: Nino, iocdSeqNo: Int)(implicit hc: HeaderCarrier): Future[JsValue] =
     cachingConnector
-      .cache(s"tax-account-history-$nino-$iocdSeqNo") {
+      .cache(s"tax-account-history-$nino-$iocdSeqNo", nino) {
         underlying
           .taxAccountHistory(nino: Nino, iocdSeqNo: Int)
           .map(SensitiveJsValue.apply)
-      }(sensitiveFormatService.sensitiveFormatJsValue[JsValue], implicitly)
+      }(sensitiveFormatService.sensitiveFormatJsValue[JsValue])
       .map(_.decryptedValue)
 }
 
