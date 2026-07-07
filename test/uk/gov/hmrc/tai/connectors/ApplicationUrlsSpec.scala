@@ -44,18 +44,6 @@ class ApplicationUrlsSpec extends BaseSpec {
     }
   }
 
-  "PdfUrls" must {
-    "return the correct urls" in {
-      val mockConfig = mock[PdfConfig]
-      when(mockConfig.baseURL)
-        .thenReturn("")
-
-      val pdfUrls = new PdfUrls(mockConfig)
-
-      pdfUrls.generatePdfUrl mustBe "/pdf-generator-service/generate"
-    }
-  }
-
   "PayeUrls" must {
     "return the correct urls" when {
       "given argument values" in {

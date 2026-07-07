@@ -24,14 +24,12 @@ import uk.gov.hmrc.tai.model.templates.{EmploymentPensionViewModel, RemoveCompan
 import uk.gov.hmrc.tai.service.PdfService
 import uk.gov.hmrc.tai.service.PdfService.{EmploymentIFormReportRequest, PdfGeneratorRequest, PensionProviderIFormRequest, RemoveCompanyBenefitIFormRequest}
 import testOnly.testViews.templates.html.PdfIndex
-import uk.gov.hmrc.tai.connectors.PdfConnector
 import uk.gov.hmrc.tai.service.helper.XslFo2PdfBytesFunction
 
 import scala.concurrent.{ExecutionContext, Future}
 
 class PdfController @Inject() (
   cc: ControllerComponents,
-  html2Pdf: PdfConnector,
   xslFo2Pdf: XslFo2PdfBytesFunction,
   view: PdfIndex
 )(implicit ec: ExecutionContext)
@@ -41,14 +39,7 @@ class PdfController @Inject() (
     Ok(view())
   }
 
-  private def generatePdfDocumentBytes(pdfReport: PdfGeneratorRequest[_], useApacheFop: Boolean): Future[Array[Byte]] =
-    if (useApacheFop) {
-      Future.successful(xslFo2Pdf(pdfReport.xmlFoDocument()))
-    } else {
-      html2Pdf.generatePdf(pdfReport.htmlDocument())
-    }
-
-  def pdf(useNewGenerator: Boolean = false, formId: String, dataId: String): Action[AnyContent] =
+  def pdf(formId: String, dataId: String): Action[AnyContent] =
     Action.async { _ =>
       val dataEmp = Map(
         "emp_isEnd_NO_isAdd_NO"  -> emp_isEnd_NO_isAdd_NO,
@@ -71,7 +62,9 @@ class PdfController @Inject() (
         throw new Exception("unknown form")
       }
 
-      generatePdfDocumentBytes(request, useNewGenerator).map(bytes => Ok(ByteString.apply(bytes)).as("application/pdf"))
+      Future
+        .successful(xslFo2Pdf(request.xmlFoDocument()))
+        .map(bytes => Ok(ByteString.apply(bytes)).as("application/pdf"))
     }
 }
 
