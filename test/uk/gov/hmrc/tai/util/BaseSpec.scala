@@ -1,5 +1,5 @@
 /*
- * Copyright 2026 HM Revenue & Customs
+ * Copyright 2023 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,6 +30,7 @@ import play.api.test.{FakeRequest, Injecting}
 import uk.gov.hmrc.domain.{Nino, NinoGenerator}
 import uk.gov.hmrc.http.{BadGatewayException, BadRequestException, HeaderCarrier, InternalServerException, NotFoundException, SessionId}
 import uk.gov.hmrc.tai.config.CustomErrorHandler
+import uk.gov.hmrc.tai.connectors.cache.CacheId
 import uk.gov.hmrc.tai.controllers.FakeTaiPlayApplication
 import uk.gov.hmrc.tai.controllers.auth.AuthJourney
 
@@ -48,9 +49,12 @@ trait BaseSpec
   lazy val loggedInAuthenticationAuthJourney: AuthJourney = FakeAuthJourney
   lazy val cc: ControllerComponents = stubControllerComponents()
 
-  implicit lazy val hc: HeaderCarrier = HeaderCarrier(sessionId = Some(SessionId("some session id")))
+  val sessionIdValue: String = "some session id"
+  implicit lazy val hc: HeaderCarrier = HeaderCarrier(sessionId = Some(SessionId(sessionIdValue)))
   val nino: Nino = NinoGenerator().nextNino
   val otherNino: Nino = NinoGenerator().nextNino
+  val cacheId: CacheId = CacheId(nino)
+  val cacheIdNoSession: CacheId = CacheId.noSession(nino)
 
   override implicit lazy val app: Application =
     GuiceApplicationBuilder()

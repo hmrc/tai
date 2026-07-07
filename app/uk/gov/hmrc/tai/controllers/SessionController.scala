@@ -1,5 +1,5 @@
 /*
- * Copyright 2026 HM Revenue & Customs
+ * Copyright 2023 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,7 +34,7 @@ class SessionController @Inject() (
 ) extends BackendController(cc) {
 
   def invalidateCache: Action[AnyContent] = authentication.authWithUserDetails.async { implicit request =>
-    sessionRepository.deleteAllFromSession(request.nino).map { _ =>
+    sessionRepository.deleteAllFromSession.map { _ =>
       Accepted
     }
   }

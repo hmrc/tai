@@ -20,28 +20,26 @@ import play.api.mvc.*
 import play.api.test.Helpers
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.tai.controllers.auth.AuthJourney
-import uk.gov.hmrc.tai.model.AuthenticatedRequest
 
 import scala.concurrent.{ExecutionContext, Future}
 
 object FakeAuthJourney extends AuthJourney {
-  private val actionBuilderFixture: AuthenticatedActionBuilderFixture = new AuthenticatedActionBuilderFixture {
-    override def invokeBlock[A](request: Request[A], block: AuthenticatedRequest[A] => Future[Result]): Future[Result] =
-      block(AuthenticatedRequest(request, Nino("AA000003D")))
+  private val actionBuilderFixture = new ActionBuilderFixture {
+    override def invokeBlock[A](request: Request[A], block: Request[A] => Future[Result]): Future[Result] =
+      block(request)
   }
 
-  override val authWithUserDetails: AuthenticatedActionBuilderFixture = actionBuilderFixture
+  override val authWithUserDetails: ActionBuilderFixture = actionBuilderFixture
 
-  override def authWithUserDetails(nino: Nino): AuthenticatedActionBuilderFixture = actionBuilderFixture
+  override def authWithUserDetails(nino: Nino): ActionBuilderFixture = actionBuilderFixture
 
-  override val authForEmployeeExpenses: AuthenticatedActionBuilderFixture = actionBuilderFixture
+  override val authForEmployeeExpenses: ActionBuilderFixture = actionBuilderFixture
 
-  override def authForEmployeeExpenses(nino: Nino): AuthenticatedActionBuilderFixture = actionBuilderFixture
+  override def authForEmployeeExpenses(nino: Nino): ActionBuilderFixture = actionBuilderFixture
 }
 
-trait AuthenticatedActionBuilderFixture extends ActionBuilder[AuthenticatedRequest, AnyContent] {
-
-  override def invokeBlock[A](request: Request[A], block: AuthenticatedRequest[A] => Future[Result]): Future[Result]
+trait ActionBuilderFixture extends ActionBuilder[Request, AnyContent] {
+  override def invokeBlock[A](a: Request[A], block: Request[A] => Future[Result]): Future[Result]
 
   override def parser: BodyParser[AnyContent] = Helpers.stubBodyParser()
 
