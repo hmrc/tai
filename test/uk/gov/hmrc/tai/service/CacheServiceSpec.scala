@@ -1,5 +1,5 @@
 /*
- * Copyright 2026 HM Revenue & Customs
+ * Copyright 2024 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -53,60 +53,59 @@ class CacheServiceSpec extends BaseSpec {
 
   "cacheEither" must {
     "return right block value when not in session repository and save to session repository" in {
-      when(mockTaiSessionCacheRepository.getEitherFromSession(any(), any())(any())).thenReturn(Future.successful(None))
-      when(mockTaiSessionCacheRepository.putSession(any(), any(), any())(any(), any()))
+      when(mockTaiSessionCacheRepository.getEitherFromSession(any())(any(), any())).thenReturn(Future.successful(None))
+      when(mockTaiSessionCacheRepository.putSession(any(), any())(any(), any(), any()))
         .thenReturn(Future.successful(Tuple2("", "")))
       val block = Future.successful[Either[UpstreamErrorResponse, String]](Right(dummyValue))
-      whenReady(sut.cacheEither(key, nino)(block).unsafeToFuture()) { result =>
+      whenReady(sut.cacheEither(key)(block).unsafeToFuture()) { result =>
         result mustBe Right(dummyValue)
-        verify(mockTaiSessionCacheRepository, times(1)).getEitherFromSession(any(), any())(any())
+        verify(mockTaiSessionCacheRepository, times(1)).getEitherFromSession(any())(any(), any())
         verify(mockTaiSessionCacheRepository, times(1)).putSession(
           any(),
-          ArgumentMatchers.eq(Right[UpstreamErrorResponse, String](dummyValue)),
-          any()
-        )(any(), any())
+          ArgumentMatchers.eq(Right[UpstreamErrorResponse, String](dummyValue))
+        )(any(), any(), any())
         verify(mockCacheConfig, times(0)).cacheErrorInSecondsTTL
       }
     }
     "return right cached block value when in session repository and don't re-save to session repository" in {
-      when(mockTaiSessionCacheRepository.getEitherFromSession(any(), any())(any()))
+      when(mockTaiSessionCacheRepository.getEitherFromSession(any())(any(), any()))
         .thenReturn(Future.successful(Some(rightUpstreamErrorResponseWrapper)))
       val block = Future.successful[Either[UpstreamErrorResponse, String]](Right(dummyValue))
-      whenReady(sut.cacheEither(key, nino)(block).unsafeToFuture()) { result =>
+      whenReady(sut.cacheEither(key)(block).unsafeToFuture()) { result =>
         result mustBe Right(secondDummyValue)
-        verify(mockTaiSessionCacheRepository, times(1)).getEitherFromSession(any(), any())(any())
-        verify(mockTaiSessionCacheRepository, times(0)).putSession(any(), any(), any())(any(), any())
+        verify(mockTaiSessionCacheRepository, times(1)).getEitherFromSession(any())(any(), any())
+        verify(mockTaiSessionCacheRepository, times(0)).putSession(any(), any())(any(), any(), any())
         verify(mockCacheConfig, times(0)).cacheErrorInSecondsTTL
       }
     }
 
     "treat cache read failure (ecryption/deserialisation error) as cache miss and re-execute block" in {
-      when(mockTaiSessionCacheRepository.getEitherFromSession(any(), any())(any()))
+      when(mockTaiSessionCacheRepository.getEitherFromSession(any())(any(), any()))
         .thenReturn(Future.successful(None))
-      when(mockTaiSessionCacheRepository.putSession(any(), any(), any())(any(), any()))
+      when(mockTaiSessionCacheRepository.putSession(any(), any())(any(), any(), any()))
         .thenReturn(Future.successful(Tuple2("", "")))
 
       val block = Future.successful[Either[UpstreamErrorResponse, String]](Right(dummyValue))
 
-      whenReady(sut.cacheEither(key, nino)(block).unsafeToFuture()) { result =>
+      whenReady(sut.cacheEither(key)(block).unsafeToFuture()) { result =>
         result mustBe Right(dummyValue)
-        verify(mockTaiSessionCacheRepository, times(1)).getEitherFromSession(any(), any())(any())
+        verify(mockTaiSessionCacheRepository, times(1)).getEitherFromSession(any())(any(), any())
         verify(mockTaiSessionCacheRepository, times(1))
-          .putSession(any(), ArgumentMatchers.eq(Right[UpstreamErrorResponse, String](dummyValue)), any())(any(), any())
+          .putSession(any(), ArgumentMatchers.eq(Right[UpstreamErrorResponse, String](dummyValue)))(any(), any(), any())
       }
     }
 
     "return left (error) from block when not in session repository and save to session repository if appConfig.cacheErrorInSecondsTTL > 0" in {
-      when(mockTaiSessionCacheRepository.getEitherFromSession(any(), any())(any())).thenReturn(Future.successful(None))
-      when(mockTaiSessionCacheRepository.putSession(any(), any(), any())(any(), any()))
+      when(mockTaiSessionCacheRepository.getEitherFromSession(any())(any(), any())).thenReturn(Future.successful(None))
+      when(mockTaiSessionCacheRepository.putSession(any(), any())(any(), any(), any()))
         .thenReturn(Future.successful(Tuple2("", "")))
       val block = Future.successful[Either[UpstreamErrorResponse, String]](leftUpstreamErrorResponse)
-      whenReady(sut.cacheEither(key, nino)(block).unsafeToFuture()) { result =>
+      whenReady(sut.cacheEither(key)(block).unsafeToFuture()) { result =>
         result mustBe leftUpstreamErrorResponse
         val putArgCaptor: ArgumentCaptor[Either[UpstreamErrorResponse, String]] =
           ArgumentCaptor.forClass(classOf[Either[UpstreamErrorResponse, String]])
-        verify(mockTaiSessionCacheRepository, times(1)).getEitherFromSession(any(), any())(any())
-        verify(mockTaiSessionCacheRepository, times(1)).putSession(any(), putArgCaptor.capture(), any())(any(), any())
+        verify(mockTaiSessionCacheRepository, times(1)).getEitherFromSession(any())(any(), any())
+        verify(mockTaiSessionCacheRepository, times(1)).putSession(any(), putArgCaptor.capture())(any(), any(), any())
         putArgCaptor.getValue.swap.map(ex =>
           UpstreamErrorResponse(ex.message, ex.statusCode, ex.reportAs)
         ) mustBe Right(upstreamErrorResponse)
@@ -115,16 +114,16 @@ class CacheServiceSpec extends BaseSpec {
     }
 
     "return left (error) from block when not in session repository and save to session repository" in {
-      when(mockTaiSessionCacheRepository.getEitherFromSession(any(), any())(any())).thenReturn(Future.successful(None))
-      when(mockTaiSessionCacheRepository.putSession(any(), any(), any())(any(), any()))
+      when(mockTaiSessionCacheRepository.getEitherFromSession(any())(any(), any())).thenReturn(Future.successful(None))
+      when(mockTaiSessionCacheRepository.putSession(any(), any())(any(), any(), any()))
         .thenReturn(Future.successful(Tuple2("", "")))
       val block = Future.successful[Either[UpstreamErrorResponse, String]](leftUpstreamErrorResponse)
-      whenReady(sut.cacheEither(key, nino)(block).unsafeToFuture()) { result =>
+      whenReady(sut.cacheEither(key)(block).unsafeToFuture()) { result =>
         result mustBe leftUpstreamErrorResponse
         val putArgCaptor: ArgumentCaptor[Either[UpstreamErrorResponse, String]] =
           ArgumentCaptor.forClass(classOf[Either[UpstreamErrorResponse, String]])
-        verify(mockTaiSessionCacheRepository, times(1)).getEitherFromSession(any(), any())(any())
-        verify(mockTaiSessionCacheRepository, times(1)).putSession(any(), putArgCaptor.capture(), any())(any(), any())
+        verify(mockTaiSessionCacheRepository, times(1)).getEitherFromSession(any())(any(), any())
+        verify(mockTaiSessionCacheRepository, times(1)).putSession(any(), putArgCaptor.capture())(any(), any(), any())
         putArgCaptor.getValue.swap.map(ex =>
           UpstreamErrorResponse(ex.message, ex.statusCode, ex.reportAs)
         ) mustBe Right(upstreamErrorResponse)
@@ -133,26 +132,26 @@ class CacheServiceSpec extends BaseSpec {
     }
     "return left (error) from block when not in session repository and NOT save to session repository when error ttl zero" in {
       when(mockCacheConfig.cacheErrorInSecondsTTL).thenReturn(0L)
-      when(mockTaiSessionCacheRepository.getEitherFromSession(any(), any())(any())).thenReturn(Future.successful(None))
-      when(mockTaiSessionCacheRepository.putSession(any(), any(), any())(any(), any()))
+      when(mockTaiSessionCacheRepository.getEitherFromSession(any())(any(), any())).thenReturn(Future.successful(None))
+      when(mockTaiSessionCacheRepository.putSession(any(), any())(any(), any(), any()))
         .thenReturn(Future.successful(Tuple2("", "")))
       val block = Future.successful[Either[UpstreamErrorResponse, String]](leftUpstreamErrorResponse)
-      whenReady(sut.cacheEither(key, nino)(block).unsafeToFuture()) { result =>
+      whenReady(sut.cacheEither(key)(block).unsafeToFuture()) { result =>
         result mustBe leftUpstreamErrorResponse
-        verify(mockTaiSessionCacheRepository, times(1)).getEitherFromSession(any(), any())(any())
-        verify(mockTaiSessionCacheRepository, times(0)).putSession(any(), any(), any())(any(), any())
+        verify(mockTaiSessionCacheRepository, times(1)).getEitherFromSession(any())(any(), any())
+        verify(mockTaiSessionCacheRepository, times(0)).putSession(any(), any())(any(), any(), any())
         verify(mockCacheConfig, times(1)).cacheErrorInSecondsTTL
       }
     }
 
     "return left (error) from session repository when in session repository and don't re-save to session repository" in {
-      when(mockTaiSessionCacheRepository.getEitherFromSession(any(), any())(any()))
+      when(mockTaiSessionCacheRepository.getEitherFromSession(any())(any(), any()))
         .thenReturn(Future.successful(Some(leftUpstreamErrorResponse)))
       val block = Future.successful[Either[UpstreamErrorResponse, String]](leftUpstreamErrorResponse)
-      whenReady(sut.cacheEither(key, nino)(block).unsafeToFuture()) { result =>
+      whenReady(sut.cacheEither(key)(block).unsafeToFuture()) { result =>
         result mustBe leftUpstreamErrorResponse
-        verify(mockTaiSessionCacheRepository, times(1)).getEitherFromSession(any(), any())(any())
-        verify(mockTaiSessionCacheRepository, times(0)).putSession(any(), any(), any())(any(), any())
+        verify(mockTaiSessionCacheRepository, times(1)).getEitherFromSession(any())(any(), any())
+        verify(mockTaiSessionCacheRepository, times(0)).putSession(any(), any())(any(), any(), any())
         verify(mockCacheConfig, times(0)).cacheErrorInSecondsTTL
       }
     }

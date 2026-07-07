@@ -1,5 +1,5 @@
 /*
- * Copyright 2026 HM Revenue & Customs
+ * Copyright 2023 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -82,10 +82,10 @@ class CachingRtiConnector @Inject() (
     val key = s"getPaymentsForYear-$nino-${taxYear.year}"
     EitherT(
       withRetry(exceptionsToRetry = lockedException) {
-        withLock(key, nino) {
-          cacheEither(key, nino)(
+        withLock(key) {
+          cacheEither(key)(
             underlying.getPaymentsForYear(nino: Nino, taxYear: TaxYear).value
-          )(sensitiveFormatService.sensitiveFormatFromReadsWritesJsArray[Seq[AnnualAccount]])
+          )(implicitly, sensitiveFormatService.sensitiveFormatFromReadsWritesJsArray[Seq[AnnualAccount]])
         }
       }
     )
