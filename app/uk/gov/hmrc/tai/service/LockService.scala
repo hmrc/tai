@@ -19,7 +19,8 @@ package uk.gov.hmrc.tai.service
 import cats.effect.IO
 import com.google.inject.Inject
 import play.api.Logging
-import uk.gov.hmrc.http.{HeaderCarrier, LockedException}
+import uk.gov.hmrc.domain.Nino
+import uk.gov.hmrc.http.LockedException
 import uk.gov.hmrc.mongo.lock.MongoLockRepository
 import uk.gov.hmrc.tai.config.MongoConfig
 
@@ -37,8 +38,8 @@ class LockService @Inject() (lockRepo: MongoLockRepository, appConfig: MongoConf
     result
   }
 
-  def withLock[A](key: String)(block: => IO[A])(implicit hc: HeaderCarrier): IO[A] =
-    IO.fromFuture(IO(takeLock(key)))
+  def withLock[A](key: String, nino: Nino)(block: => IO[A]): IO[A] =
+    IO.fromFuture(IO(takeLock(key, nino)))
       .bracket { isLockAcquired =>
         if (isLockAcquired) {
           block
@@ -46,13 +47,13 @@ class LockService @Inject() (lockRepo: MongoLockRepository, appConfig: MongoConf
           IO.raiseError[A](new LockedException(s"Lock for $key could not be acquired"))
         }
       } { _ =>
-        IO.fromFuture(IO(releaseLock(key))).recoverWith(recoverRelease(IO((): Unit)))
+        IO.fromFuture(IO(releaseLock(key, nino))).recoverWith(recoverRelease(IO((): Unit)))
       }
 
-  private def takeLock[L](owner: String)(implicit hc: HeaderCarrier): Future[Boolean] =
+  private def takeLock[L](owner: String, nino: Nino): Future[Boolean] =
     lockRepo
       .takeLock(
-        lockId = sessionId,
+        lockId = nino.nino,
         owner = owner,
         ttl = Duration(appConfig.mongoLockTTL, MILLISECONDS) // this need to be longer than the timeout from http_verbs
       )
@@ -65,16 +66,9 @@ class LockService @Inject() (lockRepo: MongoLockRepository, appConfig: MongoConf
         true
       }
 
-  private def sessionId(implicit hc: HeaderCarrier): String = hc.sessionId.fold {
-    val ex = new RuntimeException("Session id is missing from HeaderCarrier")
-    logger.error(ex.getMessage, ex)
-    java.util.UUID.randomUUID.toString
-  }(_.value)
-
-  private def releaseLock[L](owner: String)(implicit hc: HeaderCarrier): Future[Unit] =
-    lockRepo
-      .releaseLock(
-        lockId = sessionId,
-        owner = owner
-      )
+  private def releaseLock[L](owner: String, nino: Nino): Future[Unit] =
+    lockRepo.releaseLock(
+      lockId = nino.nino,
+      owner = owner
+    )
 }
