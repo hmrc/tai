@@ -16,7 +16,6 @@
 
 package uk.gov.hmrc.tai.model.admin
 
-import uk.gov.hmrc.mongoFeatureToggles.model.Environment.{Environment, Local, Production, Qa, Staging}
 import uk.gov.hmrc.mongoFeatureToggles.model.FeatureFlagName
 
 case object RtiCallToggle extends FeatureFlagName {
@@ -24,12 +23,4 @@ case object RtiCallToggle extends FeatureFlagName {
   override val description: Option[String] = Some(
     "Enable/disable calls to the RTI API for individual payment information: '/rti/individual/payments/nino/:nino'"
   )
-}
-
-case object UseApacheFopLibrary extends FeatureFlagName {
-  override val name: String = "use-apache-fop-library"
-  override val description: Option[String] = Some(
-    "Use ApacheFopLibrary instead of PDF_GENERATOR_SERVICE"
-  )
-  override val lockedEnvironments: Seq[Environment] = Seq(Local, Staging, Qa, Production)
 }

@@ -31,22 +31,10 @@
                     EmploymentIFormReportRequest
                 </th>
                 <td>
-                    <a href="@{testOnly.controllers.routes.PdfController.pdf(true,"EmploymentIFormReportRequest","emp_isEnd_NO_isAdd_NO")}">emp_isEnd_NO_isAdd_NO</a>
+                    <a href="@{testOnly.controllers.routes.PdfController.pdf("EmploymentIFormReportRequest","emp_isEnd_NO_isAdd_NO")}">emp_isEnd_NO_isAdd_NO</a>
                 </td>
                 <td>
-                    <a href="@{testOnly.controllers.routes.PdfController.pdf(false,"EmploymentIFormReportRequest","emp_isEnd_NO_isAdd_NO")}">emp_isEnd_NO_isAdd_NO</a>
-                </td>
-            </tr>
-
-            <tr>
-                <th>
-                    EmploymentIFormReportRequest
-                </th>
-                <td>
-                    <a href="@{testOnly.controllers.routes.PdfController.pdf(true,"EmploymentIFormReportRequest","emp_isEnd_YES_isAdd_NO")}">emp_isEnd_YES_isAdd_NO</a>
-                </td>
-                <td>
-                    <a href="@{testOnly.controllers.routes.PdfController.pdf(false,"EmploymentIFormReportRequest","emp_isEnd_YES_isAdd_NO")}">emp_isEnd_YES_isAdd_NO</a>
+                    <a href="@{testOnly.controllers.routes.PdfController.pdf("EmploymentIFormReportRequest","emp_isEnd_NO_isAdd_NO")}">emp_isEnd_NO_isAdd_NO</a>
                 </td>
             </tr>
 
@@ -55,10 +43,22 @@
                     EmploymentIFormReportRequest
                 </th>
                 <td>
-                    <a href="@{testOnly.controllers.routes.PdfController.pdf(true,"EmploymentIFormReportRequest","emp_isEnd_NO_isAdd_YES")}">emp_isEnd_NO_isAdd_YES</a>
+                    <a href="@{testOnly.controllers.routes.PdfController.pdf("EmploymentIFormReportRequest","emp_isEnd_YES_isAdd_NO")}">emp_isEnd_YES_isAdd_NO</a>
                 </td>
                 <td>
-                    <a href="@{testOnly.controllers.routes.PdfController.pdf(false,"EmploymentIFormReportRequest","emp_isEnd_NO_isAdd_YES")}">emp_isEnd_NO_isAdd_YES</a>
+                    <a href="@{testOnly.controllers.routes.PdfController.pdf("EmploymentIFormReportRequest","emp_isEnd_YES_isAdd_NO")}">emp_isEnd_YES_isAdd_NO</a>
+                </td>
+            </tr>
+
+            <tr>
+                <th>
+                    EmploymentIFormReportRequest
+                </th>
+                <td>
+                    <a href="@{testOnly.controllers.routes.PdfController.pdf("EmploymentIFormReportRequest","emp_isEnd_NO_isAdd_YES")}">emp_isEnd_NO_isAdd_YES</a>
+                </td>
+                <td>
+                    <a href="@{testOnly.controllers.routes.PdfController.pdf("EmploymentIFormReportRequest","emp_isEnd_NO_isAdd_YES")}">emp_isEnd_NO_isAdd_YES</a>
                 </td>
             </tr>
 
@@ -67,22 +67,10 @@
                     PensionProviderIFormRequest
                 </th>
                 <td>
-                    <a href="@{testOnly.controllers.routes.PdfController.pdf(true,"PensionProviderIFormRequest","emp_isEnd_NO_isAdd_NO")}">emp_isEnd_NO_isAdd_NO</a>
+                    <a href="@{testOnly.controllers.routes.PdfController.pdf("PensionProviderIFormRequest","emp_isEnd_NO_isAdd_NO")}">emp_isEnd_NO_isAdd_NO</a>
                 </td>
                 <td>
-                    <a href="@{testOnly.controllers.routes.PdfController.pdf(false,"PensionProviderIFormRequest","emp_isEnd_NO_isAdd_NO")}">emp_isEnd_NO_isAdd_NO</a>
-                </td>
-            </tr>
-
-            <tr>
-                <th>
-                    RemoveCompanyBenefitIFormRequest
-                </th>
-                <td>
-                    <a href="@{testOnly.controllers.routes.PdfController.pdf(true,"RemoveCompanyBenefitIFormRequest","rcb_isEnd_NO")}">rcb_isEnd_NO</a>
-                </td>
-                <td>
-                    <a href="@{testOnly.controllers.routes.PdfController.pdf(false,"RemoveCompanyBenefitIFormRequest","rcb_isEnd_NO")}">rcb_isEnd_NO</a>
+                    <a href="@{testOnly.controllers.routes.PdfController.pdf("PensionProviderIFormRequest","emp_isEnd_NO_isAdd_NO")}">emp_isEnd_NO_isAdd_NO</a>
                 </td>
             </tr>
 
@@ -91,10 +79,22 @@
                     RemoveCompanyBenefitIFormRequest
                 </th>
                 <td>
-                    <a href="@{testOnly.controllers.routes.PdfController.pdf(true,"RemoveCompanyBenefitIFormRequest","rcb_isEnd_YES")}">rcb_isEnd_YES</a>
+                    <a href="@{testOnly.controllers.routes.PdfController.pdf("RemoveCompanyBenefitIFormRequest","rcb_isEnd_NO")}">rcb_isEnd_NO</a>
                 </td>
                 <td>
-                    <a href="@{testOnly.controllers.routes.PdfController.pdf(false,"RemoveCompanyBenefitIFormRequest","rcb_isEnd_YES")}">rcb_isEnd_YES</a>
+                    <a href="@{testOnly.controllers.routes.PdfController.pdf("RemoveCompanyBenefitIFormRequest","rcb_isEnd_NO")}">rcb_isEnd_NO</a>
+                </td>
+            </tr>
+
+            <tr>
+                <th>
+                    RemoveCompanyBenefitIFormRequest
+                </th>
+                <td>
+                    <a href="@{testOnly.controllers.routes.PdfController.pdf("RemoveCompanyBenefitIFormRequest","rcb_isEnd_YES")}">rcb_isEnd_YES</a>
+                </td>
+                <td>
+                    <a href="@{testOnly.controllers.routes.PdfController.pdf("RemoveCompanyBenefitIFormRequest","rcb_isEnd_YES")}">rcb_isEnd_YES</a>
                 </td>
             </tr>
 

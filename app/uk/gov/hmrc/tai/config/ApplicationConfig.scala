@@ -30,11 +30,6 @@ trait HodConfig {
 abstract class BaseConfig
 
 @Singleton
-class PdfConfig @Inject() (servicesConfig: ServicesConfig) extends BaseConfig {
-  lazy val baseURL: String = servicesConfig.baseUrl("pdf-generator-service")
-}
-
-@Singleton
 class FandFConfig @Inject() (servicesConfig: ServicesConfig) extends BaseConfig {
   lazy val baseURL: String = servicesConfig.baseUrl("fandf")
 }
