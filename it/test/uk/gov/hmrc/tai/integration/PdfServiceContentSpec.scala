@@ -18,34 +18,24 @@ package uk.gov.hmrc.tai.integration
 import org.apache.pdfbox.Loader
 import org.apache.pdfbox.text.PDFTextStripper
 import org.apache.pekko.util.Timeout
-import org.mockito.ArgumentMatchers.any
 import org.scalatest.prop.TableDrivenPropertyChecks.forAll
 import org.scalatest.prop.TableFor3
 import org.scalatest.prop.Tables.Table
 import play.api.test.Helpers.await
-import uk.gov.hmrc.mongoFeatureToggles.model.FeatureFlag
-import uk.gov.hmrc.mongoFeatureToggles.services.FeatureFlagService
-import uk.gov.hmrc.tai.connectors.PdfConnector
-import uk.gov.hmrc.tai.model.admin.UseApacheFopLibrary
 import uk.gov.hmrc.tai.model.templates.{EmploymentPensionViewModel, RemoveCompanyBenefitViewModel}
 import uk.gov.hmrc.tai.service.PdfService
 import uk.gov.hmrc.tai.service.PdfService.{EmploymentIFormReportRequest, PdfGeneratorRequest, PensionProviderIFormRequest, RemoveCompanyBenefitIFormRequest}
 import uk.gov.hmrc.tai.service.helper.XslFo2PdfBytesFunction
 import uk.gov.hmrc.tai.util.BaseSpec
-import org.mockito.Mockito.when
 
 import java.nio.file.{Files, Path, Paths}
 import java.util.concurrent.TimeUnit
-import scala.concurrent.Future
 
 class PdfServiceContentSpec extends BaseSpec with PdfServiceContentSpecHelper {
 
   private val sut: PdfService = {
     val injectedXslFo2PdfBytesFunction = inject[XslFo2PdfBytesFunction]
-    val mockHtml2Pdf = mock[PdfConnector]
-    val mockFeatureFlagService = mock[FeatureFlagService]
-    when(mockFeatureFlagService.get(any())).thenReturn(Future.successful(FeatureFlag(UseApacheFopLibrary, true)))
-    new PdfService(mockHtml2Pdf, injectedXslFo2PdfBytesFunction, mockFeatureFlagService)
+    new PdfService(injectedXslFo2PdfBytesFunction)
   }
 
   "PdfService generatePdfDocumentBytes, when using Apache FOP" should {
@@ -91,10 +81,10 @@ trait PdfServiceContentSpecHelper {
     "my story"
   )
 
-  val employmentPensionModel_isEnd_YES_isAdd_NO =
+  val employmentPensionModel_isEnd_YES_isAdd_NO: EmploymentPensionViewModel =
     employmentPensionModel_isEnd_NO_isAdd_NO.copy(isEnd = "Yes")
 
-  val employmentPensionModel_isEnd_NO_isAdd_YES =
+  val employmentPensionModel_isEnd_NO_isAdd_YES: EmploymentPensionViewModel =
     employmentPensionModel_isEnd_NO_isAdd_NO.copy(isAdd = "Yes")
 
   val removeBenefit_isEnd_NO = RemoveCompanyBenefitViewModel(
@@ -116,7 +106,7 @@ trait PdfServiceContentSpecHelper {
     "On or after 3 March 2100"
   )
 
-  val removeBenefit_isEnd_YES =
+  val removeBenefit_isEnd_YES: RemoveCompanyBenefitViewModel =
     removeBenefit_isEnd_NO.copy(isEnd = "Yes")
 
   val table: TableFor3[String, PdfGeneratorRequest[_], Path] = Table(

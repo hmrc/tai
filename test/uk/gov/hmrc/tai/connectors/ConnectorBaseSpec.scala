@@ -65,7 +65,6 @@ trait ConnectorBaseSpec
         "microservice.services.paye.port"                     -> server.port(),
         "microservice.services.file-upload.port"              -> server.port(),
         "microservice.services.file-upload-frontend.port"     -> server.port(),
-        "microservice.services.pdf-generator-service.port"    -> server.port(),
         "microservice.services.nps-hod.originatorId"          -> npsOriginatorId,
         "microservice.services.hip-hod.originatorId"          -> hipOriginatorId,
         "microservice.services.des-hod.originatorId"          -> desOriginatorId,

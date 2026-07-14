@@ -32,11 +32,6 @@ class RtiUrls @Inject() (config: DesConfig) {
 }
 
 @Singleton
-class PdfUrls @Inject() (config: PdfConfig) {
-  def generatePdfUrl = s"${config.baseURL}/pdf-generator-service/generate"
-}
-
-@Singleton
 class FileUploadUrls @Inject() (config: FileUploadConfig) {
 
   def envelopesUrl = s"${config.baseURL}/file-upload/envelopes"
