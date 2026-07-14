@@ -1,5 +1,5 @@
 /*
- * Copyright 2026 HM Revenue & Customs
+ * Copyright 2024 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,9 +43,9 @@ class CachingTaxCodeHistoryConnector @Inject() (
 
   override def taxCodeHistory(nino: Nino, year: TaxYear)(implicit hc: HeaderCarrier): Future[TaxCodeHistory] = {
     val cacheKey = s"tax-code-history-$nino-${year.year}"
-    cachingConnector.cache(cacheKey, nino) {
+    cachingConnector.cache(cacheKey) {
       underlying.taxCodeHistory(nino, year)
-    }(sensitiveFormatService.sensitiveFormatFromReadsWrites[TaxCodeHistory])
+    }(sensitiveFormatService.sensitiveFormatFromReadsWrites[TaxCodeHistory], implicitly)
   }
 
 }
