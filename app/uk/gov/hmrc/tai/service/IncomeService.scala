@@ -19,8 +19,8 @@ package uk.gov.hmrc.tai.service
 import cats.data.EitherT
 import com.google.inject.{Inject, Singleton}
 import play.api.Logging
-import play.api.mvc.Request
 import play.api.http.Status.NOT_FOUND
+import play.api.mvc.Request
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.{HeaderCarrier, UpstreamErrorResponse}
 import uk.gov.hmrc.tai.audit.Auditor
@@ -29,7 +29,7 @@ import uk.gov.hmrc.tai.connectors.{CitizenDetailsConnector, TaxAccountConnector}
 import uk.gov.hmrc.tai.model.domain.*
 import uk.gov.hmrc.tai.model.domain.income.*
 import uk.gov.hmrc.tai.model.domain.response.*
-import uk.gov.hmrc.tai.model.hip.reads.OtherNonTaxCodeIncomeHipReads
+import uk.gov.hmrc.tai.model.hip.reads.{OtherNonTaxCodeIncomeHipReads, TaxCodeIncomeHipReads}
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.service.helper.TaxCodeIncomeHelper
 
@@ -147,6 +147,8 @@ class IncomeService @Inject() (
 
   def incomes(nino: Nino, year: TaxYear)(implicit hc: HeaderCarrier): Future[Incomes] =
     taxAccountConnector.taxAccount(nino, year).flatMap { jsValue =>
+      val taxCodeIncomes = jsValue.as[Seq[TaxCodeIncome]](TaxCodeIncomeHipReads.taxCodeIncomeSourcesReads)
+
       val nonTaxCodeIncome =
         jsValue.as[Seq[OtherNonTaxCodeIncome]](OtherNonTaxCodeIncomeHipReads.otherNonTaxCodeIncomeReads)
       val (untaxedInterestIncome, otherNonTaxCodeIncome) =
@@ -157,10 +159,10 @@ class IncomeService @Inject() (
         val untaxedInterest =
           UntaxedInterest(income.incomeComponentType, income.employmentId, income.amount, income.description)
         Future.successful(
-          Incomes(Seq.empty[TaxCodeIncome], NonTaxCodeIncome(Some(untaxedInterest), otherNonTaxCodeIncome))
+          Incomes(taxCodeIncomes, NonTaxCodeIncome(Some(untaxedInterest), otherNonTaxCodeIncome))
         )
       } else {
-        Future.successful(Incomes(Seq.empty[TaxCodeIncome], NonTaxCodeIncome(None, otherNonTaxCodeIncome)))
+        Future.successful(Incomes(taxCodeIncomes, NonTaxCodeIncome(None, otherNonTaxCodeIncome)))
       }
     }
 

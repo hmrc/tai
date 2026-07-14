@@ -722,6 +722,82 @@ class IncomeServiceSpec @Inject (config: IncomeDetailsConfig) extends BaseSpec {
           UntaxedInterest(UntaxedInterestIncome, Some(1), 100, "Untaxed Interest")
         )
       }
+
+      "return tax code incomes" when {
+        "employmentDetailsList contains a live employment" in {
+          val taxAccountJson = Json.parse(
+            """{
+              |  "employmentDetailsList": [
+              |    {
+              |      "employmentSequenceNumber": 1,
+              |      "payeSchemeOperatorName": "Employer One",
+              |      "taxCode": "1257L",
+              |      "basisOfOperation": "Cumulative",
+              |      "employmentStatus": "Live"
+              |    }
+              |  ]
+              |}""".stripMargin
+          )
+          when(mockTaxAccountConnector.taxAccount(any(), any())(any()))
+            .thenReturn(Future.successful(taxAccountJson))
+          val sut = createSUT(taxAccountConnector = mockTaxAccountConnector)
+          val result = sut.incomes(nino, TaxYear()).futureValue
+
+          result.taxCodeIncomes mustBe Seq(
+            TaxCodeIncome(
+              EmploymentIncome,
+              Some(1),
+              BigDecimal(0),
+              "EmploymentIncome",
+              "1257L",
+              "Employer One",
+              OtherBasisOperation,
+              Live,
+              BigDecimal(0),
+              BigDecimal(0),
+              BigDecimal(0)
+            )
+          )
+          result.nonTaxCodeIncomes mustBe NonTaxCodeIncome(None, Seq.empty[OtherNonTaxCodeIncome])
+        }
+
+        "employmentDetailsList contains a pension" in {
+          val taxAccountJson = Json.parse(
+            """{
+              |  "employmentDetailsList": [
+              |    {
+              |      "employmentSequenceNumber": 2,
+              |      "payeSchemeOperatorName": "Pension Provider",
+              |      "taxCode": "BR",
+              |      "basisOfOperation": "Week1/Month1",
+              |      "employmentStatus": "Live",
+              |      "activePension": true
+              |    }
+              |  ]
+              |}""".stripMargin
+          )
+          when(mockTaxAccountConnector.taxAccount(any(), any())(any()))
+            .thenReturn(Future.successful(taxAccountJson))
+          val sut = createSUT(taxAccountConnector = mockTaxAccountConnector)
+          val result = sut.incomes(nino, TaxYear()).futureValue
+
+          result.taxCodeIncomes mustBe Seq(
+            TaxCodeIncome(
+              PensionIncome,
+              Some(2),
+              BigDecimal(0),
+              "PensionIncome",
+              "BR",
+              "Pension Provider",
+              Week1Month1BasisOperation,
+              Live,
+              BigDecimal(0),
+              BigDecimal(0),
+              BigDecimal(0)
+            )
+          )
+        }
+      }
     }
   }
 
