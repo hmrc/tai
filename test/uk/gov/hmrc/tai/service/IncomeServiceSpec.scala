@@ -169,13 +169,19 @@ class IncomeServiceSpec @Inject (config: IncomeDetailsConfig) extends BaseSpec {
 
       val mockEmploymentService = mock[EmploymentService]
       val mockTaxCodeIncomeHelper = mock[TaxCodeIncomeHelper]
-      when(mockTaxCodeIncomeHelper.fetchTaxCodeIncomes(any(), any())(any()))
+      val mockTaxAccountConnector = mock[TaxAccountConnector]
+      when(mockTaxAccountConnector.taxAccount(any(), any())(any())).thenReturn(Future.successful(Json.obj()))
+      when(mockTaxCodeIncomeHelper.fetchTaxCodeIncomes(any[Future[JsValue]]()))
         .thenReturn(Future.successful(taxCodeIncomes))
 
       when(mockEmploymentService.employmentsAsEitherT(any[Nino], any[TaxYear])(any[HeaderCarrier], any()))
         .thenReturn(EitherT.rightT(Employments(Seq(employment, employment2), None)))
 
-      val sut = createSUT(employmentService = mockEmploymentService, taxCodeIncomeHelper = mockTaxCodeIncomeHelper)
+      val sut = createSUT(
+        employmentService = mockEmploymentService,
+        taxCodeIncomeHelper = mockTaxCodeIncomeHelper,
+        taxAccountConnector = mockTaxAccountConnector
+      )
       val result = sut.taxCodeIncomes(nino, TaxYear())(HeaderCarrier(), FakeRequest()).futureValue
 
       result mustBe taxCodeIncomes.map(_.copy(status = Ceased))
@@ -213,13 +219,19 @@ class IncomeServiceSpec @Inject (config: IncomeDetailsConfig) extends BaseSpec {
 
       val mockEmploymentService = mock[EmploymentService]
       val mockTaxCodeIncomeHelper = mock[TaxCodeIncomeHelper]
-      when(mockTaxCodeIncomeHelper.fetchTaxCodeIncomes(any(), any())(any()))
+      val mockTaxAccountConnector = mock[TaxAccountConnector]
+      when(mockTaxAccountConnector.taxAccount(any(), any())(any())).thenReturn(Future.successful(Json.obj()))
+      when(mockTaxCodeIncomeHelper.fetchTaxCodeIncomes(any[Future[JsValue]]()))
         .thenReturn(Future.successful(taxCodeIncomes))
 
       when(mockEmploymentService.employmentsAsEitherT(any[Nino], any[TaxYear])(any[HeaderCarrier], any()))
         .thenReturn(EitherT.rightT(Employments(Seq.empty, None)))
 
-      val sut = createSUT(employmentService = mockEmploymentService, taxCodeIncomeHelper = mockTaxCodeIncomeHelper)
+      val sut = createSUT(
+        employmentService = mockEmploymentService,
+        taxCodeIncomeHelper = mockTaxCodeIncomeHelper,
+        taxAccountConnector = mockTaxAccountConnector
+      )
       val result = sut.taxCodeIncomes(nino, TaxYear())(HeaderCarrier(), FakeRequest()).futureValue
 
       result mustBe taxCodeIncomes
@@ -257,13 +269,19 @@ class IncomeServiceSpec @Inject (config: IncomeDetailsConfig) extends BaseSpec {
 
       val mockEmploymentService = mock[EmploymentService]
       val mockTaxCodeIncomeHelper = mock[TaxCodeIncomeHelper]
-      when(mockTaxCodeIncomeHelper.fetchTaxCodeIncomes(any(), any())(any()))
+      val mockTaxAccountConnector = mock[TaxAccountConnector]
+      when(mockTaxAccountConnector.taxAccount(any(), any())(any())).thenReturn(Future.successful(Json.obj()))
+      when(mockTaxCodeIncomeHelper.fetchTaxCodeIncomes(any[Future[JsValue]]()))
         .thenReturn(Future.successful(taxCodeIncomes))
 
       when(mockEmploymentService.employmentsAsEitherT(any[Nino], any[TaxYear])(any[HeaderCarrier], any()))
         .thenReturn(EitherT.leftT(UpstreamErrorResponse("not found", NOT_FOUND)))
 
-      val sut = createSUT(employmentService = mockEmploymentService, taxCodeIncomeHelper = mockTaxCodeIncomeHelper)
+      val sut = createSUT(
+        employmentService = mockEmploymentService,
+        taxCodeIncomeHelper = mockTaxCodeIncomeHelper,
+        taxAccountConnector = mockTaxAccountConnector
+      )
       val result = sut.taxCodeIncomes(nino, TaxYear())(HeaderCarrier(), FakeRequest()).futureValue
 
       result mustBe taxCodeIncomes

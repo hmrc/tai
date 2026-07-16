@@ -18,7 +18,9 @@ package uk.gov.hmrc.tai.service
 
 import org.mockito.ArgumentMatchers.{any, eq as meq}
 import org.mockito.Mockito.when
+import play.api.libs.json.{JsValue, Json}
 import play.api.test.FakeRequest
+import uk.gov.hmrc.tai.connectors.TaxAccountConnector
 import uk.gov.hmrc.tai.model.domain.*
 import uk.gov.hmrc.tai.model.domain.calculation.*
 import uk.gov.hmrc.tai.model.domain.income.{Live, OtherBasisOperation, TaxCodeIncome}
@@ -42,12 +44,21 @@ class TaxAccountSummaryServiceSpec extends BaseSpec {
   private val mockIncomeService = mock[IncomeService]
   private val mockTotalTaxService = mock[TotalTaxService]
   private val mockTaxAccountHelper = mock[TaxAccountHelper]
+  private val mockTaxAccountConnector = mock[TaxAccountConnector]
+
+  override protected def beforeEach(): Unit = {
+    super.beforeEach()
+    when(mockTaxAccountConnector.taxAccount(any(), any())(any()))
+      .thenReturn(Future.successful(Json.obj()))
+    ()
+  }
 
   private def createSUT() = new TaxAccountSummaryService(
     mockCodingComponentService,
     mockIncomeService,
     mockTotalTaxService,
-    mockTaxAccountHelper
+    mockTaxAccountHelper,
+    mockTaxAccountConnector
   )
 
   "taxFreeAmountCalculation" must {
@@ -131,17 +142,18 @@ class TaxAccountSummaryServiceSpec extends BaseSpec {
           )
         )
 
-        when(mockCodingComponentService.codingComponents(meq(nino), any())(any()))
+        when(mockCodingComponentService.codingComponents(any[Future[JsValue]]()))
           .thenReturn(Future.successful(codingComponents))
 
-        when(mockIncomeService.taxCodeIncomes(meq(nino), any())(any(), any()))
+        when(mockIncomeService.taxCodeIncomes(any[Future[JsValue]](), meq(nino), any())(any(), any()))
           .thenReturn(Future.successful(taxCodeIncomes))
 
-        when(mockTaxAccountHelper.totalEstimatedTax(meq(nino), any())(any()))
+        when(mockTaxAccountHelper.totalEstimatedTax(any[Future[JsValue]]()))
           .thenReturn(Future.successful(BigDecimal(1111)))
-        when(mockTotalTaxService.totalTax(any(), any())(any())).thenReturn(Future.successful(totalTaxDetails))
-        when(mockTotalTaxService.taxFreeAllowance(any(), any())(any())).thenReturn(Future.successful(BigDecimal(100)))
-        when(mockTaxAccountHelper.dateOfTaxAccount(any(), any())(any())).thenReturn(
+        when(mockTotalTaxService.totalTax(any[Future[JsValue]]())).thenReturn(Future.successful(totalTaxDetails))
+        when(mockTotalTaxService.taxFreeAllowance(any[Future[JsValue]]()))
+          .thenReturn(Future.successful(BigDecimal(100)))
+        when(mockTaxAccountHelper.dateOfTaxAccount(any[Future[JsValue]]())).thenReturn(
           Future.successful(Some(LocalDate.of(2026, 1, 1)))
         )
 
@@ -194,16 +206,17 @@ class TaxAccountSummaryServiceSpec extends BaseSpec {
           )
         )
 
-        when(mockCodingComponentService.codingComponents(meq(nino), any())(any()))
+        when(mockCodingComponentService.codingComponents(any[Future[JsValue]]()))
           .thenReturn(Future.successful(codingComponents))
 
-        when(mockIncomeService.taxCodeIncomes(meq(nino), any())(any(), any()))
+        when(mockIncomeService.taxCodeIncomes(any[Future[JsValue]](), meq(nino), any())(any(), any()))
           .thenReturn(Future.successful(taxCodeIncomes))
-        when(mockTaxAccountHelper.totalEstimatedTax(meq(nino), any())(any()))
+        when(mockTaxAccountHelper.totalEstimatedTax(any[Future[JsValue]]()))
           .thenReturn(Future.successful(BigDecimal(1111)))
-        when(mockTotalTaxService.totalTax(any(), any())(any())).thenReturn(Future.successful(totalTaxDetails))
-        when(mockTotalTaxService.taxFreeAllowance(any(), any())(any())).thenReturn(Future.successful(BigDecimal(100)))
-        when(mockTaxAccountHelper.dateOfTaxAccount(any(), any())(any())).thenReturn(
+        when(mockTotalTaxService.totalTax(any[Future[JsValue]]())).thenReturn(Future.successful(totalTaxDetails))
+        when(mockTotalTaxService.taxFreeAllowance(any[Future[JsValue]]()))
+          .thenReturn(Future.successful(BigDecimal(100)))
+        when(mockTaxAccountHelper.dateOfTaxAccount(any[Future[JsValue]]())).thenReturn(
           Future.successful(Some(LocalDate.of(2026, 1, 1)))
         )
 
@@ -246,17 +259,18 @@ class TaxAccountSummaryServiceSpec extends BaseSpec {
           )
         )
 
-        when(mockCodingComponentService.codingComponents(meq(nino), any())(any()))
+        when(mockCodingComponentService.codingComponents(any[Future[JsValue]]()))
           .thenReturn(Future.successful(codingComponents))
 
-        when(mockIncomeService.taxCodeIncomes(meq(nino), any())(any(), any()))
+        when(mockIncomeService.taxCodeIncomes(any[Future[JsValue]](), meq(nino), any())(any(), any()))
           .thenReturn(Future.successful(taxCodeIncomes))
 
-        when(mockTaxAccountHelper.totalEstimatedTax(meq(nino), any())(any()))
+        when(mockTaxAccountHelper.totalEstimatedTax(any[Future[JsValue]]()))
           .thenReturn(Future.successful(BigDecimal(1111)))
-        when(mockTotalTaxService.totalTax(any(), any())(any())).thenReturn(Future.successful(totalTaxDetails))
-        when(mockTotalTaxService.taxFreeAllowance(any(), any())(any())).thenReturn(Future.successful(BigDecimal(100)))
-        when(mockTaxAccountHelper.dateOfTaxAccount(any(), any())(any())).thenReturn(
+        when(mockTotalTaxService.totalTax(any[Future[JsValue]]())).thenReturn(Future.successful(totalTaxDetails))
+        when(mockTotalTaxService.taxFreeAllowance(any[Future[JsValue]]()))
+          .thenReturn(Future.successful(BigDecimal(100)))
+        when(mockTaxAccountHelper.dateOfTaxAccount(any[Future[JsValue]]())).thenReturn(
           Future.successful(Some(LocalDate.of(2026, 1, 1)))
         )
 
@@ -309,18 +323,19 @@ class TaxAccountSummaryServiceSpec extends BaseSpec {
           )
         )
 
-        when(mockTaxAccountHelper.totalEstimatedTax(meq(nino), any())(any()))
+        when(mockTaxAccountHelper.totalEstimatedTax(any[Future[JsValue]]()))
           .thenReturn(Future.successful(BigDecimal(1111)))
 
-        when(mockCodingComponentService.codingComponents(meq(nino), any())(any()))
+        when(mockCodingComponentService.codingComponents(any[Future[JsValue]]()))
           .thenReturn(Future.successful(taxFreeAmountComponents))
 
-        when(mockIncomeService.taxCodeIncomes(meq(nino), any())(any(), any()))
+        when(mockIncomeService.taxCodeIncomes(any[Future[JsValue]](), meq(nino), any())(any(), any()))
           .thenReturn(Future.successful(taxCodeIncomes))
 
-        when(mockTotalTaxService.totalTax(any(), any())(any())).thenReturn(Future.successful(totalTaxDetails))
-        when(mockTotalTaxService.taxFreeAllowance(any(), any())(any())).thenReturn(Future.successful(BigDecimal(10000)))
-        when(mockTaxAccountHelper.dateOfTaxAccount(any(), any())(any())).thenReturn(
+        when(mockTotalTaxService.totalTax(any[Future[JsValue]]())).thenReturn(Future.successful(totalTaxDetails))
+        when(mockTotalTaxService.taxFreeAllowance(any[Future[JsValue]]()))
+          .thenReturn(Future.successful(BigDecimal(10000)))
+        when(mockTaxAccountHelper.dateOfTaxAccount(any[Future[JsValue]]())).thenReturn(
           Future.successful(Some(LocalDate.of(2026, 1, 1)))
         )
 
@@ -344,16 +359,16 @@ class TaxAccountSummaryServiceSpec extends BaseSpec {
         val taxFreeAmountComponents = Seq(
           CodingComponent(PersonalAllowancePA, Some(234), BigDecimal(5000), "PersonalAllowancePA")
         )
-        when(mockCodingComponentService.codingComponents(meq(nino), any())(any()))
+        when(mockCodingComponentService.codingComponents(any[Future[JsValue]]()))
           .thenReturn(Future.successful(taxFreeAmountComponents))
 
-        when(mockIncomeService.taxCodeIncomes(meq(nino), any())(any(), any()))
+        when(mockIncomeService.taxCodeIncomes(any[Future[JsValue]](), meq(nino), any())(any(), any()))
           .thenReturn(Future.successful(Seq.empty[TaxCodeIncome]))
 
-        when(mockTaxAccountHelper.totalEstimatedTax(meq(nino), any())(any()))
+        when(mockTaxAccountHelper.totalEstimatedTax(any[Future[JsValue]]()))
           .thenReturn(Future.successful(BigDecimal(1111)))
 
-        when(mockTaxAccountHelper.dateOfTaxAccount(any(), any())(any())).thenReturn(
+        when(mockTaxAccountHelper.dateOfTaxAccount(any[Future[JsValue]]())).thenReturn(
           Future.successful(Some(LocalDate.of(2026, 1, 1)))
         )
 
@@ -390,8 +405,9 @@ class TaxAccountSummaryServiceSpec extends BaseSpec {
           IncomeCategory(UkDividendsIncomeCategory, BigDecimal(0), BigDecimal(6000), BigDecimal(0), Seq.empty[TaxBand])
         )
         val totalTax = TotalTax(0, incomeCategories, None, None, None)
-        when(mockTotalTaxService.totalTax(any(), any())(any())).thenReturn(Future.successful(totalTax))
-        when(mockTotalTaxService.taxFreeAllowance(any(), any())(any())).thenReturn(Future.successful(BigDecimal(1000)))
+        when(mockTotalTaxService.totalTax(any[Future[JsValue]]())).thenReturn(Future.successful(totalTax))
+        when(mockTotalTaxService.taxFreeAllowance(any[Future[JsValue]]()))
+          .thenReturn(Future.successful(BigDecimal(1000)))
 
         val result = createSUT().taxAccountSummary(nino, TaxYear())(implicitly, FakeRequest()).futureValue
 
@@ -405,21 +421,21 @@ class TaxAccountSummaryServiceSpec extends BaseSpec {
           CodingComponent(GiftAidPayments, Some(234), BigDecimal(5000), "GiftAid")
         )
 
-        when(mockCodingComponentService.codingComponents(meq(nino), any())(any()))
+        when(mockCodingComponentService.codingComponents(any[Future[JsValue]]()))
           .thenReturn(Future.successful(taxFreeAmountComponents))
 
-        when(mockIncomeService.taxCodeIncomes(meq(nino), any())(any(), any()))
+        when(mockIncomeService.taxCodeIncomes(any[Future[JsValue]](), meq(nino), any())(any(), any()))
           .thenReturn(Future.successful(Seq.empty[TaxCodeIncome]))
 
-        when(mockTaxAccountHelper.totalEstimatedTax(meq(nino), any())(any()))
+        when(mockTaxAccountHelper.totalEstimatedTax(any[Future[JsValue]]()))
           .thenReturn(Future.successful(BigDecimal(1111)))
 
         val incomeCategories = Seq(
           IncomeCategory(NonSavingsIncomeCategory, BigDecimal(0), BigDecimal(1000), BigDecimal(0), Seq.empty[TaxBand])
         )
         val totalTax = TotalTax(BigDecimal(0), incomeCategories, None, None, None)
-        when(mockTotalTaxService.totalTax(any(), any())(any())).thenReturn(Future.successful(totalTax))
-        when(mockTotalTaxService.taxFreeAllowance(any(), any())(any())).thenReturn(Future.successful(BigDecimal(0)))
+        when(mockTotalTaxService.totalTax(any[Future[JsValue]]())).thenReturn(Future.successful(totalTax))
+        when(mockTotalTaxService.taxFreeAllowance(any[Future[JsValue]]())).thenReturn(Future.successful(BigDecimal(0)))
 
         val result = createSUT().taxAccountSummary(nino, TaxYear())(implicitly, FakeRequest()).futureValue
 
@@ -432,21 +448,22 @@ class TaxAccountSummaryServiceSpec extends BaseSpec {
         val taxFreeAmountComponents = Seq(
           CodingComponent(PersonalAllowancePA, Some(234), BigDecimal(11500), "PersonalAllowancePA")
         )
-        when(mockCodingComponentService.codingComponents(meq(nino), any())(any()))
+        when(mockCodingComponentService.codingComponents(any[Future[JsValue]]()))
           .thenReturn(Future.successful(taxFreeAmountComponents))
 
-        when(mockIncomeService.taxCodeIncomes(meq(nino), any())(any(), any()))
+        when(mockIncomeService.taxCodeIncomes(any[Future[JsValue]](), meq(nino), any())(any(), any()))
           .thenReturn(Future.successful(Seq.empty[TaxCodeIncome]))
 
-        when(mockTaxAccountHelper.totalEstimatedTax(meq(nino), any())(any()))
+        when(mockTaxAccountHelper.totalEstimatedTax(any[Future[JsValue]]()))
           .thenReturn(Future.successful(BigDecimal(0)))
 
         val incomeCategories = Seq(
           IncomeCategory(NonSavingsIncomeCategory, BigDecimal(0), BigDecimal(0), BigDecimal(8000), Seq.empty[TaxBand])
         )
         val totalTax = TotalTax(0, incomeCategories, None, None, None)
-        when(mockTotalTaxService.totalTax(any(), any())(any())).thenReturn(Future.successful(totalTax))
-        when(mockTotalTaxService.taxFreeAllowance(any(), any())(any())).thenReturn(Future.successful(BigDecimal(11500)))
+        when(mockTotalTaxService.totalTax(any[Future[JsValue]]())).thenReturn(Future.successful(totalTax))
+        when(mockTotalTaxService.taxFreeAllowance(any[Future[JsValue]]()))
+          .thenReturn(Future.successful(BigDecimal(11500)))
 
         val result = createSUT().taxAccountSummary(nino, TaxYear())(implicitly, FakeRequest()).futureValue
 

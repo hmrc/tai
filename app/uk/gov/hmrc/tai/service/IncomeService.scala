@@ -20,6 +20,7 @@ import cats.data.EitherT
 import com.google.inject.{Inject, Singleton}
 import play.api.Logging
 import play.api.http.Status.NOT_FOUND
+import play.api.libs.json.JsValue
 import play.api.mvc.Request
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.{HeaderCarrier, UpstreamErrorResponse}
@@ -86,8 +87,14 @@ class IncomeService @Inject() (
   def taxCodeIncomes(nino: Nino, year: TaxYear)(implicit
     hc: HeaderCarrier,
     request: Request[_]
+  ): Future[Seq[TaxCodeIncome]] =
+    taxCodeIncomes(taxAccountConnector.taxAccount(nino, year), nino, year)
+
+  def taxCodeIncomes(taxAccountDetails: Future[JsValue], nino: Nino, year: TaxYear)(implicit
+    hc: HeaderCarrier,
+    request: Request[_]
   ): Future[Seq[TaxCodeIncome]] = {
-    lazy val eventualIncomes = taxCodeIncomeHelper.fetchTaxCodeIncomes(nino, year)
+    lazy val eventualIncomes = taxCodeIncomeHelper.fetchTaxCodeIncomes(taxAccountDetails)
     lazy val eventualEmployments = employmentService
       .employmentsAsEitherT(nino, year)
       .leftMap { error =>
