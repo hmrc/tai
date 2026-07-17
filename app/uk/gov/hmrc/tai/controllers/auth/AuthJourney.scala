@@ -17,36 +17,40 @@
 package uk.gov.hmrc.tai.controllers.auth
 
 import com.google.inject.{ImplementedBy, Inject}
-import play.api.mvc.{ActionBuilder, AnyContent, DefaultActionBuilder, Request}
+import play.api.mvc.{ActionBuilder, AnyContent, DefaultActionBuilder}
 import uk.gov.hmrc.domain.Nino
+import uk.gov.hmrc.tai.model.AuthenticatedRequest
 
 @ImplementedBy(classOf[AuthJourneyImpl])
 trait AuthJourney {
-  def authWithUserDetails: ActionBuilder[Request, AnyContent]
+  def authWithUserDetails: ActionBuilder[AuthenticatedRequest, AnyContent]
 
-  def authWithUserDetails(nino: Nino): ActionBuilder[Request, AnyContent]
+  def authWithUserDetails(nino: Nino): ActionBuilder[AuthenticatedRequest, AnyContent]
 
-  def authForEmployeeExpenses: ActionBuilder[Request, AnyContent]
+  def authForEmployeeExpenses: ActionBuilder[AuthenticatedRequest, AnyContent]
 
-  def authForEmployeeExpenses(nino: Nino): ActionBuilder[Request, AnyContent]
+  def authForEmployeeExpenses(nino: Nino): ActionBuilder[AuthenticatedRequest, AnyContent]
 }
 
 class AuthJourneyImpl @Inject() (
   pertaxAuthAction: PertaxAuthAction,
   pertaxAuthActionForEmployeeExpenses: PertaxAuthActionForEmployeeExpenses,
+  authAction: AuthAction,
   ninoValidationAction: NinoValidationAction,
   defaultActionBuilder: DefaultActionBuilder
 ) extends AuthJourney {
 
-  override def authWithUserDetails: ActionBuilder[Request, AnyContent] = defaultActionBuilder andThen pertaxAuthAction
+  override def authWithUserDetails: ActionBuilder[AuthenticatedRequest, AnyContent] =
+    defaultActionBuilder andThen pertaxAuthAction andThen authAction
 
-  override def authWithUserDetails(nino: Nino): ActionBuilder[Request, AnyContent] =
-    defaultActionBuilder andThen pertaxAuthAction andThen ninoValidationAction.validateNino(nino)
+  override def authWithUserDetails(nino: Nino): ActionBuilder[AuthenticatedRequest, AnyContent] =
+    defaultActionBuilder andThen pertaxAuthAction andThen authAction andThen ninoValidationAction.validateNino(nino)
 
-  override def authForEmployeeExpenses: ActionBuilder[Request, AnyContent] =
-    defaultActionBuilder andThen pertaxAuthActionForEmployeeExpenses
+  override def authForEmployeeExpenses: ActionBuilder[AuthenticatedRequest, AnyContent] =
+    defaultActionBuilder andThen pertaxAuthActionForEmployeeExpenses andThen authAction
 
-  override def authForEmployeeExpenses(nino: Nino): ActionBuilder[Request, AnyContent] =
-    defaultActionBuilder andThen pertaxAuthActionForEmployeeExpenses andThen ninoValidationAction.validateNino(nino)
+  override def authForEmployeeExpenses(nino: Nino): ActionBuilder[AuthenticatedRequest, AnyContent] =
+    defaultActionBuilder andThen pertaxAuthActionForEmployeeExpenses andThen authAction andThen ninoValidationAction
+      .validateNino(nino)
 
 }

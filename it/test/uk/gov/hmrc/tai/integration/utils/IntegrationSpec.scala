@@ -43,6 +43,7 @@ import uk.gov.hmrc.mongoFeatureToggles.services.FeatureFlagService
 import uk.gov.hmrc.tai.config.CustomErrorHandler
 import uk.gov.hmrc.tai.model.admin.*
 import uk.gov.hmrc.tai.model.tai.TaxYear
+import uk.gov.hmrc.tai.repositories.cache.TaiSessionCacheRepository
 
 import java.util.UUID
 import scala.concurrent.duration.Duration
@@ -99,7 +100,10 @@ trait IntegrationSpec
     when(mockFeatureFlagService.getAsEitherT(eqTo[FeatureFlagName](RtiCallToggle))).thenReturn(
       EitherT.rightT(FeatureFlag(RtiCallToggle, isEnabled = false))
     )
-    ()
+
+    server.stubFor(get(urlEqualTo("/delegation/get")).willReturn(notFound()))
+    val taiSessionCacheRepository = app.injector.instanceOf[TaiSessionCacheRepository]
+    Await.result(taiSessionCacheRepository.deleteAllFromSession(nino), Duration.Inf)
   }
 
   lazy val fakeAsyncCacheApi = new FakeAsyncCacheApi()

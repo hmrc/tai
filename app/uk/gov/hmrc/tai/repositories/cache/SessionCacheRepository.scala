@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2026 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,7 @@ package uk.gov.hmrc.tai.repositories.cache
 import org.mongodb.scala.model.IndexModel
 import play.api.Logging
 import play.api.libs.json.{JsPath, JsResultException, Reads, Writes}
-import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.mongo.cache.{CacheIdType, DataKey, MongoCacheRepository}
 import uk.gov.hmrc.mongo.{MongoComponent, MongoDatabaseCollection, TimestampSupport}
 import uk.gov.hmrc.mdc.Mdc
@@ -31,13 +31,8 @@ import scala.concurrent.duration.Duration
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.control.NonFatal
 
-case object SessionCacheId extends CacheIdType[HeaderCarrier] {
-  override def run: HeaderCarrier => String =
-    _.sessionId
-      .map(_.value)
-      .getOrElse(throw NoSessionException)
-
-  case object NoSessionException extends Exception("Could not find sessionId")
+case object NinoCacheId extends CacheIdType[Nino] {
+  override def run: Nino => String = _.nino
 }
 
 @Singleton
@@ -50,19 +45,19 @@ abstract class SessionCacheRepository(
   cacheConfig: CacheConfig
 )(implicit ec: ExecutionContext)
     extends MongoDatabaseCollection with Logging {
+
   /*
-    This class exists in hmrc-mongo library but uses the sessionId from the session in the request
-    which does not exist in a backend service.
-    This class has been adapted from the one from hmrc-mongo to use the session id from the headerCarrier instead.
+   * This class exists in hmrc-mongo library as a generic MongoCacheRepository.This implementation uses the
+   * NINO as the cache identifier.
    */
 
-  private[cache] val cacheRepo: MongoCacheRepository[HeaderCarrier] = new MongoCacheRepository[HeaderCarrier](
+  private[cache] val cacheRepo: MongoCacheRepository[Nino] = new MongoCacheRepository[Nino](
     mongoComponent = mongoComponent,
     collectionName = collectionName,
     replaceIndexes = replaceIndexes,
     ttl = ttl,
     timestampSupport = timestampSupport,
-    cacheIdType = SessionCacheId
+    cacheIdType = NinoCacheId
   )
 
   override val indexes: Seq[IndexModel] =
@@ -70,26 +65,27 @@ abstract class SessionCacheRepository(
 
   def putSession[T: Writes](
     dataKey: DataKey[T],
-    data: T
-  )(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[(String, String)] =
+    data: T,
+    nino: Nino
+  )(implicit ec: ExecutionContext): Future[(String, String)] =
     Mdc.preservingMdc {
       cacheRepo
-        .put[T](hc)(dataKey, data)
-        .map(res => "sessionId" -> res.id)
+        .put[T](nino)(dataKey, data)
+        .map(res => "nino" -> res.id)
     }
 
-  def getFromSession[T: Reads](dataKey: DataKey[T])(implicit hc: HeaderCarrier): Future[Option[T]] =
+  def getFromSession[T: Reads](dataKey: DataKey[T], nino: Nino): Future[Option[T]] =
     Mdc.preservingMdc {
-      cacheRepo.get[T](hc)(dataKey)
+      cacheRepo.get[T](nino)(dataKey)
     }
 
   private def getWithDateTime[A](
-    cacheId: HeaderCarrier
+    nino: Nino
   )(dataKey: DataKey[A])(implicit reads: Reads[A]): Future[Option[(A, Instant)]] = {
     def dataPath: JsPath =
       dataKey.unwrap.split('.').foldLeft[JsPath](JsPath)(_ \ _)
     cacheRepo
-      .findById(cacheId)
+      .findById(nino)
       .map {
         _.flatMap { cache =>
           dataPath
@@ -102,10 +98,11 @@ abstract class SessionCacheRepository(
   }
 
   def getEitherFromSession[A, B, T <: Either[A, B]](
-    dataKey: DataKey[T]
-  )(implicit hc: HeaderCarrier, rds: Reads[T]): Future[Option[T]] =
+    dataKey: DataKey[T],
+    nino: Nino
+  )(implicit rds: Reads[T]): Future[Option[T]] =
     Mdc.preservingMdc {
-      getWithDateTime[T](hc)(dataKey)
+      getWithDateTime[T](nino)(dataKey)
         .map {
           case None                          => None
           case Some(Tuple2(r @ Right(_), _)) => Some(r)
@@ -123,13 +120,13 @@ abstract class SessionCacheRepository(
         }
     }
 
-  def deleteFromSession[T](dataKey: DataKey[T])(implicit hc: HeaderCarrier): Future[Unit] =
+  def deleteFromSession[T](dataKey: DataKey[T], nino: Nino): Future[Unit] =
     Mdc.preservingMdc {
-      cacheRepo.delete(hc)(dataKey)
+      cacheRepo.delete(nino)(dataKey)
     }
 
-  def deleteAllFromSession(implicit hc: HeaderCarrier): Future[Unit] =
+  def deleteAllFromSession(nino: Nino): Future[Unit] =
     Mdc.preservingMdc {
-      cacheRepo.deleteEntity(hc)
+      cacheRepo.deleteEntity(nino)
     }
 }

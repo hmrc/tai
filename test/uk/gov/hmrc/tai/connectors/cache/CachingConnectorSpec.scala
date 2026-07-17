@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 HM Revenue & Customs
+ * Copyright 2026 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -51,65 +51,67 @@ class CachingConnectorSpec extends ConnectorBaseSpec {
     "calling cache" must {
       "call the cache repository and not underlying method if value present" in {
 
-        when(mockSessionCacheRepository.getFromSession[String](DataKey(any()))(any(), any()))
+        when(mockSessionCacheRepository.getFromSession[String](DataKey(any()), any())(any()))
           .thenReturn(Future.successful(Some("cached value")))
-        when(mockSessionCacheRepository.putSession[String](DataKey(any()), any())(any(), any(), any()))
+        when(mockSessionCacheRepository.putSession[String](DataKey(any()), any(), any())(any(), any()))
           .thenReturn(Future.successful(("", "")))
         when(mockConnector.fakeMethod()).thenReturn(Future.successful(""))
 
-        val result = connector.cache[String]("key")(mockConnector.fakeMethod()).futureValue
+        val result = connector.cache[String]("key", nino)(mockConnector.fakeMethod()).futureValue
 
         result mustBe "cached value"
-        verify(mockSessionCacheRepository, times(1)).getFromSession[String](DataKey(any()))(any(), any())
-        verify(mockSessionCacheRepository, times(0)).putSession[String](DataKey(any()), any())(any(), any(), any())
+        verify(mockSessionCacheRepository, times(1)).getFromSession[String](DataKey(any()), any())(any())
+        verify(mockSessionCacheRepository, times(0)).putSession[String](DataKey(any()), any(), any())(any(), any())
         verify(mockConnector, times(0)).fakeMethod()
       }
       "call underlying method and store value in the cache if no value is present already" in {
-        when(mockSessionCacheRepository.getFromSession[String](DataKey(any()))(any(), any()))
+        when(mockSessionCacheRepository.getFromSession[String](DataKey(any()), any())(any()))
           .thenReturn(Future.successful(None))
-        when(mockSessionCacheRepository.putSession[String](DataKey(any()), any())(any(), any(), any()))
+        when(mockSessionCacheRepository.putSession[String](DataKey(any()), any(), any())(any(), any()))
           .thenReturn(Future.successful(("", "")))
         when(mockConnector.fakeMethod()).thenReturn(Future.successful("underlying method value"))
 
-        val result = connector.cache[String]("key")(mockConnector.fakeMethod()).futureValue
+        val result = connector.cache[String]("key", nino)(mockConnector.fakeMethod()).futureValue
 
         result mustBe "underlying method value"
 
-        verify(mockSessionCacheRepository, times(1)).getFromSession[String](DataKey(any()))(any(), any())
-        verify(mockSessionCacheRepository, times(1)).putSession[String](DataKey(any()), any())(any(), any(), any())
+        verify(mockSessionCacheRepository, times(1)).getFromSession[String](DataKey(any()), any())(any())
+        verify(mockSessionCacheRepository, times(1)).putSession[String](DataKey(any()), any(), any())(any(), any())
         verify(mockConnector, times(1)).fakeMethod()
       }
     }
 
     "calling cacheEitherT" must {
       "return a right and not call underlying method" in {
-        when(mockSessionCacheRepository.getFromSession[String](DataKey(any()))(any(), any()))
+        when(mockSessionCacheRepository.getFromSession[String](DataKey(any()), any())(any()))
           .thenReturn(Future.successful(Some("cached value")))
-        when(mockSessionCacheRepository.putSession[String](DataKey(any()), any())(any(), any(), any()))
+        when(mockSessionCacheRepository.putSession[String](DataKey(any()), any(), any())(any(), any()))
           .thenReturn(Future.successful(("", "")))
         when(mockConnector.fakeEitherT(any())).thenReturn(EitherT.rightT("underlying method value"))
 
-        val result = connector.cacheEitherT[String, String]("key")(mockConnector.fakeEitherT(true)).value.futureValue
+        val result =
+          connector.cacheEitherT[String, String]("key", nino)(mockConnector.fakeEitherT(true)).value.futureValue
 
         result mustBe Right("cached value")
 
-        verify(mockSessionCacheRepository, times(1)).getFromSession[String](DataKey(any()))(any(), any())
-        verify(mockSessionCacheRepository, times(0)).putSession[String](DataKey(any()), any())(any(), any(), any())
+        verify(mockSessionCacheRepository, times(1)).getFromSession[String](DataKey(any()), any())(any())
+        verify(mockSessionCacheRepository, times(0)).putSession[String](DataKey(any()), any(), any())(any(), any())
         verify(mockConnector, times(0)).fakeEitherT(any())
       }
       "return a right from underlying method and put method value in cache" in {
-        when(mockSessionCacheRepository.getFromSession[String](DataKey(any()))(any(), any()))
+        when(mockSessionCacheRepository.getFromSession[String](DataKey(any()), any())(any()))
           .thenReturn(Future.successful(None))
-        when(mockSessionCacheRepository.putSession[String](DataKey(any()), any())(any(), any(), any()))
+        when(mockSessionCacheRepository.putSession[String](DataKey(any()), any(), any())(any(), any()))
           .thenReturn(Future.successful(("", "")))
         when(mockConnector.fakeEitherT(any())).thenReturn(EitherT.rightT("underlying method value"))
 
-        val result = connector.cacheEitherT[String, String]("key")(mockConnector.fakeEitherT(true)).value.futureValue
+        val result =
+          connector.cacheEitherT[String, String]("key", nino)(mockConnector.fakeEitherT(true)).value.futureValue
 
         result mustBe Right("underlying method value")
 
-        verify(mockSessionCacheRepository, times(1)).getFromSession[String](DataKey(any()))(any(), any())
-        verify(mockSessionCacheRepository, times(1)).putSession[String](DataKey(any()), any())(any(), any(), any())
+        verify(mockSessionCacheRepository, times(1)).getFromSession[String](DataKey(any()), any())(any())
+        verify(mockSessionCacheRepository, times(1)).putSession[String](DataKey(any()), any(), any())(any(), any())
         verify(mockConnector, times(1)).fakeEitherT(any())
       }
     }
