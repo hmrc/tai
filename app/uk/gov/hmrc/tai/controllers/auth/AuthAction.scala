@@ -18,7 +18,6 @@ package uk.gov.hmrc.tai.controllers.auth
 
 import com.google.inject.{ImplementedBy, Inject}
 import play.api.Logging
-import play.api.http.Status.UNAUTHORIZED
 import play.api.mvc.*
 import play.api.mvc.Results.*
 import uk.gov.hmrc.auth.core.*
@@ -62,7 +61,7 @@ class AuthActionImpl @Inject() (
           }
         case None =>
           logger.error("Unable to retrieve NINO from Auth")
-          Future.successful(Left(Status(UNAUTHORIZED)))
+          Future.successful(Left(Unauthorized))
       }
       .recover {
         case x: NoActiveSession =>
