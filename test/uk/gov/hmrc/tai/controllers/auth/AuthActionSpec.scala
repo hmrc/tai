@@ -17,52 +17,67 @@
 package uk.gov.hmrc.tai.controllers.auth
 
 import org.mockito.ArgumentMatchers.any
-import org.mockito.Mockito.when
+import org.mockito.Mockito.{never, reset, verify, when}
 import play.api.http.Status.*
 import play.api.mvc.Results.Ok
 import play.api.mvc.{Action, AnyContent}
 import play.api.test.FakeRequest
-import play.api.test.Helpers.{contentAsString, defaultAwaitTimeout, status, stubControllerComponents}
+import play.api.test.Helpers.{contentAsString, defaultAwaitTimeout, status}
 import uk.gov.hmrc.auth.core.{AuthConnector, BearerTokenExpired, InsufficientConfidenceLevel}
+import uk.gov.hmrc.tai.config.MongoConfig
+import uk.gov.hmrc.tai.model.CachedAuthRetrievals
+import uk.gov.hmrc.tai.repositories.cache.AuthCacheRepository
 import uk.gov.hmrc.tai.util.BaseSpec
 
 import scala.concurrent.Future
 
 class AuthActionSpec extends BaseSpec {
 
+  private val mockAuthConnector = mock[AuthConnector]
+  private val mockAuthCacheRepository = mock[AuthCacheRepository]
+  private val mockMongoConfig = mock[MongoConfig]
+
   private class TestAction(authAction: AuthAction) {
-    val action: Action[AnyContent] =
-      (stubControllerComponents().actionBuilder andThen authAction) { request =>
-        Ok(request.nino.value)
-      }
+    val action: Action[AnyContent] = (cc.actionBuilder andThen authAction) { request =>
+      Ok(request.nino.value)
+    }
   }
 
-  private val mockAuthConnector = mock[AuthConnector]
+  override def beforeEach(): Unit = {
+    super.beforeEach()
+    reset(mockAuthConnector, mockAuthCacheRepository, mockMongoConfig)
+  }
 
   "AuthAction" when {
     "the user has a NINO" must {
-      "allow the request" in {
+      "allow the request when cache is disabled" in {
+        when(mockMongoConfig.mongoAuthEnabled).thenReturn(false)
         when(mockAuthConnector.authorise[Option[String]](any(), any())(any(), any())).thenReturn(
           Future.successful(Some("AA000003D"))
         )
 
-        val authAction = new AuthActionImpl(mockAuthConnector, stubControllerComponents())
+        val authAction = new AuthActionImpl(mockAuthConnector, mockMongoConfig, mockAuthCacheRepository, cc)
         val testAction = new TestAction(authAction)
 
         val result = testAction.action(FakeRequest())
 
         status(result) mustBe OK
         contentAsString(result) mustBe "AA000003D"
+
+        verify(mockAuthConnector).authorise(any(), any())(any(), any())
+        verify(mockAuthCacheRepository, never()).getFromSession[CachedAuthRetrievals](any())(any(), any())
+        verify(mockAuthCacheRepository, never()).putSession[CachedAuthRetrievals](any(), any())(any(), any())
       }
     }
 
     "the user has no NINO" must {
       "return Unauthorized" in {
+        when(mockMongoConfig.mongoAuthEnabled).thenReturn(false)
         when(mockAuthConnector.authorise[Option[String]](any(), any())(any(), any())).thenReturn(
           Future.successful(None)
         )
 
-        val authAction = new AuthActionImpl(mockAuthConnector, stubControllerComponents())
+        val authAction = new AuthActionImpl(mockAuthConnector, mockMongoConfig, mockAuthCacheRepository, cc)
         val testAction = new TestAction(authAction)
 
         val result = testAction.action(FakeRequest())
@@ -73,11 +88,13 @@ class AuthActionSpec extends BaseSpec {
 
     "auth throws NoActiveSession" must {
       "return Unauthorized" in {
+        when(mockMongoConfig.mongoAuthEnabled).thenReturn(false)
         when(mockAuthConnector.authorise[Option[String]](any(), any())(any(), any())).thenReturn(
           Future.failed(new BearerTokenExpired)
         )
 
-        val authAction = new AuthActionImpl(mockAuthConnector, stubControllerComponents())
+        val authAction = new AuthActionImpl(mockAuthConnector, mockMongoConfig, mockAuthCacheRepository, cc)
+
         val testAction = new TestAction(authAction)
 
         val result = testAction.action(FakeRequest())
@@ -88,16 +105,66 @@ class AuthActionSpec extends BaseSpec {
 
     "auth throws InsufficientConfidenceLevel" must {
       "return Unauthorized" in {
+        when(mockMongoConfig.mongoAuthEnabled).thenReturn(false)
         when(mockAuthConnector.authorise[Option[String]](any(), any())(any(), any())).thenReturn(
           Future.failed(new InsufficientConfidenceLevel)
         )
 
-        val authAction = new AuthActionImpl(mockAuthConnector, stubControllerComponents())
+        val authAction = new AuthActionImpl(mockAuthConnector, mockMongoConfig, mockAuthCacheRepository, cc)
+
         val testAction = new TestAction(authAction)
 
         val result = testAction.action(FakeRequest())
 
         status(result) mustBe UNAUTHORIZED
+      }
+    }
+
+    "Auth cache is enabled" must {
+      "use cached retrievals on cache hit" in {
+        when(mockMongoConfig.mongoAuthEnabled).thenReturn(true)
+        when(mockAuthCacheRepository.getFromSession[CachedAuthRetrievals](any())(any(), any())).thenReturn(
+          Future.successful(Some(CachedAuthRetrievals("AA000003D")))
+        )
+
+        val authAction = new AuthActionImpl(mockAuthConnector, mockMongoConfig, mockAuthCacheRepository, cc)
+        val testAction = new TestAction(authAction)
+
+        val result = testAction.action(FakeRequest())
+
+        status(result) mustBe OK
+        contentAsString(result) mustBe "AA000003D"
+
+        verify(mockAuthCacheRepository).getFromSession[CachedAuthRetrievals](any())(any(), any())
+        verify(mockAuthConnector, never()).authorise(any(), any())(any(), any())
+        verify(mockAuthCacheRepository, never()).putSession[CachedAuthRetrievals](any(), any())(any(), any())
+      }
+
+      "retrieve from auth and cache the result on cache miss" in {
+        when(mockMongoConfig.mongoAuthEnabled).thenReturn(true)
+        when(mockAuthCacheRepository.getFromSession[CachedAuthRetrievals](any())(any(), any())).thenReturn(
+          Future.successful(None)
+        )
+
+        when(mockAuthCacheRepository.putSession[CachedAuthRetrievals](any(), any())(any(), any())).thenReturn(
+          Future.successful("id" -> "id")
+        )
+
+        when(mockAuthConnector.authorise[Option[String]](any(), any())(any(), any())).thenReturn(
+          Future.successful(Some("AA000003D"))
+        )
+
+        val authAction = new AuthActionImpl(mockAuthConnector, mockMongoConfig, mockAuthCacheRepository, cc)
+        val testAction = new TestAction(authAction)
+
+        val result = testAction.action(FakeRequest())
+
+        status(result) mustBe OK
+        contentAsString(result) mustBe "AA000003D"
+
+        verify(mockAuthCacheRepository).getFromSession[CachedAuthRetrievals](any())(any(), any())
+        verify(mockAuthCacheRepository).putSession[CachedAuthRetrievals](any(), any())(any(), any())
+        verify(mockAuthConnector).authorise(any(), any())(any(), any())
       }
     }
   }
