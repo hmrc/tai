@@ -27,7 +27,7 @@ case class PdfSubmission(
   formId: String,
   numberOfPages: Int,
   attachmentCount: Int = 0,
-  hmrcReceivedAt: LocalDateTime = LocalDateTime.now(ZoneId.of(LondonEuropeTimezone)), // TODO extract from config
+  hmrcReceivedAt: LocalDateTime = LocalDateTime.now(ZoneId.of(LondonEuropeTimezone)),
   submissionMark: String = "",
   casKey: String = "",
   businessArea: String = "PSA",
@@ -47,4 +47,10 @@ case class PdfSubmission(
   val reconciliationId: String = s"$submissionReference-$formattedTime"
   val fileFormat = "pdf"
   val mimeType: String = "application/pdf"
+}
+
+object PdfSubmission {
+
+  def apply(customerId: String, formId: String, numberOfPages: Int, timezone: String): PdfSubmission =
+    new PdfSubmission(customerId, formId, numberOfPages, hmrcReceivedAt = LocalDateTime.now(ZoneId.of(timezone)))
 }

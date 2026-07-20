@@ -126,9 +126,7 @@ class TaxAccountHelperSpec extends BaseSpec {
           )
         )
         val jsonWithUnderPayments = createJsonWithDeductions(underpaymentDeduction)
-        when(mockTaxAccountConnector.taxAccount(any(), any())(any()))
-          .thenReturn(Future.successful(jsonWithUnderPayments))
-        val result = createSUT().totalEstimatedTax(nino, TaxYear()).futureValue
+        val result = createSUT().totalEstimatedTax(Future.successful(jsonWithUnderPayments)).futureValue
         result mustBe BigDecimal(1171)
       }
 
@@ -141,10 +139,8 @@ class TaxAccountHelperSpec extends BaseSpec {
           )
         )
         val jsonWithOutstandingDebt = createJsonWithDeductions(outstandingDebtDeduction)
-        when(mockTaxAccountConnector.taxAccount(any(), any())(any()))
-          .thenReturn(Future.successful(jsonWithOutstandingDebt))
 
-        val result = createSUT().totalEstimatedTax(nino, TaxYear()).futureValue
+        val result = createSUT().totalEstimatedTax(Future.successful(jsonWithOutstandingDebt)).futureValue
         result mustBe BigDecimal(1171)
       }
 
@@ -157,10 +153,8 @@ class TaxAccountHelperSpec extends BaseSpec {
           )
         )
         val jsonWithEstimatedTaxOwed = createJsonWithDeductions(estimatedTaxOwedDeduction)
-        when(mockTaxAccountConnector.taxAccount(any(), any())(any()))
-          .thenReturn(Future.successful(jsonWithEstimatedTaxOwed))
 
-        val result = createSUT().totalEstimatedTax(nino, TaxYear()).futureValue
+        val result = createSUT().totalEstimatedTax(Future.successful(jsonWithEstimatedTaxOwed)).futureValue
         result mustBe BigDecimal(1171)
       }
 
@@ -189,10 +183,8 @@ class TaxAccountHelperSpec extends BaseSpec {
             )
           )
           val jsonWithAllAffectingComponents = createJsonWithDeductions(allAffectingDeductions)
-          when(mockTaxAccountConnector.taxAccount(any(), any())(any()))
-            .thenReturn(Future.successful(jsonWithAllAffectingComponents))
 
-          val result = createSUT().totalEstimatedTax(nino, TaxYear()).futureValue
+          val result = createSUT().totalEstimatedTax(Future.successful(jsonWithAllAffectingComponents)).futureValue
           result mustBe BigDecimal(1371)
         }
       }
@@ -207,10 +199,8 @@ class TaxAccountHelperSpec extends BaseSpec {
             )
           )
           val jsonWithNoEffectingComponent = createJsonWithDeductions(noAffectingDeductions)
-          when(mockTaxAccountConnector.taxAccount(any(), any())(any()))
-            .thenReturn(Future.successful(jsonWithNoEffectingComponent))
 
-          val result = createSUT().totalEstimatedTax(nino, TaxYear()).futureValue
+          val result = createSUT().totalEstimatedTax(Future.successful(jsonWithNoEffectingComponent)).futureValue
           result mustBe BigDecimal(1071)
         }
       }
