@@ -23,7 +23,7 @@ import play.api.mvc.Results.*
 import uk.gov.hmrc.auth.core.*
 import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals
 import uk.gov.hmrc.domain.Nino
-import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.http.{GatewayTimeoutException, HeaderCarrier}
 import uk.gov.hmrc.mongo.cache.DataKey
 import uk.gov.hmrc.play.http.HeaderCarrierConverter
 import uk.gov.hmrc.tai.config.MongoConfig
@@ -64,12 +64,19 @@ class AuthActionImpl @Inject() (
           Future.successful(Left(Unauthorized))
       }
       .recover {
-        case x: NoActiveSession =>
-          logger.error("Failed to authorise: " + x.reason)
-          Left(Unauthorized(x.getMessage))
-        case y: InsufficientConfidenceLevel =>
-          logger.error("Failed to authorise: " + y.reason)
-          Left(Unauthorized(y.getMessage))
+        case error: NoActiveSession =>
+          Left(Unauthorized(error.reason))
+
+        case error: InsufficientConfidenceLevel =>
+          Left(Unauthorized(error.reason))
+
+        case error: GatewayTimeoutException =>
+          logger.error(error.getMessage)
+          Left(BadGateway(error.getMessage))
+
+        case error =>
+          logger.error(error.getMessage, error)
+          Left(InternalServerError(error.getMessage))
       }
 
   override protected def refine[A](request: Request[A]): Future[Either[Result, AuthenticatedRequest[A]]] = {
