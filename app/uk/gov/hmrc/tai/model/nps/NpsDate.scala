@@ -20,7 +20,7 @@ import play.api.libs.json._
 import uk.gov.hmrc.tai.model.nps.NpsDate._
 
 import java.time.LocalDate
-import java.time.format.DateTimeFormatter
+import java.time.format.{DateTimeFormatter, DateTimeParseException}
 import scala.language.implicitConversions
 import scala.util.Try
 
@@ -38,7 +38,7 @@ object NpsDate {
   }
   implicit val writes: Writes[NpsDate] = (date: NpsDate) => JsString(date.toNpsString)
 
-  private val taxPlatformDateFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd")
+  private[nps] val taxPlatformDateFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd")
   private val hipDateRegex = """^(\d\d\d\d)-(\d\d)-(\d\d)$""".r
   private val npsDateRegex = """^(\d\d)/(\d\d)/(\d\d\d\d)$""".r
   private val npsDateFormat = DateTimeFormatter.ofPattern("dd/MM/yyyy")
@@ -59,19 +59,15 @@ object NpsDateImplicitConversions {
   implicit def localToNps(date: LocalDate): NpsDate = NpsDate(date)
 }
 
-// TODO: Replace this with our existing date serialization code
 object localDateSerializer {
 
-  private val localDateRegex = """^(\d\d\d\d)-(\d\d)-(\d\d)$""".r
+  def deserialize(str: String): LocalDate =
+    try LocalDate.parse(str, NpsDate.taxPlatformDateFormat)
+    catch {
+      case _: DateTimeParseException => throw new IllegalArgumentException(parseError(str))
+    }
 
-  def deserialize(str: String): LocalDate = str match {
-    case localDateRegex(y, m, d) =>
-      LocalDate.of(y.toInt, m.toInt, d.toInt)
-    case _ => throw new Exception(parseError(str))
-  }
-
-  def serialize(value: LocalDate): String =
-    "%04d-%02d-%02d".format(value.getYear, value.getMonthValue, value.getDayOfMonth)
+  def serialize(value: LocalDate): String = value.format(NpsDate.taxPlatformDateFormat)
 
   private def parseError(str: String) =
     s"Unable to parse '$str' to type 'LocalDate', expected a valid value with format: yyyy-MM-dd"

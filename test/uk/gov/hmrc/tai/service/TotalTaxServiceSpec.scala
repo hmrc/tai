@@ -18,7 +18,7 @@ package uk.gov.hmrc.tai.service
 
 import org.mockito.ArgumentMatchers.{any, eq as meq}
 import org.mockito.Mockito.{reset, when}
-import play.api.libs.json.{JsObject, Json}
+import play.api.libs.json.{JsObject, JsValue, Json}
 import uk.gov.hmrc.tai.connectors.TaxAccountConnector
 import uk.gov.hmrc.tai.model.domain.calculation.IncomeCategory
 import uk.gov.hmrc.tai.model.domain.taxAdjustments.*
@@ -106,7 +106,7 @@ class TotalTaxServiceSpec extends BaseSpec {
 
   "totalTax" must {
     "return the income categories that is coming from TaxAccountConnector" in {
-      when(mockTaxAccountHelper.totalEstimatedTax(meq(nino), meq(TaxYear()))(any()))
+      when(mockTaxAccountHelper.totalEstimatedTax(any[Future[JsValue]]()))
         .thenReturn(Future.successful(BigDecimal(0)))
       when(mockTaxAccountHelper.reliefsGivingBackTaxComponents(any())).thenReturn(Future.successful(None))
       when(mockTaxAccountHelper.otherTaxDueComponents(any())).thenReturn(Future.successful(None))
@@ -125,7 +125,7 @@ class TotalTaxServiceSpec extends BaseSpec {
     }
 
     "return amount that is coming from totalEstimatedTax" in {
-      when(mockTaxAccountHelper.totalEstimatedTax(meq(nino), meq(TaxYear()))(any()))
+      when(mockTaxAccountHelper.totalEstimatedTax(any[Future[JsValue]]()))
         .thenReturn(Future.successful(BigDecimal(1000)))
       when(mockTaxAccountHelper.reliefsGivingBackTaxComponents(any())).thenReturn(Future.successful(None))
       when(mockTaxAccountHelper.otherTaxDueComponents(any())).thenReturn(Future.successful(None))
@@ -142,7 +142,7 @@ class TotalTaxServiceSpec extends BaseSpec {
     }
 
     "return reliefs giving back tax adjustment component" in {
-      when(mockTaxAccountHelper.totalEstimatedTax(meq(nino), meq(TaxYear()))(any()))
+      when(mockTaxAccountHelper.totalEstimatedTax(any[Future[JsValue]]()))
         .thenReturn(Future.successful(BigDecimal(0)))
       val adjustment = TaxAdjustment(100, Seq(TaxAdjustmentComponent(EnterpriseInvestmentSchemeRelief, 100)))
       when(mockTaxAccountHelper.reliefsGivingBackTaxComponents(any())).thenReturn(
@@ -161,7 +161,7 @@ class TotalTaxServiceSpec extends BaseSpec {
     }
 
     "return other tax due component" in {
-      when(mockTaxAccountHelper.totalEstimatedTax(meq(nino), meq(TaxYear()))(any()))
+      when(mockTaxAccountHelper.totalEstimatedTax(any[Future[JsValue]]()))
         .thenReturn(Future.successful(BigDecimal(0)))
       val adjustment = TaxAdjustment(100, Seq(TaxAdjustmentComponent(ExcessGiftAidTax, 100)))
       when(mockTaxAccountHelper.reliefsGivingBackTaxComponents(any())).thenReturn(Future.successful(None))
@@ -176,7 +176,7 @@ class TotalTaxServiceSpec extends BaseSpec {
     }
 
     "return already taxed at source component" in {
-      when(mockTaxAccountHelper.totalEstimatedTax(meq(nino), meq(TaxYear()))(any()))
+      when(mockTaxAccountHelper.totalEstimatedTax(any[Future[JsValue]]()))
         .thenReturn(Future.successful(BigDecimal(0)))
       val adjustment = TaxAdjustment(100, Seq(TaxAdjustmentComponent(TaxOnBankBSInterest, 100)))
       when(mockTaxAccountHelper.reliefsGivingBackTaxComponents(any())).thenReturn(Future.successful(None))
@@ -191,7 +191,7 @@ class TotalTaxServiceSpec extends BaseSpec {
     }
 
     "return tax on other income" in {
-      when(mockTaxAccountHelper.totalEstimatedTax(meq(nino), meq(TaxYear()))(any()))
+      when(mockTaxAccountHelper.totalEstimatedTax(any[Future[JsValue]]()))
         .thenReturn(Future.successful(BigDecimal(0)))
       when(mockTaxAccountHelper.reliefsGivingBackTaxComponents(any())).thenReturn(Future.successful(None))
       when(mockTaxAccountHelper.otherTaxDueComponents(any())).thenReturn(Future.successful(None))
@@ -206,7 +206,7 @@ class TotalTaxServiceSpec extends BaseSpec {
 
     "return tax relief components" in {
       val taxReliefComponents = TaxAdjustment(100, Seq(TaxAdjustmentComponent(PersonalPensionPaymentRelief, 100)))
-      when(mockTaxAccountHelper.totalEstimatedTax(meq(nino), meq(TaxYear()))(any()))
+      when(mockTaxAccountHelper.totalEstimatedTax(any[Future[JsValue]]()))
         .thenReturn(Future.successful(BigDecimal(0)))
       when(mockTaxAccountHelper.reliefsGivingBackTaxComponents(any())).thenReturn(Future.successful(None))
       when(mockTaxAccountHelper.otherTaxDueComponents(any())).thenReturn(Future.successful(None))
@@ -222,7 +222,7 @@ class TotalTaxServiceSpec extends BaseSpec {
 
   "taxFreeAllowance" must {
     "return tax free allowance amount" in {
-      val result = sut.taxFreeAllowance(nino, TaxYear()).futureValue
+      val result = sut.taxFreeAllowance(Future.successful(incomeCategories)).futureValue
 
       result mustBe 100
     }

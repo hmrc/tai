@@ -38,7 +38,10 @@ class TaxAccountHelper @Inject() (taxAccountConnector: TaxAccountConnector)(impl
   ec: ExecutionContext
 ) extends Logging {
 
-  def dateOfTaxAccount(nino: Nino, year: TaxYear)(implicit hc: HeaderCarrier): Future[Option[LocalDate]] = {
+  def dateOfTaxAccount(nino: Nino, year: TaxYear)(implicit hc: HeaderCarrier): Future[Option[LocalDate]] =
+    dateOfTaxAccount(taxAccountConnector.taxAccount(nino, year))
+
+  def dateOfTaxAccount(taxAccountDetails: Future[JsValue]): Future[Option[LocalDate]] = {
     val dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
 
     val localDateOptionReads: Reads[Option[LocalDate]] = Reads[Option[LocalDate]] { jsValue =>
@@ -58,19 +61,16 @@ class TaxAccountHelper @Inject() (taxAccountConnector: TaxAccountConnector)(impl
         }
     }
 
-    taxAccountConnector
-      .taxAccount(nino, year)
-      .map { taxAccount =>
-        (taxAccount \ "date").asOpt[Option[LocalDate]](localDateOptionReads).flatten
-      }
+    taxAccountDetails.map { taxAccount =>
+      (taxAccount \ "date").asOpt[Option[LocalDate]](localDateOptionReads).flatten
+    }
   }
 
-  def totalEstimatedTax(nino: Nino, year: TaxYear)(implicit hc: HeaderCarrier): Future[BigDecimal] = {
+  def totalEstimatedTax(taxAccountDetails: Future[JsValue]): Future[BigDecimal] = {
     val componentTypesCanAffectTotalEst: Seq[TaxComponentType] =
       Seq(UnderPaymentFromPreviousYear, OutstandingDebt, EstimatedTaxYouOweThisYear)
 
-    taxAccountConnector
-      .taxAccount(nino, year)
+    taxAccountDetails
       .flatMap { taxAccount =>
         val totalTax = taxAccount.as[BigDecimal](TaxOnOtherIncomeHipReads.taxAccountSummaryReads)
 

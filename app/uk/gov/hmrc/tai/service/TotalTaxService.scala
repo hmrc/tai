@@ -17,6 +17,7 @@
 package uk.gov.hmrc.tai.service
 
 import com.google.inject.{Inject, Singleton}
+import play.api.libs.json.JsValue
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.tai.connectors.TaxAccountConnector
@@ -32,11 +33,13 @@ class TotalTaxService @Inject() (
   taxAccountConnector: TaxAccountConnector,
   taxAccountHelper: TaxAccountHelper
 )(implicit ec: ExecutionContext) {
-  def totalTax(nino: Nino, year: TaxYear)(implicit hc: HeaderCarrier): Future[TotalTax] = {
-    val taxAccountDetails = taxAccountConnector.taxAccount(nino, year)
+  def totalTax(nino: Nino, year: TaxYear)(implicit hc: HeaderCarrier): Future[TotalTax] =
+    totalTax(taxAccountConnector.taxAccount(nino, year))
+
+  def totalTax(taxAccountDetails: Future[JsValue]): Future[TotalTax] =
     for {
       incomeCategories     <- taxAccountDetails.map(_.as[Seq[IncomeCategory]](TotalTaxHipReads.incomeCategorySeqReads))
-      totalTaxAmount       <- taxAccountHelper.totalEstimatedTax(nino, year)
+      totalTaxAmount       <- taxAccountHelper.totalEstimatedTax(taxAccountDetails)
       reliefsGivingBackTax <- taxAccountHelper.reliefsGivingBackTaxComponents(taxAccountDetails)
       otherTaxDue          <- taxAccountHelper.otherTaxDueComponents(taxAccountDetails)
       alreadyTaxedAtSource <- taxAccountHelper.alreadyTaxedAtSourceComponents(taxAccountDetails)
@@ -51,10 +54,7 @@ class TotalTaxService @Inject() (
       taxOnOtherIncome,
       taxReliefComponents
     )
-  }
 
-  def taxFreeAllowance(nino: Nino, year: TaxYear)(implicit hc: HeaderCarrier): Future[BigDecimal] =
-    taxAccountConnector
-      .taxAccount(nino, year)
-      .map(_.as[BigDecimal](TotalTaxHipReads.taxFreeAllowanceReads))
+  def taxFreeAllowance(taxAccountDetails: Future[JsValue]): Future[BigDecimal] =
+    taxAccountDetails.map(_.as[BigDecimal](TotalTaxHipReads.taxFreeAllowanceReads))
 }

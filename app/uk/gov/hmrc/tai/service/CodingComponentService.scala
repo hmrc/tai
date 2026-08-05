@@ -17,6 +17,7 @@
 package uk.gov.hmrc.tai.service
 
 import com.google.inject.{Inject, Singleton}
+import play.api.libs.json.JsValue
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.tai.connectors.TaxAccountConnector
@@ -32,9 +33,10 @@ class CodingComponentService @Inject() (
 )(implicit ec: ExecutionContext) {
 
   def codingComponents(nino: Nino, year: TaxYear)(implicit hc: HeaderCarrier): Future[Seq[CodingComponent]] =
-    taxAccountConnector
-      .taxAccount(nino, year)
-      .map(_.as[Seq[CodingComponent]](CodingComponentHipReads.codingComponentReads))
+    codingComponents(taxAccountConnector.taxAccount(nino, year))
+
+  def codingComponents(taxAccountDetails: Future[JsValue]): Future[Seq[CodingComponent]] =
+    taxAccountDetails.map(_.as[Seq[CodingComponent]](CodingComponentHipReads.codingComponentReads))
 
   def codingComponentsForTaxCodeId(nino: Nino, taxCodeId: Int)(implicit
     hc: HeaderCarrier

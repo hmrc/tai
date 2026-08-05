@@ -17,6 +17,7 @@
 package uk.gov.hmrc.tai.service.helper
 
 import com.google.inject.{Inject, Singleton}
+import play.api.libs.json.JsValue
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.{HeaderCarrier, NotFoundException}
 import uk.gov.hmrc.tai.connectors.TaxAccountConnector
@@ -31,9 +32,10 @@ class TaxCodeIncomeHelper @Inject() (
   taxAccountConnector: TaxAccountConnector
 )(implicit ec: ExecutionContext) {
   def fetchTaxCodeIncomes(nino: Nino, year: TaxYear)(implicit hc: HeaderCarrier): Future[Seq[TaxCodeIncome]] =
-    taxAccountConnector
-      .taxAccount(nino, year)
-      .map(_.as[Seq[TaxCodeIncome]](TaxCodeIncomeHipReads.taxCodeIncomeSourcesReads))
+    fetchTaxCodeIncomes(taxAccountConnector.taxAccount(nino, year))
+
+  def fetchTaxCodeIncomes(taxAccountDetails: Future[JsValue]): Future[Seq[TaxCodeIncome]] =
+    taxAccountDetails.map(_.as[Seq[TaxCodeIncome]](TaxCodeIncomeHipReads.taxCodeIncomeSourcesReads))
 
   def incomeAmountForEmploymentId(nino: Nino, year: TaxYear, employmentId: Int)(implicit
     hc: HeaderCarrier

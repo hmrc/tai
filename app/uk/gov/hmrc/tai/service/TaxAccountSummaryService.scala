@@ -17,11 +17,13 @@
 package uk.gov.hmrc.tai.service
 
 import com.google.inject.{Inject, Singleton}
+import play.api.libs.json.JsValue
 import play.api.mvc.Request
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.tai.connectors.TaxAccountConnector
+import uk.gov.hmrc.tai.model.domain.*
 import uk.gov.hmrc.tai.model.domain.calculation.CodingComponent
-import uk.gov.hmrc.tai.model.domain._
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.service.helper.TaxAccountHelper
 
@@ -33,7 +35,8 @@ class TaxAccountSummaryService @Inject() (
   codingComponentService: CodingComponentService,
   incomeService: IncomeService,
   totalTaxService: TotalTaxService,
-  taxAccountHelper: TaxAccountHelper
+  taxAccountHelper: TaxAccountHelper,
+  taxAccountConnector: TaxAccountConnector
 )(implicit
   ec: ExecutionContext
 ) {
@@ -41,18 +44,16 @@ class TaxAccountSummaryService @Inject() (
   def taxAccountSummary(nino: Nino, year: TaxYear)(implicit
     hc: HeaderCarrier,
     request: Request[_]
-  ): Future[TaxAccountSummary] =
-    // This is really bad if for some reason the cache does not work properly.
-    // It generates a large number of http calls to the same API.
-    // The calls are sequential so there is no race condition to the cache.
-    // todo: refactor all different calls to taxAccount connector into a single call and the proper reads.
+  ): Future[TaxAccountSummary] = {
+    val taxAccountDetails: Future[JsValue] = taxAccountConnector.taxAccount(nino, year)
+
     for {
-      totalEstimatedTax       <- taxAccountHelper.totalEstimatedTax(nino, year)
-      taxFreeAmountComponents <- codingComponentService.codingComponents(nino, year)
-      taxCodeIncomes          <- incomeService.taxCodeIncomes(nino, year)
-      totalTax                <- totalTaxService.totalTax(nino, year)
-      taxFreeAllowance        <- totalTaxService.taxFreeAllowance(nino, year)
-      date                    <- taxAccountHelper.dateOfTaxAccount(nino, year)
+      totalEstimatedTax       <- taxAccountHelper.totalEstimatedTax(taxAccountDetails)
+      taxFreeAmountComponents <- codingComponentService.codingComponents(taxAccountDetails)
+      taxCodeIncomes          <- incomeService.taxCodeIncomes(taxAccountDetails, nino, year)
+      totalTax                <- totalTaxService.totalTax(taxAccountDetails)
+      taxFreeAllowance        <- totalTaxService.taxFreeAllowance(taxAccountDetails)
+      date                    <- taxAccountHelper.dateOfTaxAccount(taxAccountDetails)
     } yield {
 
       val taxFreeAmount = taxFreeAmountCalculation(taxFreeAmountComponents)
@@ -75,6 +76,7 @@ class TaxAccountSummaryService @Inject() (
         date
       )
     }
+  }
 
   private[service] def taxFreeAmountCalculation(codingComponents: Seq[CodingComponent]): BigDecimal =
     codingComponents.foldLeft(BigDecimal(0))((total: BigDecimal, component: CodingComponent) =>
