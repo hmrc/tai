@@ -33,9 +33,9 @@ import scala.concurrent.Future
 
 class TaxAccountSummaryControllerSpec extends BaseSpec with NpsExceptions {
 
-  val taxAccountSummary: TaxAccountSummary = TaxAccountSummary(1111, 0, 12.34, 0, 0, 0, 0, None)
+  val taxAccountSummary: TaxAccountSummary = TaxAccountSummary(Some(1111), Some(0), 12.34, 0, 0, Some(0), Some(0), None)
   val taxAccountSummaryForYearCY1: TaxAccountSummary =
-    TaxAccountSummary(2222, 1, 56.78, 100.00, 43.22, 200, 100, Some(LocalDate.of(2026, 1, 1)))
+    TaxAccountSummary(Some(2222), Some(1), 56.78, 100.00, 43.22, Some(200), Some(100), Some(LocalDate.of(2026, 1, 1)))
 
   "taxAccountSummaryForYear" must {
     "return the tax summary for the given year" when {
