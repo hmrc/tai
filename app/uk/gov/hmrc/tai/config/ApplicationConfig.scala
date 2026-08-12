@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2026 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -104,6 +104,9 @@ class MongoConfig @Inject() (val runModeConfiguration: Configuration) extends Ba
   lazy val mongoLockTTL: Int = runModeConfiguration.getOptional[Int]("mongo.lock.expiryInMilliseconds").getOrElse(1200)
   lazy val mongoTTLUpdateIncome: Int =
     runModeConfiguration.getOptional[Int]("tai.cache.updateIncome.expiryInSeconds").getOrElse(3600 * 48)
+  lazy val mongoAuthTTL: Int = runModeConfiguration.getOptional[Int]("mongodb.auth.expiryInSeconds").getOrElse(30)
+  lazy val mongoAuthEnabled: Boolean =
+    runModeConfiguration.getOptional[Boolean]("mongodb.auth.enabled").getOrElse(false)
 }
 
 @Singleton

@@ -17,31 +17,88 @@
 package uk.gov.hmrc.tai.controllers.auth
 
 import com.google.inject.{ImplementedBy, Inject}
-import play.api.http.Status.UNAUTHORIZED
+import play.api.Logging
 import play.api.mvc.*
 import play.api.mvc.Results.*
 import uk.gov.hmrc.auth.core.*
 import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals
 import uk.gov.hmrc.domain.Nino
-import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.http.{GatewayTimeoutException, HeaderCarrier}
+import uk.gov.hmrc.mongo.cache.DataKey
 import uk.gov.hmrc.play.http.HeaderCarrierConverter
-import uk.gov.hmrc.tai.model.AuthenticatedRequest
+import uk.gov.hmrc.tai.config.MongoConfig
+import uk.gov.hmrc.tai.model.{AuthenticatedRequest, CachedAuthRetrievals}
+import uk.gov.hmrc.tai.repositories.cache.AuthCacheRepository
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class AuthActionImpl @Inject() (override val authConnector: AuthConnector, cc: ControllerComponents)(implicit
+class AuthActionImpl @Inject() (
+  override val authConnector: AuthConnector,
+  appConfig: MongoConfig,
+  authCacheRepository: AuthCacheRepository,
+  cc: ControllerComponents
+)(implicit
   ec: ExecutionContext
-) extends AuthAction with AuthorisedFunctions {
+) extends AuthAction with AuthorisedFunctions with Logging {
+
+  private val AuthRetrievalsKey = DataKey[CachedAuthRetrievals]("auth-retrievals")
+
+  private def callAuth[A](request: Request[A], cacheResult: Boolean)(implicit
+    hc: HeaderCarrier
+  ): Future[Either[Result, AuthenticatedRequest[A]]] =
+    authorised(ConfidenceLevel.L200)
+      .retrieve(Retrievals.nino) {
+        case Some(nino) =>
+          val retrievals = CachedAuthRetrievals(nino)
+          val authenticatedRequest = AuthenticatedRequest(request, Nino(nino))
+
+          if (cacheResult) {
+            authCacheRepository.putSession(AuthRetrievalsKey, retrievals).map { _ =>
+              Right(authenticatedRequest)
+            }
+          } else {
+            Future.successful(Right(authenticatedRequest))
+          }
+        case None =>
+          logger.error("Unable to retrieve NINO from Auth")
+          Future.successful(Left(Unauthorized))
+      }
+      .recover {
+        case error: NoActiveSession =>
+          Left(Unauthorized(error.reason))
+
+        case error: InsufficientConfidenceLevel =>
+          Left(Unauthorized(error.reason))
+
+        case error: GatewayTimeoutException =>
+          logger.error(error.getMessage)
+          Left(BadGateway(error.getMessage))
+
+        case error =>
+          logger.error(error.getMessage, error)
+          Left(InternalServerError(error.getMessage))
+      }
 
   override protected def refine[A](request: Request[A]): Future[Either[Result, AuthenticatedRequest[A]]] = {
     implicit val hc: HeaderCarrier = HeaderCarrierConverter.fromRequest(request)
 
-    authorised(ConfidenceLevel.L200).retrieve(Retrievals.nino) {
-      case Some(nino) => Future.successful(Right(AuthenticatedRequest(request, Nino(nino))))
-      case None       => Future.successful(Left(Status(UNAUTHORIZED)))
-    } recover {
-      case _: NoActiveSession             => Left(Status(UNAUTHORIZED))
-      case _: InsufficientConfidenceLevel => Left(Status(UNAUTHORIZED))
+    if (appConfig.mongoAuthEnabled) {
+      authCacheRepository
+        .getFromSession[CachedAuthRetrievals](AuthRetrievalsKey)
+        .flatMap {
+          case Some(cacheRetrievals) =>
+            logger.debug("Auth retrieval cache HIT")
+            Future.successful(
+              Right(AuthenticatedRequest(request, Nino(cacheRetrievals.nino)))
+            )
+
+          case None =>
+            logger.debug("Auth retrieval cache MISS..!!")
+            callAuth(request, cacheResult = true)
+        }
+    } else {
+      logger.debug("Mongo caching for auth retrievals DISABLED..!!")
+      callAuth(request, cacheResult = false)
     }
   }
 
