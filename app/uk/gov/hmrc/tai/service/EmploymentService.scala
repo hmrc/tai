@@ -27,11 +27,11 @@ import uk.gov.hmrc.tai.audit.Auditor
 import uk.gov.hmrc.tai.connectors.{CitizenDetailsConnector, EmploymentDetailsConnector, RtiConnector}
 import uk.gov.hmrc.tai.model.api.EmploymentCollection
 import uk.gov.hmrc.tai.model.api.EmploymentCollection.employmentCollectionHodReadsHIP
+import uk.gov.hmrc.tai.model.dms.DmsSubmissionMetadata
 import uk.gov.hmrc.tai.model.domain.*
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.model.templates.{EmploymentPensionViewModel, PdfSubmission}
 import uk.gov.hmrc.tai.service.PdfService.EmploymentIFormReportRequest
-import uk.gov.hmrc.tai.templates.xml.PdfSubmissionMetadata
 import uk.gov.hmrc.tai.util.IFormConstants
 
 import java.time.LocalDate
@@ -46,7 +46,7 @@ class EmploymentService @Inject() (
   citizenDetailsConnector: CitizenDetailsConnector,
   employmentBuilder: EmploymentBuilder,
   iFormSubmissionService: IFormSubmissionService,
-  fileUploadService: FileUploadService,
+  upscanSubmissionService: UpscanSubmissionService,
   pdfService: PdfService,
   auditable: Auditor
 )(implicit ec: ExecutionContext) {
@@ -60,14 +60,8 @@ class EmploymentService @Inject() (
   private def endEmploymentFileName(envelopeId: String) =
     s"$envelopeId-EndEmployment-${LocalDate.now().format(dateFormat)}-iform.pdf"
 
-  private def endEmploymentMetaDataName(envelopeId: String) =
-    s"$envelopeId-EndEmployment-${LocalDate.now().format(dateFormat)}-metadata.xml"
-
   private def addEmploymentFileName(envelopeId: String) =
     s"$envelopeId-AddEmployment-${LocalDate.now().format(dateFormat)}-iform.pdf"
-
-  private def addEmploymentMetaDataName(envelopeId: String) =
-    s"$envelopeId-AddEmployment-${LocalDate.now().format(dateFormat)}-metadata.xml"
 
   private def fetchEmploymentsCollection(nino: Nino, taxYear: TaxYear)(implicit
     hc: HeaderCarrier
@@ -146,19 +140,11 @@ class EmploymentService @Inject() (
           pdfRequest = EmploymentIFormReportRequest(templateModel)
           pdf <-
             pdfService.generatePdf(pdfRequest)
-          envelopeId <- fileUploadService.createEnvelope()
-          endEmploymentMetadata = PdfSubmissionMetadata(PdfSubmission(ninoWithoutSuffix(nino), "TES1", 2))
-                                    .toString()
-                                    .getBytes
-          _ <- fileUploadService
+          envelopeId <- upscanSubmissionService.initiateSubmission(
+                          DmsSubmissionMetadata.from(PdfSubmission(ninoWithoutSuffix(nino), "TES1", 2))
+                        )
+          _ <- upscanSubmissionService
                  .uploadFile(pdf, envelopeId, endEmploymentFileName(envelopeId), MimeContentType.ApplicationPdf)
-          _ <- fileUploadService
-                 .uploadFile(
-                   endEmploymentMetadata,
-                   envelopeId,
-                   endEmploymentMetaDataName(envelopeId),
-                   MimeContentType.ApplicationXml
-                 )
         } yield {
           logger.info("Envelope Id for end employment- " + envelopeId)
 
@@ -188,18 +174,11 @@ class EmploymentService @Inject() (
       pdfRequest = EmploymentIFormReportRequest(templateModel)
       pdf <-
         pdfService.generatePdf(pdfRequest)
-      envelopeId <- fileUploadService.createEnvelope()
-      addEmploymentMetadata = PdfSubmissionMetadata(PdfSubmission(ninoWithoutSuffix(nino), "TES1", 2))
-                                .toString()
-                                .getBytes
-      _ <- fileUploadService
+      envelopeId <- upscanSubmissionService.initiateSubmission(
+                      DmsSubmissionMetadata.from(PdfSubmission(ninoWithoutSuffix(nino), "TES1", 2))
+                    )
+      _ <- upscanSubmissionService
              .uploadFile(pdf, envelopeId, addEmploymentFileName(envelopeId), MimeContentType.ApplicationPdf)
-      _ <- fileUploadService.uploadFile(
-             addEmploymentMetadata,
-             envelopeId,
-             addEmploymentMetaDataName(envelopeId),
-             MimeContentType.ApplicationXml
-           )
     } yield {
       logger.info("Envelope Id for add employment- " + envelopeId)
 
