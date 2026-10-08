@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2026 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,19 +14,18 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.tai.model
+package uk.gov.hmrc.tai.model.upscan
 
-import play.api.libs.json.{Format, Json}
+import play.api.libs.json.{Json, OFormat}
 
-case class FileUploadCallback(envelopeId: String, fileId: String, status: String, reason: Option[String]) {
-  def toMap: Map[String, String] = Map(
-    "envelopId" -> envelopeId,
-    "status"    -> status,
-    "reason"    -> reason.getOrElse(""),
-    "file-Id"   -> fileId
-  )
+case class UpscanUploadRequest(href: String, fields: Map[String, String])
+
+object UpscanUploadRequest {
+  implicit val format: OFormat[UpscanUploadRequest] = Json.format[UpscanUploadRequest]
 }
 
-object FileUploadCallback {
-  implicit val formatFileUpload: Format[FileUploadCallback] = Json.format[FileUploadCallback]
+case class UpscanInitiateResponse(reference: String, uploadRequest: UpscanUploadRequest)
+
+object UpscanInitiateResponse {
+  implicit val format: OFormat[UpscanInitiateResponse] = Json.format[UpscanInitiateResponse]
 }
