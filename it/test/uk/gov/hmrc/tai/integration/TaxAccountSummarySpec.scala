@@ -28,7 +28,7 @@ import play.api.test.Helpers.{status as getStatus, *}
 import uk.gov.hmrc.http.{HeaderNames, HttpException, InternalServerException}
 import uk.gov.hmrc.mongoFeatureToggles.model.{FeatureFlag, FeatureFlagName}
 import uk.gov.hmrc.tai.integration.utils.IntegrationSpec
-import uk.gov.hmrc.tai.model.admin.RtiCallToggle
+import uk.gov.hmrc.tai.model.admin.FeatureFlagNameTai.RtiCallToggle
 
 import scala.concurrent.Await
 import scala.concurrent.duration.Duration
