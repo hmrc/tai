@@ -29,7 +29,7 @@ import play.api.test.Helpers.{GET, contentAsJson, defaultAwaitTimeout, route, st
 import uk.gov.hmrc.http.{HeaderNames, HttpException}
 import uk.gov.hmrc.mongoFeatureToggles.model.{FeatureFlag, FeatureFlagName}
 import uk.gov.hmrc.tai.integration.utils.{FileHelper, IntegrationSpec}
-import uk.gov.hmrc.tai.model.admin.RtiCallToggle
+import uk.gov.hmrc.tai.model.admin.FeatureFlagNameTai.RtiCallToggle
 import uk.gov.hmrc.tai.model.domain.income.BasisOperation.Week1Month1
 import uk.gov.hmrc.tai.model.tai.TaxYear
 
