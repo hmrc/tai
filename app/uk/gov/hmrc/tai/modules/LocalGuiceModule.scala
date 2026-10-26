@@ -21,12 +21,11 @@ import play.api.{Configuration, Environment}
 import uk.gov.hmrc.auth.core.AuthorisedFunctions
 import uk.gov.hmrc.crypto.{Decrypter, Encrypter}
 import uk.gov.hmrc.tai.auth.MicroserviceAuthorisedFunctions
-import uk.gov.hmrc.tai.config.{ApplicationStartUp, CryptoProvider}
+import uk.gov.hmrc.tai.config.CryptoProvider
 import uk.gov.hmrc.tai.connectors.*
 
 class LocalGuiceModule extends Module {
   override def bindings(environment: Environment, configuration: Configuration): Seq[Binding[_]] = Seq(
-    bind[ApplicationStartUp].toSelf.eagerly(),
     bind[AuthorisedFunctions].to[MicroserviceAuthorisedFunctions].eagerly(),
     bind[RtiConnector].to[CachingRtiConnector],
     bind[RtiConnector].qualifiedWith("default").to[DefaultRtiConnector],

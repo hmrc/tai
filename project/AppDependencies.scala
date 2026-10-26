@@ -5,7 +5,7 @@ object AppDependencies {
 
   private val playVersion = "play-30"
   private val bootstrapVersion = "10.7.0"
-  private val mongoClientVersion = "2.5.0"
+  private val mongoClientVersion = "3.0.0"
 
   val compile: Seq[ModuleID] = Seq(
     filters,

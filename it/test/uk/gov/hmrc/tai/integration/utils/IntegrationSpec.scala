@@ -41,6 +41,7 @@ import uk.gov.hmrc.http.{BadRequestException, InternalServerException, NotFoundE
 import uk.gov.hmrc.mongoFeatureToggles.model.{FeatureFlag, FeatureFlagName}
 import uk.gov.hmrc.mongoFeatureToggles.services.FeatureFlagService
 import uk.gov.hmrc.tai.config.CustomErrorHandler
+import uk.gov.hmrc.tai.model.admin.FeatureFlagNameTai.RtiCallToggle
 import uk.gov.hmrc.tai.model.admin.*
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.repositories.cache.TaiSessionCacheRepository
