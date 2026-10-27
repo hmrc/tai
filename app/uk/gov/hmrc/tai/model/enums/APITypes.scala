@@ -41,9 +41,10 @@ object APITypes extends Enumeration {
   val HipIabdUpdateEmployeeExpensesAPI: Value = Value
   val PdfServiceAPI: Value = Value
   val CompanyCarAPI: Value = Value
-  val FusCreateEnvelope: Value = Value
-  val FusUploadFile: Value = Value
-  val FusCloseEnvelope: Value = Value
+  val UpscanInitiate: Value = Value
+  val UpscanUpload: Value = Value
+  val UpscanDownload: Value = Value
+  val DmsSubmission: Value = Value
   val BbsiAPI: Value = Value
   val TaxCodeChangeAPI: Value = Value
   val TaxAccountHistoryAPI: Value = Value

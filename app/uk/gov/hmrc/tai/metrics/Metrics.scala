@@ -28,13 +28,13 @@ class Metrics @Inject() (metrics: MetricRegistry) {
 
   private val registry: MetricRegistry = metrics
 
-  val SuccessCounterSuffix = "-success-counter"
-  val FailureCounterSuffix = "-failed-counter"
-  val CacheHitCounter = "tai-cache-hit-counter"
-  val CacheMissCounter = "tai-cache-miss-counter"
-  val TimerSuffix = "-timer"
+  private val SuccessCounterSuffix = "-success-counter"
+  private val FailureCounterSuffix = "-failed-counter"
+  private val CacheHitCounter = "tai-cache-hit-counter"
+  private val CacheMissCounter = "tai-cache-miss-counter"
+  private val TimerSuffix = "-timer"
 
-  val metricDescriptions: Map[enums.APITypes.Value, String] = Map(
+  private val metricDescriptions: Map[enums.APITypes.Value, String] = Map(
     APITypes.NpsPersonAPI                     -> "nps-person",
     APITypes.NpsTaxAccountAPI                 -> "nps-tax-account",
     APITypes.NpsEmploymentAPI                 -> "nps-employment",
@@ -55,9 +55,10 @@ class Metrics @Inject() (metrics: MetricRegistry) {
     APITypes.HipIabdUpdateEmployeeExpensesAPI -> "hip-iabd-flat-rate-expenses-put",
     APITypes.PdfServiceAPI                    -> "pdf-service",
     APITypes.CompanyCarAPI                    -> "company-car",
-    APITypes.FusCreateEnvelope                -> "create-envelope",
-    APITypes.FusUploadFile                    -> "file-upload",
-    APITypes.FusCloseEnvelope                 -> "close-envelope",
+    APITypes.UpscanInitiate                   -> "upscan-initiate",
+    APITypes.UpscanUpload                     -> "upscan-upload",
+    APITypes.UpscanDownload                   -> "upscan-download",
+    APITypes.DmsSubmission                    -> "dms-submission",
     APITypes.BbsiAPI                          -> "bbsi",
     APITypes.TaxCodeChangeAPI                 -> "tax-code-change",
     APITypes.TaxAccountHistoryAPI             -> "tax-account-history"

@@ -44,12 +44,12 @@ class IFormSubmissionServiceSpec extends BaseSpec {
   private def createSUT(
     citizenDetailsConnector: CitizenDetailsConnector,
     pdfService: PdfService,
-    fileUploadService: FileUploadService
+    upscanSubmissionService: UpscanSubmissionService
   ) =
-    new IFormSubmissionService(citizenDetailsConnector, pdfService, fileUploadService)
+    new IFormSubmissionService(citizenDetailsConnector, pdfService, upscanSubmissionService)
 
   "IFormSubmissionService" should {
-    "create and submit an iform and return an envelope id after submission" in {
+    "create and submit an iform and return a submission id after submission" in {
       val mockCitizenDetailsConnector = mock[CitizenDetailsConnector]
       when(mockCitizenDetailsConnector.getPerson(any())(any()))
         .thenReturn(Future.successful(person))
@@ -58,13 +58,13 @@ class IFormSubmissionServiceSpec extends BaseSpec {
       when(mockPdfService.generatePdf(any()))
         .thenReturn(Future.successful(pdfBytes))
 
-      val mockFileUploadService = mock[FileUploadService]
-      when(mockFileUploadService.createEnvelope()(hc))
+      val mockUpscanSubmissionService = mock[UpscanSubmissionService]
+      when(mockUpscanSubmissionService.initiateSubmission(any())(any()))
         .thenReturn(Future.successful("1"))
-      when(mockFileUploadService.uploadFile(any(), any(), any(), any())(any()))
+      when(mockUpscanSubmissionService.uploadFile(any(), any(), any(), any())(any()))
         .thenReturn(Future.successful(HttpResponse(200, responseBody)))
 
-      val sut = createSUT(mockCitizenDetailsConnector, mockPdfService, mockFileUploadService)
+      val sut = createSUT(mockCitizenDetailsConnector, mockPdfService, mockUpscanSubmissionService)
       val addEmployment =
         AddEmployment("employerName", LocalDate.parse("2018-12-13"), "12345", "Yes", Some("123456789"))
       val templateModel =
@@ -80,13 +80,13 @@ class IFormSubmissionServiceSpec extends BaseSpec {
 
       messageId mustBe "1"
 
-      verify(mockFileUploadService, times(1)).uploadFile(
+      verify(mockUpscanSubmissionService, times(1)).uploadFile(
         any(),
         any(),
         contains(s"1-$iformSubmissionKey-${LocalDate.now().format(formatter)}-iform.pdf"),
         any()
       )(any())
-      verify(mockFileUploadService, times(1)).uploadFile(
+      verify(mockUpscanSubmissionService, never).uploadFile(
         any(),
         any(),
         contains(s"1-$iformSubmissionKey-${LocalDate.now().format(formatter)}-metadata.xml"),
@@ -95,7 +95,7 @@ class IFormSubmissionServiceSpec extends BaseSpec {
     }
 
     "abort the iform submission when the iform creation fails" in {
-      val mockFileUploadService = mock[FileUploadService]
+      val mockUpscanSubmissionService = mock[UpscanSubmissionService]
 
       val mockCitizenDetailsConnector = mock[CitizenDetailsConnector]
       when(mockCitizenDetailsConnector.getPerson(any())(any()))
@@ -105,7 +105,7 @@ class IFormSubmissionServiceSpec extends BaseSpec {
       when(mockPdfService.generatePdf(any()))
         .thenReturn(Future.failed(new RuntimeException("Error")))
 
-      val sut = createSUT(mockCitizenDetailsConnector, mockPdfService, mockFileUploadService)
+      val sut = createSUT(mockCitizenDetailsConnector, mockPdfService, mockUpscanSubmissionService)
       val addEmployment =
         AddEmployment("employerName", LocalDate.parse("2018-12-13"), "12345", "Yes", Some("123456789"))
       val templateModel =
@@ -123,13 +123,13 @@ class IFormSubmissionServiceSpec extends BaseSpec {
 
       result mustBe a[RuntimeException]
 
-      verify(mockFileUploadService, never).uploadFile(
+      verify(mockUpscanSubmissionService, never).uploadFile(
         any(),
         any(),
         contains(s"1-$iformSubmissionKey-${LocalDate.now().format(formatter)}-iform.pdf"),
         any()
       )(any())
-      verify(mockFileUploadService, never).uploadFile(
+      verify(mockUpscanSubmissionService, never).uploadFile(
         any(),
         any(),
         contains(s"1-$iformSubmissionKey-${LocalDate.now().format(formatter)}-metadata.xml"),

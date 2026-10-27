@@ -48,7 +48,8 @@ GET           /:nino/tax-account/:year/summary                                  
 # Total Tax
 GET           /:nino/tax-account/:year/total-tax                                                                      @uk.gov.hmrc.tai.controllers.TotalTaxController.totalTax(nino: Nino, year: uk.gov.hmrc.tai.model.tai.TaxYear)
 
-POST          /file-upload/callback                                                                                   @uk.gov.hmrc.tai.controllers.FileUploadController.fileUploadCallback()
+POST          /dms/callback                                                                                           @uk.gov.hmrc.tai.controllers.DmsCallbackController.callback()
+POST          /upscan/callback                                                                                        @uk.gov.hmrc.tai.controllers.UpscanCallbackController.callback()
 
 
 # Invalidate Session Cache
