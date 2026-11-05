@@ -28,7 +28,7 @@ import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.http.{HeaderCarrier, HeaderNames, HttpException, HttpResponse, LockedException, StringContextOps, UpstreamErrorResponse}
 import uk.gov.hmrc.mongoFeatureToggles.services.FeatureFlagService
 import uk.gov.hmrc.tai.config.DesConfig
-import uk.gov.hmrc.tai.model.admin.RtiCallToggle
+import uk.gov.hmrc.tai.model.admin.FeatureFlagNameTai.RtiCallToggle
 import uk.gov.hmrc.tai.model.domain.*
 import uk.gov.hmrc.tai.model.domain.AnnualAccount.{annualAccountHodReads, format}
 import uk.gov.hmrc.tai.model.tai.TaxYear

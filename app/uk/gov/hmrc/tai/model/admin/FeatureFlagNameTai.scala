@@ -14,15 +14,10 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.tai.config
+package uk.gov.hmrc.tai.model.admin
 
-import uk.gov.hmrc.mongoFeatureToggles.model.FeatureFlagNamesLibrary
-import uk.gov.hmrc.tai.model.admin.RtiCallToggle
+import uk.gov.hmrc.mongoFeatureToggles.model.FeatureFlagName
 
-class ApplicationStartUp {
-  FeatureFlagNamesLibrary.addFlags(
-    List(
-      RtiCallToggle
-    )
-  )
+enum FeatureFlagNameTai(val name: String) extends FeatureFlagName {
+  case RtiCallToggle extends FeatureFlagNameTai("rti-call-toggle")
 }

@@ -32,7 +32,7 @@ import play.api.test.FakeRequest
 import uk.gov.hmrc.http.{HeaderNames, UpstreamErrorResponse}
 import uk.gov.hmrc.mongoFeatureToggles.model.{FeatureFlag, FeatureFlagName}
 import uk.gov.hmrc.mongoFeatureToggles.services.FeatureFlagService
-import uk.gov.hmrc.tai.model.admin.RtiCallToggle
+import uk.gov.hmrc.tai.model.admin.FeatureFlagNameTai.RtiCallToggle
 import uk.gov.hmrc.tai.model.domain.*
 import uk.gov.hmrc.tai.model.rti.QaData
 import uk.gov.hmrc.tai.model.tai.TaxYear
