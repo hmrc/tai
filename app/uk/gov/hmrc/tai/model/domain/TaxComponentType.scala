@@ -77,6 +77,7 @@ case object PersonalAllowanceAgedPAA extends AllowanceComponentType
 case object PersonalAllowanceElderlyPAE extends AllowanceComponentType
 case object MarriageAllowanceReceived extends AllowanceComponentType
 case object BRDifferenceTaxReduction extends AllowanceComponentType
+case object PensionTaxAllowance extends AllowanceComponentType
 
 case object MarriedCouplesAllowanceToWifeMAW extends DeductionComponentType
 case object BalancingCharge extends DeductionComponentType
