@@ -164,7 +164,8 @@ object CodingComponentHipReads {
       30 -> ForeignPensionAllowance,
       31 -> EarlyYearsAdjustment,
       32 -> MarriageAllowanceReceived,
-      34 -> BRDifferenceTaxReduction
+      34 -> BRDifferenceTaxReduction,
+      35 -> PensionTaxAllowance
     )
 
     private val benefitMap = Map(
