@@ -15,15 +15,15 @@ object AppDependencies {
     "uk.gov.hmrc"   %% s"crypto-json-$playVersion"                  % "8.4.0",
     "org.typelevel" %% "cats-core"                                  % "2.13.0",
     "uk.gov.hmrc"   %% s"mongo-feature-toggles-client-$playVersion" % mongoClientVersion,
-    "org.typelevel" %% "cats-effect"                                % "3.6.3",
-    "org.apache.xmlgraphics"   % "fop"                              % "2.11",
+    "org.typelevel" %% "cats-effect"                                % "3.7.1",
+    "org.apache.xmlgraphics"   % "fop"                              % "2.12",
   )
 
   val test: Seq[ModuleID] = Seq(
     "org.scalatestplus" %% "scalacheck-1-18"                                 % "3.2.19.0",
     "uk.gov.hmrc"       %% s"mongo-feature-toggles-client-test-$playVersion" % mongoClientVersion,
     "uk.gov.hmrc"       %% s"domain-test-$playVersion"                       % "13.0.0",
-    "org.apache.pdfbox"  % "pdfbox"                                          % "3.0.6",
+    "org.apache.pdfbox"  % "pdfbox"                                          % "3.0.8",
   ).map(_ % "test")
 
   val all: Seq[ModuleID] = compile ++ test
