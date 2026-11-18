@@ -16,19 +16,18 @@
 
 package uk.gov.hmrc.tai.service
 
-import org.mockito.ArgumentMatchers.{any, contains}
+import org.mockito.ArgumentMatchers.{any, eq as meq}
+import org.mockito.ArgumentCaptor
 import org.mockito.Mockito.{never, times, verify, when}
-import uk.gov.hmrc.http.HttpResponse
 import uk.gov.hmrc.tai.connectors.CitizenDetailsConnector
 import uk.gov.hmrc.tai.model.domain.{AddEmployment, Address, Person}
 import uk.gov.hmrc.tai.model.tai.TaxYear
-import uk.gov.hmrc.tai.model.templates.EmploymentPensionViewModel
+import uk.gov.hmrc.tai.model.templates.{EmploymentPensionViewModel, PdfSubmission}
 import uk.gov.hmrc.tai.service.PdfService.EmploymentIFormReportRequest
 import uk.gov.hmrc.tai.util.BaseSpec
 
 import java.nio.file.{Files, Paths}
 import java.time.LocalDate
-import java.time.format.DateTimeFormatter
 import scala.concurrent.Future
 
 class IFormSubmissionServiceSpec extends BaseSpec {
@@ -39,17 +38,15 @@ class IFormSubmissionServiceSpec extends BaseSpec {
 
   private val pdfBytes = Files.readAllBytes(Paths.get("test/resources/sample.pdf"))
 
-  private val formatter = DateTimeFormatter.ofPattern("YYYYMMdd")
-
   private def createSUT(
     citizenDetailsConnector: CitizenDetailsConnector,
     pdfService: PdfService,
-    fileUploadService: FileUploadService
+    documentSubmissionService: DocumentSubmissionService
   ) =
-    new IFormSubmissionService(citizenDetailsConnector, pdfService, fileUploadService)
+    new IFormSubmissionService(citizenDetailsConnector, pdfService, documentSubmissionService)
 
   "IFormSubmissionService" should {
-    "create and submit an iform and return an envelope id after submission" in {
+    "create and submit an iform and return a submission id after submission" in {
       val mockCitizenDetailsConnector = mock[CitizenDetailsConnector]
       when(mockCitizenDetailsConnector.getPerson(any())(any()))
         .thenReturn(Future.successful(person))
@@ -58,13 +55,11 @@ class IFormSubmissionServiceSpec extends BaseSpec {
       when(mockPdfService.generatePdf(any()))
         .thenReturn(Future.successful(pdfBytes))
 
-      val mockFileUploadService = mock[FileUploadService]
-      when(mockFileUploadService.createEnvelope()(hc))
+      val mockDocumentSubmissionService = mock[DocumentSubmissionService]
+      when(mockDocumentSubmissionService.submit(any(), any(), any())(any()))
         .thenReturn(Future.successful("1"))
-      when(mockFileUploadService.uploadFile(any(), any(), any(), any())(any()))
-        .thenReturn(Future.successful(HttpResponse(200, responseBody)))
 
-      val sut = createSUT(mockCitizenDetailsConnector, mockPdfService, mockFileUploadService)
+      val sut = createSUT(mockCitizenDetailsConnector, mockPdfService, mockDocumentSubmissionService)
       val addEmployment =
         AddEmployment("employerName", LocalDate.parse("2018-12-13"), "12345", "Yes", Some("123456789"))
       val templateModel =
@@ -80,22 +75,15 @@ class IFormSubmissionServiceSpec extends BaseSpec {
 
       messageId mustBe "1"
 
-      verify(mockFileUploadService, times(1)).uploadFile(
-        any(),
-        any(),
-        contains(s"1-$iformSubmissionKey-${LocalDate.now().format(formatter)}-iform.pdf"),
-        any()
-      )(any())
-      verify(mockFileUploadService, times(1)).uploadFile(
-        any(),
-        any(),
-        contains(s"1-$iformSubmissionKey-${LocalDate.now().format(formatter)}-metadata.xml"),
-        any()
-      )(any())
+      val captor = ArgumentCaptor.forClass(classOf[PdfSubmission])
+      verify(mockDocumentSubmissionService, times(1))
+        .submit(meq(pdfBytes), meq(iformSubmissionKey), captor.capture())(any())
+      captor.getValue.customerId mustBe nino.withoutSuffix
+      captor.getValue.formId mustBe iformId
     }
 
     "abort the iform submission when the iform creation fails" in {
-      val mockFileUploadService = mock[FileUploadService]
+      val mockDocumentSubmissionService = mock[DocumentSubmissionService]
 
       val mockCitizenDetailsConnector = mock[CitizenDetailsConnector]
       when(mockCitizenDetailsConnector.getPerson(any())(any()))
@@ -105,7 +93,7 @@ class IFormSubmissionServiceSpec extends BaseSpec {
       when(mockPdfService.generatePdf(any()))
         .thenReturn(Future.failed(new RuntimeException("Error")))
 
-      val sut = createSUT(mockCitizenDetailsConnector, mockPdfService, mockFileUploadService)
+      val sut = createSUT(mockCitizenDetailsConnector, mockPdfService, mockDocumentSubmissionService)
       val addEmployment =
         AddEmployment("employerName", LocalDate.parse("2018-12-13"), "12345", "Yes", Some("123456789"))
       val templateModel =
@@ -123,18 +111,7 @@ class IFormSubmissionServiceSpec extends BaseSpec {
 
       result mustBe a[RuntimeException]
 
-      verify(mockFileUploadService, never).uploadFile(
-        any(),
-        any(),
-        contains(s"1-$iformSubmissionKey-${LocalDate.now().format(formatter)}-iform.pdf"),
-        any()
-      )(any())
-      verify(mockFileUploadService, never).uploadFile(
-        any(),
-        any(),
-        contains(s"1-$iformSubmissionKey-${LocalDate.now().format(formatter)}-metadata.xml"),
-        any()
-      )(any())
+      verify(mockDocumentSubmissionService, never).submit(any(), any(), any())(any())
     }
   }
 }

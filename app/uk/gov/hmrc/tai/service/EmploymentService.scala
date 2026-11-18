@@ -22,7 +22,7 @@ import play.api.Logger
 import play.api.http.Status.NOT_FOUND
 import play.api.mvc.Request
 import uk.gov.hmrc.domain.Nino
-import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse, UpstreamErrorResponse}
+import uk.gov.hmrc.http.{HeaderCarrier, UpstreamErrorResponse}
 import uk.gov.hmrc.tai.audit.Auditor
 import uk.gov.hmrc.tai.connectors.{CitizenDetailsConnector, EmploymentDetailsConnector, RtiConnector}
 import uk.gov.hmrc.tai.model.api.EmploymentCollection
@@ -31,11 +31,8 @@ import uk.gov.hmrc.tai.model.domain.*
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.model.templates.{EmploymentPensionViewModel, PdfSubmission}
 import uk.gov.hmrc.tai.service.PdfService.EmploymentIFormReportRequest
-import uk.gov.hmrc.tai.templates.xml.PdfSubmissionMetadata
 import uk.gov.hmrc.tai.util.IFormConstants
 
-import java.time.LocalDate
-import java.time.format.DateTimeFormatter
 import scala.collection.immutable.Seq
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -46,7 +43,7 @@ class EmploymentService @Inject() (
   citizenDetailsConnector: CitizenDetailsConnector,
   employmentBuilder: EmploymentBuilder,
   iFormSubmissionService: IFormSubmissionService,
-  fileUploadService: FileUploadService,
+  documentSubmissionService: DocumentSubmissionService,
   pdfService: PdfService,
   auditable: Auditor
 )(implicit ec: ExecutionContext) {
@@ -54,20 +51,6 @@ class EmploymentService @Inject() (
   private val logger: Logger = Logger(getClass.getName)
 
   private val EndEmploymentAuditRequest = "EndEmploymentRequest"
-
-  private val dateFormat = DateTimeFormatter.ofPattern("YYYYMMdd")
-
-  private def endEmploymentFileName(envelopeId: String) =
-    s"$envelopeId-EndEmployment-${LocalDate.now().format(dateFormat)}-iform.pdf"
-
-  private def endEmploymentMetaDataName(envelopeId: String) =
-    s"$envelopeId-EndEmployment-${LocalDate.now().format(dateFormat)}-metadata.xml"
-
-  private def addEmploymentFileName(envelopeId: String) =
-    s"$envelopeId-AddEmployment-${LocalDate.now().format(dateFormat)}-iform.pdf"
-
-  private def addEmploymentMetaDataName(envelopeId: String) =
-    s"$envelopeId-AddEmployment-${LocalDate.now().format(dateFormat)}-metadata.xml"
 
   private def fetchEmploymentsCollection(nino: Nino, taxYear: TaxYear)(implicit
     hc: HeaderCarrier
@@ -146,19 +129,11 @@ class EmploymentService @Inject() (
           pdfRequest = EmploymentIFormReportRequest(templateModel)
           pdf <-
             pdfService.generatePdf(pdfRequest)
-          envelopeId <- fileUploadService.createEnvelope()
-          endEmploymentMetadata = PdfSubmissionMetadata(PdfSubmission(ninoWithoutSuffix(nino), "TES1", 2))
-                                    .toString()
-                                    .getBytes
-          _ <- fileUploadService
-                 .uploadFile(pdf, envelopeId, endEmploymentFileName(envelopeId), MimeContentType.ApplicationPdf)
-          _ <- fileUploadService
-                 .uploadFile(
-                   endEmploymentMetadata,
-                   envelopeId,
-                   endEmploymentMetaDataName(envelopeId),
-                   MimeContentType.ApplicationXml
-                 )
+          envelopeId <- documentSubmissionService.submit(
+                          pdf,
+                          "EndEmployment",
+                          PdfSubmission(ninoWithoutSuffix(nino), "TES1", 2)
+                        )
         } yield {
           logger.info("Envelope Id for end employment- " + envelopeId)
 
@@ -188,18 +163,11 @@ class EmploymentService @Inject() (
       pdfRequest = EmploymentIFormReportRequest(templateModel)
       pdf <-
         pdfService.generatePdf(pdfRequest)
-      envelopeId <- fileUploadService.createEnvelope()
-      addEmploymentMetadata = PdfSubmissionMetadata(PdfSubmission(ninoWithoutSuffix(nino), "TES1", 2))
-                                .toString()
-                                .getBytes
-      _ <- fileUploadService
-             .uploadFile(pdf, envelopeId, addEmploymentFileName(envelopeId), MimeContentType.ApplicationPdf)
-      _ <- fileUploadService.uploadFile(
-             addEmploymentMetadata,
-             envelopeId,
-             addEmploymentMetaDataName(envelopeId),
-             MimeContentType.ApplicationXml
-           )
+      envelopeId <- documentSubmissionService.submit(
+                      pdf,
+                      "AddEmployment",
+                      PdfSubmission(ninoWithoutSuffix(nino), "TES1", 2)
+                    )
     } yield {
       logger.info("Envelope Id for add employment- " + envelopeId)
 

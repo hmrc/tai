@@ -17,36 +17,24 @@
 package uk.gov.hmrc.tai.service
 
 import com.google.inject.{Inject, Singleton}
-
-import java.time.LocalDate
 import play.api.Logger
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.tai.connectors.CitizenDetailsConnector
-import uk.gov.hmrc.tai.model.domain.{MimeContentType, Person}
+import uk.gov.hmrc.tai.model.domain.Person
 import uk.gov.hmrc.tai.model.templates.PdfSubmission
 import uk.gov.hmrc.tai.service.PdfService.PdfGeneratorRequest
-import uk.gov.hmrc.tai.templates.xml.PdfSubmissionMetadata
 
-import java.time.format.DateTimeFormatter
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class IFormSubmissionService @Inject() (
   citizenDetailsConnector: CitizenDetailsConnector,
   pdfService: PdfService,
-  fileUploadService: FileUploadService
+  documentSubmissionService: DocumentSubmissionService
 )(implicit ec: ExecutionContext) {
 
   private val logger: Logger = Logger(getClass.getName)
-
-  private val dateFormat = DateTimeFormatter.ofPattern("YYYYMMdd")
-
-  private def iformFilename(envelopeId: String, iformSubmissionKey: String) =
-    s"$envelopeId-$iformSubmissionKey-${LocalDate.now().format(dateFormat)}-iform.pdf"
-
-  private def metadataFilename(envelopeId: String, iformSubmissionKey: String) =
-    s"$envelopeId-$iformSubmissionKey-${LocalDate.now().format(dateFormat)}-metadata.xml"
 
   def uploadIForm(
     nino: Nino,
@@ -55,19 +43,14 @@ class IFormSubmissionService @Inject() (
     iformGenerationFunc: Person => Future[PdfGeneratorRequest[?]]
   )(implicit hc: HeaderCarrier): Future[String] =
     for {
-      person     <- citizenDetailsConnector.getPerson(nino)
-      formData   <- iformGenerationFunc(person)
-      pdf        <- pdfService.generatePdf(formData)
-      envelopeId <- fileUploadService.createEnvelope()
-      metadata = PdfSubmissionMetadata(PdfSubmission(nino.withoutSuffix, iformId, 2)).toString().getBytes
-      _ <- fileUploadService
-             .uploadFile(pdf, envelopeId, iformFilename(envelopeId, iformSubmissionKey), MimeContentType.ApplicationPdf)
-      _ <- fileUploadService.uploadFile(
-             metadata,
-             envelopeId,
-             metadataFilename(envelopeId, iformSubmissionKey),
-             MimeContentType.ApplicationXml
-           )
+      person   <- citizenDetailsConnector.getPerson(nino)
+      formData <- iformGenerationFunc(person)
+      pdf      <- pdfService.generatePdf(formData)
+      envelopeId <- documentSubmissionService.submit(
+                      pdf,
+                      iformSubmissionKey,
+                      PdfSubmission(nino.withoutSuffix, iformId, 2)
+                    )
     } yield {
       logger.info(s"Envelope Id for $iformSubmissionKey - " + envelopeId)
       envelopeId

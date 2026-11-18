@@ -49,6 +49,33 @@ class FileUploadConfig @Inject() (servicesConfig: ServicesConfig) extends BaseCo
 }
 
 @Singleton
+class UpscanConfig @Inject() (servicesConfig: ServicesConfig, runModeConfiguration: Configuration) extends BaseConfig {
+  lazy val baseURL: String = servicesConfig.baseUrl("upscan-initiate")
+
+  lazy val callbackUrl: String =
+    runModeConfiguration.getOptional[String]("upscan.callback-endpoint").getOrElse("")
+  lazy val minFileSizeBytes: Int =
+    runModeConfiguration.getOptional[Int]("upscan.minFileSizeBytes").getOrElse(1)
+  lazy val maxFileSizeBytes: Int =
+    runModeConfiguration.getOptional[Int]("upscan.maxFileSizeBytes").getOrElse(10 * 1024 * 1024)
+  lazy val consumingService: String =
+    runModeConfiguration.getOptional[String]("upscan.consumingService").getOrElse("tai")
+
+  lazy val submissionTTLSeconds: Long =
+    runModeConfiguration.getOptional[Long]("tai.upscan.expiryInSeconds").getOrElse(86400L)
+}
+
+@Singleton
+class DmsSubmissionConfig @Inject() (servicesConfig: ServicesConfig, runModeConfiguration: Configuration)
+    extends BaseConfig {
+  lazy val baseURL: String = servicesConfig.baseUrl("dms-submission")
+
+  lazy val callbackUrl: String =
+    runModeConfiguration.getOptional[String]("dms-submission.callback-endpoint").getOrElse("")
+  lazy val authToken: String = runModeConfiguration.get[String]("internal-auth.token")
+}
+
+@Singleton
 class CitizenDetailsConfig @Inject() (servicesConfig: ServicesConfig) extends BaseConfig {
   lazy val baseURL: String = servicesConfig.baseUrl("citizen-details")
 }
