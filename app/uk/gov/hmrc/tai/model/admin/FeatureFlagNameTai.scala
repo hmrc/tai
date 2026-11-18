@@ -20,4 +20,5 @@ import uk.gov.hmrc.mongoFeatureToggles.model.FeatureFlagName
 
 enum FeatureFlagNameTai(val name: String) extends FeatureFlagName {
   case RtiCallToggle extends FeatureFlagNameTai("rti-call-toggle")
+  case UpscanSubmissionToggle extends FeatureFlagNameTai("upscan-submission-toggle")
 }

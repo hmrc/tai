@@ -26,10 +26,12 @@ class ApplicationUrlsSpec extends BaseSpec {
   val mockConfigNps: NpsConfig = mock[NpsConfig]
   val mockConfigDes: DesConfig = mock[DesConfig]
   val mockConfigFileUpload: FileUploadConfig = mock[FileUploadConfig]
+  val mockConfigUpscan: UpscanConfig = mock[UpscanConfig]
 
   when(mockConfigNps.baseURL).thenReturn("")
   when(mockConfigDes.baseURL).thenReturn("")
   when(mockConfigFileUpload.baseURL).thenReturn("")
+  when(mockConfigUpscan.baseURL).thenReturn("")
 
   val taxAccountUrls = new TaxAccountUrls(mockConfigNps, mockConfigDes)
   val iabdUrls = new IabdUrls(mockConfigNps)
@@ -78,6 +80,32 @@ class ApplicationUrlsSpec extends BaseSpec {
 
         fileUploadUrls.fileUrl("123-123", "xml") mustBe "/file-upload/upload/envelopes/123-123/files/xml"
       }
+    }
+  }
+
+  "UpscanUrls" must {
+    "return the correct urls" when {
+      "no arguments are given" in {
+        val upscanUrls = new UpscanUrls(mockConfigUpscan)
+
+        upscanUrls.initiateUrl mustBe "/upscan/v2/initiate"
+      }
+
+      "the base url is set" in {
+        val config = mock[UpscanConfig]
+        when(config.baseURL).thenReturn("http://localhost:9570")
+
+        new UpscanUrls(config).initiateUrl mustBe "http://localhost:9570/upscan/v2/initiate"
+      }
+    }
+  }
+
+  "DmsSubmissionUrls" must {
+    "return the submit url" in {
+      val config = mock[DmsSubmissionConfig]
+      when(config.baseURL).thenReturn("http://localhost:8222")
+
+      new DmsSubmissionUrls(config).submitUrl mustBe "http://localhost:8222/dms-submission/submit"
     }
   }
 
