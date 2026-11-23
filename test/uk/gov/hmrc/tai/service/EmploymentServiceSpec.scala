@@ -19,13 +19,13 @@ package uk.gov.hmrc.tai.service
 import cats.data.EitherT
 import cats.instances.future.*
 import org.mockito.ArgumentCaptor
-import org.mockito.ArgumentMatchers.{any, contains, eq as meq}
+import org.mockito.ArgumentMatchers.{any, eq as meq}
 import org.mockito.Mockito.*
 import play.api.http.Status.INTERNAL_SERVER_ERROR
 import play.api.libs.json.{JsArray, Json}
 import play.api.test.FakeRequest
 import uk.gov.hmrc.domain.Nino
-import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse, UpstreamErrorResponse}
+import uk.gov.hmrc.http.{HeaderCarrier, UpstreamErrorResponse}
 import uk.gov.hmrc.mongoFeatureToggles.services.FeatureFlagService
 import uk.gov.hmrc.tai.audit.Auditor
 import uk.gov.hmrc.tai.connectors.{CitizenDetailsConnector, DefaultEmploymentDetailsConnector, RtiConnector}
@@ -39,7 +39,6 @@ import uk.gov.hmrc.tai.util.{BaseSpec, IFormConstants}
 
 import java.nio.file.{Files, Paths}
 import java.time.LocalDate
-import java.time.format.DateTimeFormatter
 import scala.concurrent.duration.DurationInt
 import scala.concurrent.{Await, Future}
 import scala.jdk.CollectionConverters.ListHasAsScala
@@ -108,7 +107,7 @@ class EmploymentServiceSpec extends BaseSpec {
     citizenDetailsConnector: CitizenDetailsConnector,
     employmentBuilder: EmploymentBuilder,
     iFormSubmissionService: IFormSubmissionService,
-    fileUploadService: FileUploadService,
+    documentSubmissionService: DocumentSubmissionService,
     pdfService: PdfService,
     auditable: Auditor
   ) =
@@ -118,7 +117,7 @@ class EmploymentServiceSpec extends BaseSpec {
       citizenDetailsConnector,
       employmentBuilder,
       iFormSubmissionService,
-      fileUploadService,
+      documentSubmissionService,
       pdfService,
       auditable
     )
@@ -154,7 +153,7 @@ class EmploymentServiceSpec extends BaseSpec {
         mock[CitizenDetailsConnector],
         mockEmploymentBuilder,
         mock[IFormSubmissionService],
-        mock[FileUploadService],
+        mock[DocumentSubmissionService],
         mock[PdfService],
         mock[Auditor]
       )
@@ -208,7 +207,7 @@ class EmploymentServiceSpec extends BaseSpec {
         mock[CitizenDetailsConnector],
         mockEmploymentBuilder,
         mock[IFormSubmissionService],
-        mock[FileUploadService],
+        mock[DocumentSubmissionService],
         mock[PdfService],
         mock[Auditor]
       )
@@ -260,7 +259,7 @@ class EmploymentServiceSpec extends BaseSpec {
         mock[CitizenDetailsConnector],
         mockEmploymentBuilder,
         mock[IFormSubmissionService],
-        mock[FileUploadService],
+        mock[DocumentSubmissionService],
         mock[PdfService],
         mock[Auditor]
       )
@@ -288,7 +287,7 @@ class EmploymentServiceSpec extends BaseSpec {
         mock[CitizenDetailsConnector],
         mockEmploymentBuilder,
         mock[IFormSubmissionService],
-        mock[FileUploadService],
+        mock[DocumentSubmissionService],
         mock[PdfService],
         mock[Auditor]
       )
@@ -299,7 +298,7 @@ class EmploymentServiceSpec extends BaseSpec {
   }
 
   "endEmployment" must {
-    "return an envelopeId" when {
+    "return a submission id" when {
       "given valid inputs" in {
         val endEmployment = EndEmployment(LocalDate.of(2017, 6, 20), "1234", Some("123456789"))
 
@@ -311,11 +310,9 @@ class EmploymentServiceSpec extends BaseSpec {
         when(mockPdfService.generatePdf(any()))
           .thenReturn(Future.successful(pdfBytes))
 
-        val mockFileUploadService = mock[FileUploadService]
-        when(mockFileUploadService.createEnvelope())
+        val mockDocumentSubmissionService = mock[DocumentSubmissionService]
+        when(mockDocumentSubmissionService.submit(any(), any(), any())(any()))
           .thenReturn(Future.successful("1"))
-        when(mockFileUploadService.uploadFile(any(), any(), any(), any())(any()))
-          .thenReturn(Future.successful(HttpResponse(200, responseBody)))
 
         val mockAuditable = mock[Auditor]
         doNothing()
@@ -338,7 +335,7 @@ class EmploymentServiceSpec extends BaseSpec {
           mockCitizenDetailsConnector,
           inject[EmploymentBuilder],
           mock[IFormSubmissionService],
-          mockFileUploadService,
+          mockDocumentSubmissionService,
           mockPdfService,
           mockAuditable
         )
@@ -348,12 +345,7 @@ class EmploymentServiceSpec extends BaseSpec {
           5.seconds
         ) mustBe Right("1")
 
-        verify(mockFileUploadService, times(1)).uploadFile(
-          any(),
-          any(),
-          contains(s"1-EndEmployment-${LocalDate.now().format(DateTimeFormatter.ofPattern("YYYYMMdd"))}-iform.pdf"),
-          any()
-        )(any())
+        verify(mockDocumentSubmissionService, times(1)).submit(any(), meq("EndEmployment"), any())(any())
       }
     }
 
@@ -378,11 +370,9 @@ class EmploymentServiceSpec extends BaseSpec {
       when(mockPdfService.generatePdf(any()))
         .thenReturn(Future.successful(pdfBytes))
 
-      val mockFileUploadService = mock[FileUploadService]
-      when(mockFileUploadService.createEnvelope())
+      val mockDocumentSubmissionService = mock[DocumentSubmissionService]
+      when(mockDocumentSubmissionService.submit(any(), any(), any())(any()))
         .thenReturn(Future.successful("111"))
-      when(mockFileUploadService.uploadFile(any(), any(), any(), any())(any()))
-        .thenReturn(Future.successful(HttpResponse(200, responseBody)))
 
       val mockAuditable = mock[Auditor]
       doNothing()
@@ -395,7 +385,7 @@ class EmploymentServiceSpec extends BaseSpec {
         mockCitizenDetailsConnector,
         inject[EmploymentBuilder],
         mock[IFormSubmissionService],
-        mockFileUploadService,
+        mockDocumentSubmissionService,
         mockPdfService,
         mockAuditable
       )
@@ -409,7 +399,7 @@ class EmploymentServiceSpec extends BaseSpec {
   }
 
   "addEmployment" must {
-    "return an envelopeId" when {
+    "return a submission id" when {
       "given valid inputs" in {
         val addEmployment = AddEmployment("testName", LocalDate.of(2017, 8, 1), "1234", "Yes", Some("123456789"))
 
@@ -421,11 +411,9 @@ class EmploymentServiceSpec extends BaseSpec {
         when(mockPdfService.generatePdf(any()))
           .thenReturn(Future.successful(pdfBytes))
 
-        val mockFileUploadService = mock[FileUploadService]
-        when(mockFileUploadService.createEnvelope())
+        val mockDocumentSubmissionService = mock[DocumentSubmissionService]
+        when(mockDocumentSubmissionService.submit(any(), any(), any())(any()))
           .thenReturn(Future.successful("1"))
-        when(mockFileUploadService.uploadFile(any(), any(), any(), any())(any()))
-          .thenReturn(Future.successful(HttpResponse(200, responseBody)))
 
         val mockAuditable = mock[Auditor]
         doNothing()
@@ -438,7 +426,7 @@ class EmploymentServiceSpec extends BaseSpec {
           mockCitizenDetailsConnector,
           mockEmploymentBuilder,
           mock[IFormSubmissionService],
-          mockFileUploadService,
+          mockDocumentSubmissionService,
           mockPdfService,
           mockAuditable
         )
@@ -446,12 +434,7 @@ class EmploymentServiceSpec extends BaseSpec {
 
         result mustBe "1"
 
-        verify(mockFileUploadService, times(1)).uploadFile(
-          any(),
-          any(),
-          contains(s"1-AddEmployment-${LocalDate.now().format(DateTimeFormatter.ofPattern("YYYYMMdd"))}-iform.pdf"),
-          any()
-        )(any())
+        verify(mockDocumentSubmissionService, times(1)).submit(any(), meq("AddEmployment"), any())(any())
       }
     }
 
@@ -466,11 +449,9 @@ class EmploymentServiceSpec extends BaseSpec {
       when(mockPdfService.generatePdf(any()))
         .thenReturn(Future.successful(pdfBytes))
 
-      val mockFileUploadService = mock[FileUploadService]
-      when(mockFileUploadService.createEnvelope())
+      val mockDocumentSubmissionService = mock[DocumentSubmissionService]
+      when(mockDocumentSubmissionService.submit(any(), any(), any())(any()))
         .thenReturn(Future.successful("111"))
-      when(mockFileUploadService.uploadFile(any(), any(), any(), any())(any()))
-        .thenReturn(Future.successful(HttpResponse(200, responseBody)))
 
       val mockAuditable = mock[Auditor]
       doNothing()
@@ -483,7 +464,7 @@ class EmploymentServiceSpec extends BaseSpec {
         mockCitizenDetailsConnector,
         mockEmploymentBuilder,
         mock[IFormSubmissionService],
-        mockFileUploadService,
+        mockDocumentSubmissionService,
         mockPdfService,
         mockAuditable
       )
@@ -505,7 +486,7 @@ class EmploymentServiceSpec extends BaseSpec {
   }
 
   "incorrectEmployment" must {
-    "return an envelopeId" when {
+    "return a submission id" when {
       "given valid inputs" in {
         val employment = IncorrectEmployment("whatYouToldUs", "No", None)
 
@@ -527,7 +508,7 @@ class EmploymentServiceSpec extends BaseSpec {
           mock[CitizenDetailsConnector],
           mockEmploymentBuilder,
           mockIFormSubmissionService,
-          mock[FileUploadService],
+          mock[DocumentSubmissionService],
           mock[PdfService],
           mockAuditable
         )
@@ -565,7 +546,7 @@ class EmploymentServiceSpec extends BaseSpec {
         mock[CitizenDetailsConnector],
         mockEmploymentBuilder,
         mockIFormSubmissionService,
-        mock[FileUploadService],
+        mock[DocumentSubmissionService],
         mock[PdfService],
         mockAuditable
       )
@@ -577,7 +558,7 @@ class EmploymentServiceSpec extends BaseSpec {
   }
 
   "updatePreviousYearIncome" must {
-    "return an envelopeId" when {
+    "return a submission id" when {
       "given valid inputs" in {
         val employment = IncorrectEmployment("whatYouToldUs", "No", None)
 
@@ -601,7 +582,7 @@ class EmploymentServiceSpec extends BaseSpec {
           mock[CitizenDetailsConnector],
           mockEmploymentBuilder,
           mockIFormSubmissionService,
-          mock[FileUploadService],
+          mock[DocumentSubmissionService],
           mock[PdfService],
           mockAuditable
         )
@@ -640,7 +621,7 @@ class EmploymentServiceSpec extends BaseSpec {
         mock[CitizenDetailsConnector],
         mockEmploymentBuilder,
         mockIFormSubmissionService,
-        mock[FileUploadService],
+        mock[DocumentSubmissionService],
         mock[PdfService],
         mockAuditable
       )
@@ -665,7 +646,7 @@ class EmploymentServiceSpec extends BaseSpec {
         mock[CitizenDetailsConnector],
         mockEmploymentBuilder,
         mock[IFormSubmissionService],
-        mock[FileUploadService],
+        mock[DocumentSubmissionService],
         mock[PdfService],
         mock[Auditor]
       )
@@ -690,7 +671,7 @@ class EmploymentServiceSpec extends BaseSpec {
         mock[CitizenDetailsConnector],
         mockEmploymentBuilder,
         mock[IFormSubmissionService],
-        mock[FileUploadService],
+        mock[DocumentSubmissionService],
         mock[PdfService],
         mock[Auditor]
       )
@@ -716,7 +697,7 @@ class EmploymentServiceSpec extends BaseSpec {
         mock[CitizenDetailsConnector],
         mockEmploymentBuilder,
         mock[IFormSubmissionService],
-        mock[FileUploadService],
+        mock[DocumentSubmissionService],
         mock[PdfService],
         mock[Auditor]
       )
@@ -753,7 +734,7 @@ class EmploymentServiceSpec extends BaseSpec {
         mock[CitizenDetailsConnector],
         mockEmploymentBuilder,
         mock[IFormSubmissionService],
-        mock[FileUploadService],
+        mock[DocumentSubmissionService],
         mock[PdfService],
         mock[Auditor]
       )

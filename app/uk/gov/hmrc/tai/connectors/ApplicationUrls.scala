@@ -18,7 +18,7 @@ package uk.gov.hmrc.tai.connectors
 
 import com.google.inject.{Inject, Singleton}
 import uk.gov.hmrc.domain.Nino
-import uk.gov.hmrc.tai.config._
+import uk.gov.hmrc.tai.config.*
 import uk.gov.hmrc.tai.model.tai.TaxYear
 
 @Singleton
@@ -38,6 +38,18 @@ class FileUploadUrls @Inject() (config: FileUploadConfig) {
   def routingUrl = s"${config.baseURL}/file-routing/requests"
   def fileUrl(envelopeId: String, fileId: String) =
     s"${config.frontendBaseURL}/file-upload/upload/envelopes/$envelopeId/files/$fileId"
+}
+
+@Singleton
+class UpscanUrls @Inject() (config: UpscanConfig) {
+
+  def initiateUrl: String = s"${config.baseURL}/upscan/v2/initiate"
+}
+
+@Singleton
+class DmsSubmissionUrls @Inject() (config: DmsSubmissionConfig) {
+
+  def submitUrl: String = s"${config.baseURL}/dms-submission/submit"
 }
 
 @Singleton

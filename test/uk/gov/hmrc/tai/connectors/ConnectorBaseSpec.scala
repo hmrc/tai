@@ -65,6 +65,8 @@ trait ConnectorBaseSpec
         "microservice.services.paye.port"                     -> server.port(),
         "microservice.services.file-upload.port"              -> server.port(),
         "microservice.services.file-upload-frontend.port"     -> server.port(),
+        "microservice.services.upscan-initiate.port"          -> server.port(),
+        "microservice.services.dms-submission.port"           -> server.port(),
         "microservice.services.nps-hod.originatorId"          -> npsOriginatorId,
         "microservice.services.hip-hod.originatorId"          -> hipOriginatorId,
         "microservice.services.des-hod.originatorId"          -> desOriginatorId,

@@ -58,6 +58,10 @@ class Metrics @Inject() (metrics: MetricRegistry) {
     APITypes.FusCreateEnvelope                -> "create-envelope",
     APITypes.FusUploadFile                    -> "file-upload",
     APITypes.FusCloseEnvelope                 -> "close-envelope",
+    APITypes.UpscanInitiate                   -> "upscan-initiate",
+    APITypes.UpscanUpload                     -> "upscan-upload",
+    APITypes.UpscanDownload                   -> "upscan-download",
+    APITypes.DmsSubmission                    -> "dms-submission",
     APITypes.BbsiAPI                          -> "bbsi",
     APITypes.TaxCodeChangeAPI                 -> "tax-code-change",
     APITypes.TaxAccountHistoryAPI             -> "tax-account-history"
