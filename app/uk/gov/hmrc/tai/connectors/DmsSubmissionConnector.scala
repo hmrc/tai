@@ -21,10 +21,12 @@ import org.apache.pekko.stream.scaladsl.Source
 import org.apache.pekko.util.ByteString
 import play.api.Logging
 import play.api.http.Status.*
-import play.api.libs.ws.WSClient
+import play.api.libs.ws.bodyWritableOf_Multipart
 import play.api.mvc.MultipartFormData
 import play.api.mvc.MultipartFormData.{DataPart, FilePart}
-import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.http.HttpReads.Implicits.*
+import uk.gov.hmrc.http.client.HttpClientV2
+import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse, StringContextOps}
 import uk.gov.hmrc.tai.config.DmsSubmissionConfig
 import uk.gov.hmrc.tai.metrics.Metrics
 import uk.gov.hmrc.tai.model.dms.{DmsSubmissionMetadata, DmsSubmissionResponse}
@@ -37,7 +39,7 @@ import scala.concurrent.{ExecutionContext, Future}
 @Singleton
 class DmsSubmissionConnector @Inject() (
   metrics: Metrics,
-  wsClient: WSClient,
+  httpClientV2: HttpClientV2,
   urls: DmsSubmissionUrls,
   config: DmsSubmissionConfig
 )(implicit ec: ExecutionContext)
@@ -62,12 +64,15 @@ class DmsSubmissionConnector @Inject() (
     ).map { case (key, value) => DataPart(key, value) }
 
     val filePart: MultipartFormData.Part[Source[ByteString, ?]] =
-      FilePart("form", fileName, Some("application/octet-stream"), Source.single(ByteString(pdf)))
+      FilePart("form", fileName, Some("application/pdf"), Source.single(ByteString(pdf)))
 
-    wsClient
-      .url(urls.submitUrl)
-      .addHttpHeaders("Authorization" -> config.authToken)
-      .post(Source(dataParts :+ filePart))
+    val url = urls.submitUrl
+
+    httpClientV2
+      .post(url"$url")
+      .setHeader("Authorization" -> config.authToken)
+      .withBody(Source(dataParts :+ filePart))
+      .execute[HttpResponse](readRaw, ec)
       .map { response =>
         timerContext.stop()
         if (response.status == ACCEPTED) {

@@ -59,7 +59,13 @@ class DmsSubmissionConnectorSpec extends ConnectorBaseSpec {
             aMultipart().withName("metadata.classificationType").withBody(equalTo("PSA-DFS TES")).build()
           )
           .withRequestBodyPart(aMultipart().withName("metadata.businessArea").withBody(equalTo("PSA")).build())
-          .withRequestBodyPart(aMultipart().withName("form").withBody(equalTo("pdf-content")).build())
+          .withRequestBodyPart(
+            aMultipart()
+              .withName("form")
+              .withHeader("Content-Type", equalTo("application/pdf"))
+              .withBody(equalTo("pdf-content"))
+              .build()
+          )
       )
     }
 
